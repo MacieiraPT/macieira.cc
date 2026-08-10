@@ -124,10 +124,34 @@ To point it at a different account, change `USER` at the top of the file.
 
 ---
 
-## Deploying to Cloudflare Pages
+## Deploying to Cloudflare
 
-Connect the repository in the Cloudflare dashboard (Workers & Pages → Create → Pages →
-Connect to Git) and use:
+The site is the repository root, so both of Cloudflare's static hosting products work.
+`_headers` applies either way — on both platforms it is *parsed*, not served — and it sets
+a year of immutable caching on `vendor/` and the fonts plus a content security policy that
+only allows the two external hosts the page uses (`api.github.com` and GitHub's avatar CDN).
+
+### Workers (current setup)
+
+`wrangler.jsonc` is committed, so a connected build just runs `npx wrangler deploy` and
+serves this directory.
+
+The one thing to know: Cloudflare's build container runs `npm clean-install` before the
+deploy command, because there is a `package.json` here. That creates `node_modules` *inside
+the assets directory* — including Wrangler's own 122 MiB `workerd` binary, which is well
+over the 25 MiB per-asset limit. **`.assetsignore` is what keeps that out of the upload.**
+Don't delete it, and add to it if the repository ever grows something else that shouldn't
+be public.
+
+To deploy by hand:
+
+```bash
+npx wrangler deploy
+```
+
+### Pages
+
+If you'd rather use Pages: Workers & Pages → Create → Pages → Connect to Git, with
 
 | Setting | Value |
 | --- | --- |
@@ -135,16 +159,8 @@ Connect to Git) and use:
 | Build command | *(leave empty)* |
 | Build output directory | `/` |
 
-Then add `macieira.cc` under **Custom domains**. Cloudflare handles the DNS record and the
-certificate. `_headers` is picked up automatically — it sets a year of immutable caching on
-`vendor/` and the fonts, and a content security policy that only allows the two external
-hosts the page actually uses (`api.github.com` and GitHub's avatar CDN).
-
-Wrangler works too, if you'd rather deploy from the terminal:
-
-```bash
-npx wrangler pages deploy . --project-name=macieira-cc
-```
+Either way, add `macieira.cc` under **Custom domains** — Cloudflare handles the DNS record
+and the certificate.
 
 ---
 

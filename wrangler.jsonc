@@ -1,0 +1,14 @@
+{
+  // Assets-only Worker: there is no `main` script, so Cloudflare just serves
+  // the directory. Committing this stops Wrangler from re-guessing the
+  // settings (and re-writing a config file) on every build.
+  //
+  // What actually ships is this directory minus .assetsignore's list.
+  // Caching and security headers come from _headers, which the platform
+  // parses rather than serves.
+  "name": "macieira-cc",
+  "compatibility_date": "2026-08-10",
+  "assets": {
+    "directory": "."
+  }
+}

@@ -1,6 +1,12 @@
 # Files in this directory that are NOT part of the published site.
-# Same syntax as .gitignore. _headers is deliberately absent: Cloudflare
-# parses it rather than serving it, so it must stay in the upload.
+#
+# Cloudflare's build container installs the devDependencies before running
+# `wrangler deploy`, and the assets directory is the repository root — so
+# without this file the upload includes node_modules, which contains
+# wrangler's own 122 MiB `workerd` binary and blows the 25 MiB asset limit.
+#
+# Same syntax as .gitignore. Note that _headers and _redirects are parsed by
+# the platform rather than served, so they must NOT be listed here.
 
 node_modules/
 tools/
