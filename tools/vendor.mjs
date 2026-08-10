@@ -86,8 +86,9 @@ const bundles = [
         Scene, PerspectiveCamera, WebGLRenderer, Group, Timer,
         BufferGeometry, Float32BufferAttribute, Points, ShaderMaterial,
         AdditiveBlending, Vector2, Vector3, Color, MathUtils,
-        Mesh, MeshPhongMaterial, SphereGeometry, TubeGeometry,
+        Mesh, MeshPhongMaterial, SphereGeometry, TubeGeometry, PlaneGeometry,
         CatmullRomCurve3, AmbientLight, DirectionalLight,
+        InstancedMesh, Object3D, DoubleSide,
       } from 'three';
     `,
   },
