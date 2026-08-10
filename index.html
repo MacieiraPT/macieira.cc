@@ -110,7 +110,7 @@
 
 <body>
 
-<a class="skip-link" href="#now">Skip to content</a>
+<a class="skip-link" href="#now" data-pt="Saltar para o conteúdo">Skip to content</a>
 
 <!--
   Icon sprite. Brand marks are the official ones (paths from simple-icons,
@@ -160,7 +160,7 @@
 </div>
 
 <header class="masthead">
-  <a class="masthead__brand" href="#top" data-anchor aria-label="macieira.cc — back to top">
+  <a class="masthead__brand" href="#top" data-anchor aria-label="macieira.cc — back to top" data-pt-aria-label="macieira.cc — voltar ao topo">
     <!--
       The mark: an apple, because macieira is Portuguese for apple tree.
       Body and stem are single continuous strokes, which is what lets anime.js
@@ -176,19 +176,34 @@
     <span class="masthead__wordmark">macieira<span class="dim">.cc</span></span>
   </a>
 
-  <nav class="masthead__nav" aria-label="Sections">
-    <a href="#now" data-anchor><span class="idx">01</span> now</a>
-    <a href="#play" data-anchor><span class="idx">02</span> elsewhere</a>
+  <nav class="masthead__nav" aria-label="Sections" data-pt-aria-label="Secções">
+    <a href="#now" data-anchor><span class="idx">01</span> <span data-pt="agora">now</span></a>
+    <a href="#play" data-anchor><span class="idx">02</span> <span data-pt="por aí">elsewhere</span></a>
     <a href="#dev" data-anchor><span class="idx">03</span> github</a>
-    <a href="#say-hi" data-anchor><span class="idx">04</span> contact</a>
+    <a href="#say-hi" data-anchor><span class="idx">04</span> <span data-pt="contacto">contact</span></a>
   </nav>
 
-  <!-- GitHub is the one link that gets a persistent, weighted slot in the chrome. -->
-  <a class="btn btn--ghost masthead__gh" href="https://github.com/MacieiraPT" rel="me noopener" target="_blank" data-magnetic>
-    <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
-    <span>GitHub</span>
-    <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow"/></svg>
-  </a>
+  <div class="masthead__end">
+    <!--
+      Language switch. Two buttons and a chip that slides between them; which
+      one is lit comes from `html[data-lang]`, so the control never has to be
+      told where it is. It ships `hidden` because without JS there is nothing
+      to switch — the page is in English and every Portuguese string is an
+      attribute nobody is reading. js/modules/lang.js un-hides it.
+    -->
+    <div class="lang" role="group" aria-label="Language" data-pt-aria-label="Idioma" data-lang-switcher hidden>
+      <span class="lang__thumb" aria-hidden="true"></span>
+      <button class="lang__btn" type="button" lang="en" data-lang-switch="en" aria-pressed="true">EN</button>
+      <button class="lang__btn" type="button" lang="pt-PT" data-lang-switch="pt" aria-pressed="false">PT</button>
+    </div>
+
+    <!-- GitHub is the one link that gets a persistent, weighted slot in the chrome. -->
+    <a class="btn btn--ghost masthead__gh" href="https://github.com/MacieiraPT" rel="me noopener" target="_blank" data-magnetic>
+      <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
+      <span>GitHub</span>
+      <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow"/></svg>
+    </a>
+  </div>
 </header>
 
 <main id="top">
@@ -277,9 +292,9 @@
             pop-in scale from overwriting each other.
           -->
           <ul class="orchard__apples" data-tree-apples>
-            <li class="orchard__apple" style="--x:50.4%; --y:44.0%; --sway:0"><button class="apple" type="button" data-apple="name" aria-controls="fact-name"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">the name</span></button></li>
-            <li class="orchard__apple" style="--x:38.5%; --y:65.6%; --sway:0.6"><button class="apple" type="button" data-apple="who" aria-controls="fact-who"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">who</span></button></li>
-            <li class="orchard__apple" style="--x:32.8%; --y:49.8%; --sway:1.2"><button class="apple" type="button" data-apple="training" aria-controls="fact-training"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">training</span></button></li>
+            <li class="orchard__apple" style="--x:50.4%; --y:44.0%; --sway:0"><button class="apple" type="button" data-apple="name" aria-controls="fact-name"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono" data-pt="o nome">the name</span></button></li>
+            <li class="orchard__apple" style="--x:38.5%; --y:65.6%; --sway:0.6"><button class="apple" type="button" data-apple="who" aria-controls="fact-who"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono" data-pt="quem">who</span></button></li>
+            <li class="orchard__apple" style="--x:32.8%; --y:49.8%; --sway:1.2"><button class="apple" type="button" data-apple="training" aria-controls="fact-training"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono" data-pt="formação">training</span></button></li>
             <li class="orchard__apple" style="--x:67.8%; --y:50.2%; --sway:1.8"><button class="apple" type="button" data-apple="stack" aria-controls="fact-stack"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">stack</span></button></li>
             <li class="orchard__apple" style="--x:21.3%; --y:61.0%; --sway:2.4"><button class="apple" type="button" data-apple="steam" aria-controls="fact-steam"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Steam</span></button></li>
             <li class="orchard__apple" style="--x:61.1%; --y:66.2%; --sway:3.0"><button class="apple" type="button" data-apple="discord" aria-controls="fact-discord"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Discord</span></button></li>
@@ -290,38 +305,44 @@
         <div class="hero__copy">
           <h1 class="hero__name" id="hero-name" data-hero="name" data-split>Rodrigo Macieira</h1>
 
+          <!--
+            One sentence, two spans: `data-pt` replaces an element's whole
+            content, so a line with a tag inside it translates piece by piece.
+          -->
           <p class="hero__lede" data-hero="lede">
-            <span class="hero__lede-lead">Developer, based in Portugal.</span> This is where
-            the work goes as it gets made, starting with the thing you're looking at.
+            <span class="hero__lede-lead" data-pt="Programador, em Portugal.">Developer, based in Portugal.</span>
+            <span data-pt="É aqui que o trabalho vai aparecendo à medida que é feito, a começar por aquilo que estás a ver.">This is where
+            the work goes as it gets made, starting with the thing you're looking at.</span>
           </p>
 
           <div class="basket" data-hero="basket">
             <div class="basket__deck" data-tree-facts>
 
               <article class="fact" id="fact-name" data-fact="name">
-                <p class="fact__label mono">01 — the name</p>
-                <h2 class="fact__title">Macieira means apple tree.</h2>
-                <p class="fact__body">
+                <p class="fact__label mono" data-pt="01 — o nome">01 — the name</p>
+                <h2 class="fact__title" data-pt="Macieira é a árvore que dá maçãs.">Macieira means apple tree.</h2>
+                <p class="fact__body" data-pt="É o meu apelido. A primeira página leva isso à letra.">
                   It's my surname, in Portuguese. The front page takes that literally.
                 </p>
               </article>
 
               <article class="fact" id="fact-who" data-fact="who">
-                <p class="fact__label mono">02 — who</p>
-                <h2 class="fact__title">Rodrigo Macieira, <span data-age>18</span>, from Portugal.</h2>
-                <p class="fact__body">
+                <p class="fact__label mono" data-pt="02 — quem">02 — who</p>
+                <h2 class="fact__title">Rodrigo Macieira, <span data-age>18</span>, <span data-pt="de Portugal.">from Portugal.</span></h2>
+                <p class="fact__body" data-pt="Este site é a primeira coisa que publiquei. Tudo o que vier a seguir vai para o GitHub e aparece sozinho mais abaixo nesta página.">
                   This site is the first thing I've shipped. Everything after it lands on
                   GitHub and shows up further down this page on its own.
                 </p>
               </article>
 
               <article class="fact" id="fact-training" data-fact="training">
-                <p class="fact__label mono">03 — training</p>
+                <p class="fact__label mono" data-pt="03 — formação">03 — training</p>
                 <h2 class="fact__title">Programador de Informática.</h2>
                 <p class="fact__body">
-                  Three years of software development as a Portuguese <i>curso profissional</i>,
+                  <span data-pt="Três anos de desenvolvimento de software num">Three years of software development as a Portuguese</span>
+                  <i data-pt="curso profissional">curso profissional</i><span data-pt=", concluídos — uma qualificação de nível 4 no Quadro Nacional de Qualificações, e o diploma do secundário com ela.">,
                   finished — a level 4 qualification on the national framework, and a secondary
-                  diploma with it.
+                  diploma with it.</span>
                 </p>
                 <a class="btn btn--ghost fact__action" href="https://catalogo.snq.gov.pt/qualificacoesDetalhe/7382" target="_blank" rel="noopener">
                   <span>481040 · Catálogo Nacional de Qualificações</span>
@@ -332,7 +353,7 @@
               <article class="fact" id="fact-stack" data-fact="stack">
                 <p class="fact__label mono">04 — stack</p>
                 <h2 class="fact__title">Three.js, GSAP, Lenis.</h2>
-                <p class="fact__body">
+                <p class="fact__body" data-pt="Módulos ES simples e duas cenas WebGL. Sem framework e sem build — o que está no repositório é o que é publicado.">
                   Plain ES modules and two WebGL scenes. No framework and no build step —
                   what's in the repository is what ships.
                 </p>
@@ -341,7 +362,7 @@
               <article class="fact" id="fact-steam" data-fact="steam">
                 <p class="fact__label mono">05 — steam</p>
                 <h2 class="fact__title">Steam</h2>
-                <p class="fact__body">Off the clock.</p>
+                <p class="fact__body" data-pt="Fora de horas.">Off the clock.</p>
                 <a class="btn btn--ghost fact__action" href="https://steamcommunity.com/id/r_di/" target="_blank" rel="noopener">
                   <svg class="icon" aria-hidden="true"><use href="#i-steam"/></svg>
                   <span>/id/r_di</span>
@@ -352,7 +373,7 @@
               <article class="fact" id="fact-discord" data-fact="discord">
                 <p class="fact__label mono">06 — discord</p>
                 <h2 class="fact__title">Discord</h2>
-                <p class="fact__body">The fastest way to reach me.</p>
+                <p class="fact__body" data-pt="A forma mais rápida de falar comigo.">The fastest way to reach me.</p>
                 <button class="btn btn--ghost fact__action" type="button" data-copy="rvdi">
                   <svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg>
                   <span>rvdi</span>
@@ -363,7 +384,7 @@
               <article class="fact" id="fact-github" data-fact="github">
                 <p class="fact__label mono">07 — github</p>
                 <h2 class="fact__title">GitHub</h2>
-                <p class="fact__body">Source for this site, and everything after it.</p>
+                <p class="fact__body" data-pt="O código deste site, e de tudo o que vier a seguir.">Source for this site, and everything after it.</p>
                 <a class="btn btn--ghost fact__action" href="https://github.com/MacieiraPT" target="_blank" rel="me noopener">
                   <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
                   <span>@MacieiraPT</span>
@@ -379,7 +400,7 @@
             -->
             <p class="basket__prompt mono" data-tree-prompt hidden>
               <span class="basket__prompt-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span>
-              Seven apples, hidden in the tree. Drag to look around.
+              <span data-pt="Sete maçãs, escondidas na árvore. Arrasta para veres à volta.">Seven apples, hidden in the tree. Drag to look around.</span>
             </p>
           </div>
         </div>
@@ -395,16 +416,16 @@
       <div class="hero__foot">
         <a class="hero__cue" href="#now" data-anchor data-hero="cue">
           <span class="hero__cue-line" aria-hidden="true"></span>
-          <span>scroll</span>
+          <span data-pt="desce">scroll</span>
         </a>
 
         <p class="hero__kicker" data-hero="kicker">
           <span class="dot" aria-hidden="true"></span>
           Portugal
           <span class="sep" aria-hidden="true">/</span>
-          <span data-clock aria-label="Local time in Portugal">--:--</span>
+          <span data-clock aria-label="Local time in Portugal" data-pt-aria-label="Hora local em Portugal">--:--</span>
           <span class="sep" aria-hidden="true">/</span>
-          developer
+          <span data-pt="programador">developer</span>
         </p>
       </div>
     </div>
@@ -413,24 +434,24 @@
   <!-- ───────────────────────────────  01 NOW  ────────────────────────────── -->
   <section class="section section--now" id="now" aria-labelledby="now-title">
     <div class="section__head">
-      <p class="label" data-reveal>01 — now</p>
-      <h2 class="h2" id="now-title" data-reveal-lines>
+      <p class="label" data-reveal data-pt="01 — agora">01 — now</p>
+      <h2 class="h2" id="now-title" data-reveal-lines data-pt="No início, e a construir onde se vê.">
         Early, and building where it can be seen.
       </h2>
     </div>
 
     <div class="cards">
       <article class="card card--accent" data-reveal>
-        <p class="card__label">Shipped</p>
-        <p class="card__body">This site. Static ES modules, two WebGL scenes, no framework and no build step — the repository is the deploy.</p>
+        <p class="card__label" data-pt="Publicado">Shipped</p>
+        <p class="card__body" data-pt="Este site. Módulos ES estáticos, duas cenas WebGL, sem framework e sem build — o repositório é o deploy.">This site. Static ES modules, two WebGL scenes, no framework and no build step — the repository is the deploy.</p>
       </article>
       <article class="card" data-reveal>
-        <p class="card__label">Working on</p>
-        <p class="card__body">Real-time graphics on the web, and the performance work that keeps them running on a phone as well as a desktop.</p>
+        <p class="card__label" data-pt="A trabalhar em">Working on</p>
+        <p class="card__body" data-pt="Gráficos em tempo real na web, e o trabalho de performance que os mantém a correr tanto no telemóvel como no computador.">Real-time graphics on the web, and the performance work that keeps them running on a phone as well as a desktop.</p>
       </article>
       <article class="card" data-reveal>
-        <p class="card__label">Next</p>
-        <p class="card__body">Whatever I build lands on GitHub, and shows up further down this page on its own.</p>
+        <p class="card__label" data-pt="A seguir">Next</p>
+        <p class="card__body" data-pt="O que quer que construa vai para o GitHub, e aparece sozinho mais abaixo nesta página.">Whatever I build lands on GitHub, and shows up further down this page on its own.</p>
       </article>
     </div>
   </section>
@@ -439,18 +460,18 @@
   <div class="marquee" aria-hidden="true" data-marquee>
     <div class="marquee__track" data-marquee-track>
       <span>macieira</span><span class="marquee__dot">◆</span>
-      <span>apple tree</span><span class="marquee__dot">◆</span>
+      <span data-pt="árvore das maçãs">apple tree</span><span class="marquee__dot">◆</span>
       <span>portugal</span><span class="marquee__dot">◆</span>
       <span>webgl</span><span class="marquee__dot">◆</span>
-      <span>in the open</span><span class="marquee__dot">◆</span>
+      <span data-pt="à vista de todos">in the open</span><span class="marquee__dot">◆</span>
     </div>
   </div>
 
   <!-- ───────────────────────────────  02 PLAY  ───────────────────────────── -->
   <section class="section section--play" id="play" aria-labelledby="play-title">
     <div class="section__head">
-      <p class="label" data-reveal>02 — elsewhere</p>
-      <h2 class="h2" id="play-title" data-reveal-lines>Three places. That's the whole list.</h2>
+      <p class="label" data-reveal data-pt="02 — por aí">02 — elsewhere</p>
+      <h2 class="h2" id="play-title" data-reveal-lines data-pt="Três sítios. É essa a lista toda.">Three places. That's the whole list.</h2>
     </div>
 
     <ul class="links" role="list">
@@ -505,7 +526,7 @@
       </svg>
       <span class="seam__caption">
         <span class="seam__state" data-morph-label>macieira</span>
-        <span class="seam__hint mono">tap to switch</span>
+        <span class="seam__hint mono" data-pt="toca para trocar">tap to switch</span>
       </span>
     </button>
 
@@ -523,11 +544,11 @@
       <!-- Left rail gets pinned by ScrollTrigger on wide screens. -->
       <div class="dev__rail" data-pin-rail>
         <div class="dev__rail-inner">
-          <p class="label" data-reveal>03 — github</p>
-          <h2 class="h2" id="dev-title" data-reveal-lines>
+          <p class="label" data-reveal data-pt="03 — github">03 — github</p>
+          <h2 class="h2" id="dev-title" data-reveal-lines data-pt="Lido em direto da API.">
             Read live from the API.
           </h2>
-          <p class="prose" data-reveal>
+          <p class="prose" data-reveal data-pt="Os contadores, a atividade e os repositórios vêm diretamente da API pública do GitHub em vez de estarem escritos aqui, por isso esta secção só pode dizer aquilo que é mesmo verdade em cada dia.">
             Counters, activity and repositories come straight from the public GitHub
             API rather than being typed in here, so this section can only say what is
             actually true on any given day.
@@ -557,27 +578,27 @@
               </span>
             </div>
             <p class="gh__live mono" data-gh-status>
-              <span class="dot" aria-hidden="true"></span><span data-gh-status-text>connecting…</span>
+              <span class="dot" aria-hidden="true"></span><span data-gh-status-text data-pt="a ligar…">connecting…</span>
             </p>
           </header>
 
           <dl class="gh__stats">
-            <div><dt>Public repos</dt><dd data-gh-stat="repos">—</dd></div>
-            <div><dt>Followers</dt><dd data-gh-stat="followers">—</dd></div>
-            <div><dt>On GitHub since</dt><dd data-gh-stat="since">—</dd></div>
+            <div><dt data-pt="Repositórios públicos">Public repos</dt><dd data-gh-stat="repos">—</dd></div>
+            <div><dt data-pt="Seguidores">Followers</dt><dd data-gh-stat="followers">—</dd></div>
+            <div><dt data-pt="No GitHub desde">On GitHub since</dt><dd data-gh-stat="since">—</dd></div>
           </dl>
 
           <div class="gh__activity">
             <p class="gh__activity-head">
-              <span class="label">Public activity</span>
-              <span class="mono dim" data-gh-activity-note>last 14 days</span>
+              <span class="label" data-pt="Atividade pública">Public activity</span>
+              <span class="mono dim" data-gh-activity-note data-pt="últimos 14 dias">last 14 days</span>
             </p>
             <!--
               Fourteen flat bars ship in the markup so the panel still looks
               deliberate when the API can't be reached. github.js replaces
               them with the real ones and grows them into place.
             -->
-            <div class="spark" data-gh-spark role="img" aria-label="Public GitHub activity over the last 14 days">
+            <div class="spark" data-gh-spark role="img" aria-label="Public GitHub activity over the last 14 days" data-pt-aria-label="Atividade pública no GitHub nos últimos 14 dias">
               <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
               <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
               <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
@@ -589,7 +610,7 @@
           </div>
 
           <div class="gh__repos" data-gh-repos>
-            <p class="gh__empty">
+            <p class="gh__empty" data-pt="Os repositórios aparecem aqui à medida que são publicados.">
               Repositories appear here as they are published.
             </p>
           </div>
@@ -603,23 +624,24 @@
           and the empty state disappears on its own.
         -->
         <section class="work" aria-labelledby="work-title" data-work>
-          <h3 class="work__title label" id="work-title" data-reveal>Selected work</h3>
+          <h3 class="work__title label" id="work-title" data-reveal data-pt="Trabalho escolhido">Selected work</h3>
           <div class="work__grid" data-work-grid>
             <article class="work-card work-card--ghost">
-              <p class="work-card__slot mono">slot 01</p>
-              <p class="work-card__text">Reserved.</p>
+              <p class="work-card__slot mono" data-pt="vaga 01">slot 01</p>
+              <p class="work-card__text" data-pt="Reservada.">Reserved.</p>
             </article>
             <article class="work-card work-card--ghost">
-              <p class="work-card__slot mono">slot 02</p>
-              <p class="work-card__text">Reserved.</p>
+              <p class="work-card__slot mono" data-pt="vaga 02">slot 02</p>
+              <p class="work-card__text" data-pt="Reservada.">Reserved.</p>
             </article>
             <article class="work-card work-card--ghost">
-              <p class="work-card__slot mono">slot 03</p>
-              <p class="work-card__text">Reserved.</p>
+              <p class="work-card__slot mono" data-pt="vaga 03">slot 03</p>
+              <p class="work-card__text" data-pt="Reservada.">Reserved.</p>
             </article>
           </div>
           <p class="work__note mono" data-reveal>
-            Wired to <span class="dim">js/data/projects.js</span> — cards appear when there are entries.
+            <span data-pt="Ligado a">Wired to</span> <span class="dim">js/data/projects.js</span>
+            <span data-pt="— os cartões aparecem quando houver entradas.">— cards appear when there are entries.</span>
           </p>
         </section>
 
@@ -631,8 +653,8 @@
 <!-- ────────────────────────────────  FOOTER  ───────────────────────────────- -->
 <footer class="footer" id="say-hi">
   <div class="footer__top">
-    <p class="label" data-reveal>04 — contact</p>
-    <p class="footer__big" data-reveal-lines>
+    <p class="label" data-reveal data-pt="04 — contacto">04 — contact</p>
+    <p class="footer__big" data-reveal-lines data-pt="Fala comigo, ou acompanha os commits.">
       Get in touch, or watch the commits.
     </p>
 
@@ -658,19 +680,19 @@
     <span class="sticker sticker--1" data-sticker aria-hidden="true"><svg class="sticker__apple" viewBox="0 0 48 48"><use href="#i-apple"/></svg></span>
     <span class="sticker sticker--2 mono" data-sticker>PT</span>
     <span class="sticker sticker--3 mono" data-sticker>.cc</span>
-    <p class="stickers__hint mono" aria-hidden="true">drag them</p>
+    <p class="stickers__hint mono" aria-hidden="true" data-pt="arrasta-os">drag them</p>
   </div>
 
   <div class="colophon">
     <p class="mono">
-      Built with <span class="dim">Three.js</span>, <span class="dim">GSAP</span>,
-      <span class="dim">Lenis</span> and <span class="dim">anime.js</span>.
-      Static, hosted on Cloudflare Pages.
+      <span data-pt="Feito com">Built with</span> <span class="dim">Three.js</span>, <span class="dim">GSAP</span>,
+      <span class="dim">Lenis</span> <span data-pt="e">and</span> <span class="dim">anime.js</span>.
+      <span data-pt="Estático, alojado na Cloudflare Pages.">Static, hosted on Cloudflare Pages.</span>
     </p>
     <p class="mono">
-      <span data-clock>--:--</span> in Portugal
+      <span data-clock>--:--</span> <span data-pt="em Portugal">in Portugal</span>
       <span class="sep" aria-hidden="true">/</span>
-      <a href="#top" data-anchor>back to top</a>
+      <a href="#top" data-anchor data-pt="voltar ao topo">back to top</a>
     </p>
   </div>
 </footer>

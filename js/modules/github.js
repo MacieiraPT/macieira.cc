@@ -16,7 +16,12 @@
  *     is a real state with real copy, not an error.
  *   - Anything can fail. The markup in index.html already reads correctly
  *     with no JS at all; this only ever *improves* it.
+ *   - Every word this panel puts on screen is written here rather than in the
+ *     markup, so all of it has to survive a language switch. The fetch happens
+ *     once; `paint()` is what runs again.
  */
+
+import { locale, onLanguageChange, t } from './lang.js';
 
 const USER = 'MacieiraPT';
 const API = 'https://api.github.com';
@@ -77,8 +82,25 @@ async function getJSON(path, signal) {
 /* Formatting                                                                  */
 /* -------------------------------------------------------------------------- */
 
-const numberFormat = new Intl.NumberFormat('en-GB');
-const relativeFormat = new Intl.RelativeTimeFormat('en-GB', { numeric: 'auto' });
+/**
+ * The three formatters, rebuilt only when the locale actually moves.
+ * Constructing an Intl formatter is expensive enough not to do per repository,
+ * and a module-level constant would be stuck in whatever language the page
+ * happened to boot in.
+ */
+let intlCache = { locale: null };
+function intl() {
+  const tag = locale();
+  if (intlCache.locale !== tag) {
+    intlCache = {
+      locale: tag,
+      numbers: new Intl.NumberFormat(tag),
+      relative: new Intl.RelativeTimeFormat(tag, { numeric: 'auto' }),
+      day: new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'short' }),
+    };
+  }
+  return intlCache;
+}
 
 const UNITS = [
   ['year', 365 * 24 * 3600],
@@ -92,9 +114,9 @@ const UNITS = [
 function timeAgo(iso) {
   const seconds = (Date.parse(iso) - Date.now()) / 1000;
   for (const [unit, size] of UNITS) {
-    if (Math.abs(seconds) >= size) return relativeFormat.format(Math.round(seconds / size), unit);
+    if (Math.abs(seconds) >= size) return intl().relative.format(Math.round(seconds / size), unit);
   }
-  return 'just now';
+  return t('justNow');
 }
 
 /** GitHub's own language colours, for the handful most likely to show up first. */
@@ -138,8 +160,8 @@ function renderProfile(root, user) {
     if (cell) cell.textContent = value;
   };
 
-  set('repos', numberFormat.format(user.public_repos ?? 0));
-  set('followers', numberFormat.format(user.followers ?? 0));
+  set('repos', intl().numbers.format(user.public_repos ?? 0));
+  set('followers', intl().numbers.format(user.followers ?? 0));
   set('since', user.created_at ? new Date(user.created_at).getFullYear() : '—');
 }
 
@@ -182,7 +204,7 @@ function renderActivity(root, events) {
     bar.dataset.empty = String(value === 0);
     bar.style.transitionDelay = `${index * 22}ms`;
     const day = new Date(startOfToday.getTime() - (ACTIVITY_DAYS - 1 - index) * 86_400_000);
-    bar.title = `${day.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}: ${value} event${value === 1 ? '' : 's'}`;
+    bar.title = t('ghDayTitle', intl().day.format(day), value);
     return bar;
   });
 
@@ -196,14 +218,11 @@ function renderActivity(root, events) {
     });
   });
 
-  spark.setAttribute(
-    'aria-label',
-    `${total} public GitHub event${total === 1 ? '' : 's'} in the last ${ACTIVITY_DAYS} days`
-  );
+  spark.setAttribute('aria-label', t('ghActivityLabel', total, ACTIVITY_DAYS));
   if (note) {
     note.textContent = total
-      ? `${total} event${total === 1 ? '' : 's'} · last ${ACTIVITY_DAYS} days`
-      : `quiet · last ${ACTIVITY_DAYS} days`;
+      ? t('ghActivityNote', total, ACTIVITY_DAYS)
+      : t('ghQuiet', ACTIVITY_DAYS);
   }
 }
 
@@ -219,9 +238,7 @@ function renderRepos(root, repos) {
   if (!own.length) {
     const message = document.createElement('p');
     message.className = 'gh__empty';
-    message.textContent = repos.length
-      ? 'Nothing public of my own yet — only forks so far.'
-      : 'No public repositories yet. First one lands here the moment it exists.';
+    message.textContent = repos.length ? t('ghForksOnly') : t('ghNoRepos');
     container.replaceChildren(message);
     return;
   }
@@ -250,7 +267,7 @@ function renderRepos(root, repos) {
       }
       if (repo.stargazers_count) {
         const stars = document.createElement('span');
-        stars.textContent = `★ ${numberFormat.format(repo.stargazers_count)}`;
+        stars.textContent = `★ ${intl().numbers.format(repo.stargazers_count)}`;
         meta.append(stars);
       }
       const updated = document.createElement('span');
@@ -296,7 +313,7 @@ export async function initGitHub(onRender) {
   const root = document.querySelector('[data-gh]');
   if (!root) return;
 
-  setStatus(root, 'loading', 'fetching…');
+  setStatus(root, 'loading', t('ghFetching'));
 
   // One shared timeout: a hanging request should degrade, not spin forever.
   const controller = new AbortController();
@@ -309,25 +326,37 @@ export async function initGitHub(onRender) {
   ]);
   clearTimeout(timeout);
 
-  if (profile.status === 'rejected') {
-    setStatus(root, 'error', 'offline');
-    setNote(
-      root,
-      profile.reason?.rateLimited
-        ? "GitHub's public API is rate-limited from this network right now — the profile link still works."
-        : "Couldn't reach the GitHub API from here. The profile link still works."
-    );
-    onRender?.();
-    return;
-  }
+  /**
+   * Draws the panel from what the fetch came back with. Everything in here is
+   * a pure function of that data plus the current language, which is what lets
+   * a switch re-run it without touching the network — the whole panel, rather
+   * than the labels alone, because the relative dates and the counters are
+   * localised too. The activity bars grow again on the way past; they are the
+   * one thing that re-animates, and it reads as the panel refreshing.
+   */
+  const paint = () => {
+    if (profile.status === 'rejected') {
+      setStatus(root, 'error', t('ghOffline'));
+      setNote(root, profile.reason?.rateLimited ? t('ghRateLimited') : t('ghUnreachable'));
+      return;
+    }
 
-  renderProfile(root, profile.value.data);
-  if (Array.isArray(repositories.value?.data)) renderRepos(root, repositories.value.data);
-  if (Array.isArray(activity.value?.data)) renderActivity(root, activity.value.data);
+    renderProfile(root, profile.value.data);
+    if (Array.isArray(repositories.value?.data)) renderRepos(root, repositories.value.data);
+    if (Array.isArray(activity.value?.data)) renderActivity(root, activity.value.data);
 
-  const fresh = profile.value.fresh;
-  setStatus(root, 'live', fresh ? 'live from the GitHub API' : 'from cache');
-  setNote(root, fresh ? '' : 'Cached for up to 30 minutes to stay inside the public rate limit.');
+    const fresh = profile.value.fresh;
+    setStatus(root, 'live', fresh ? t('ghLive') : t('ghFromCache'));
+    setNote(root, fresh ? '' : t('ghCacheNote'));
+  };
 
+  paint();
   onRender?.();
+
+  // The note and the repository list change height between languages, so the
+  // refresh has to happen again on every switch — not only after the fetch.
+  onLanguageChange(() => {
+    paint();
+    onRender?.();
+  });
 }

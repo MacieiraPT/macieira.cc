@@ -3,9 +3,10 @@
  *
  * Boot order is deliberate, and it is the performance story of this page:
  *
- *   1. Interactions that must work no matter what (copy buttons, clock,
- *      the apple tree), then the 3D tree — the one deferred chunk that is
- *      asked for immediately, because it *is* the front page.
+ *   1. The language, then the interactions that must work no matter what
+ *      (copy buttons, clock, the apple tree), then the 3D tree — the one
+ *      deferred chunk that is asked for immediately, because it *is* the
+ *      front page.
  *   2. The scroll layer — Lenis driven by GSAP's ticker.
  *   3. Anything that measures text, once webfonts have settled.
  *   4. Idle work: the live GitHub panel, then the anime.js details.
@@ -27,6 +28,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { allowWebGL, fontsReady, webglBlockReason, whenIdle } from './modules/env.js';
 import { createSmoothScroll, initAnchors } from './modules/smooth-scroll.js';
+import { initLanguage } from './modules/lang.js';
 import { playIntro } from './modules/hero.js';
 import {
   initMagnetic,
@@ -88,6 +90,11 @@ root.classList.add('booted');
 /* -------------------------------------------------------------------------- */
 /* 1. Baseline interactions                                                    */
 /* -------------------------------------------------------------------------- */
+
+// First, and before anything else has touched the DOM: this is what captures
+// the English that shipped in the document, and a Portuguese visitor should
+// never see a frame of English on the way to their own language.
+safely('language', initLanguage);
 
 safely('copy buttons', initCopyButtons);
 safely('clock', initClock);

@@ -30,6 +30,16 @@ export function revert(el) {
 }
 
 /**
+ * Drops what was remembered, so the next split treats whatever is in the DOM
+ * now as the original. Used when the copy itself has changed underneath a
+ * split element — a language switch — where reverting would put the previous
+ * language back.
+ */
+export function forget(el) {
+  registry.delete(el);
+}
+
+/**
  * Wraps each rendered line. Returns the inner (moving) elements, in order.
  * Elements containing markup are left alone — measuring them word-by-word
  * would throw the nested tags away.

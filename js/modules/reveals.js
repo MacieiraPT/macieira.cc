@@ -15,7 +15,8 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { env } from './env.js';
-import { splitLines, revert } from './split.js';
+import { onLanguageChange } from './lang.js';
+import { splitLines, revert, forget } from './split.js';
 
 /* -------------------------------------------------------------------------- */
 /* Reveals                                                                     */
@@ -84,6 +85,18 @@ export function initReveals() {
   }
 
   headlines.forEach(setupHeadline);
+
+  // A language switch replaces the headline's text outright (js/modules/lang.js
+  // writes textContent, masks and all), so the split has to be rebuilt from
+  // it. `forget` first: the remembered markup is the *previous* language, and
+  // reverting to it would undo the switch on the way past.
+  onLanguageChange(() => {
+    headlines.forEach((headline) => {
+      forget(headline);
+      setupHeadline(headline);
+    });
+    ScrollTrigger.refresh();
+  });
 
   // Line breaks depend on the viewport, so a width change invalidates them.
   // Height-only changes (mobile browser chrome collapsing) are ignored.

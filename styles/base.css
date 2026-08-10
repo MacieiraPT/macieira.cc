@@ -98,7 +98,6 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scrollbar-color: var(--ink-faint) transparent;
 }
 
 /* Native smooth scroll only matters when Lenis is *not* running (JS off) —
@@ -131,6 +130,62 @@ dl, dd { margin: 0; }
 }
 
 ::selection { background: var(--tint); color: #0a0a0c; }
+
+/* --------------------------------------------------------------------------
+   Scrollbar
+   --------------------------------------------------------------------------
+   The bar reads as part of the page rather than as part of the window: no
+   track, a thumb inset from the edge by a transparent border, and the live
+   --tint running through it — so it drifts from acid to plasma with everything
+   else as you cross into the build half. It is the same instrument as the
+   progress bar at the top of the window, turned on its side.
+
+   The two halves are mutually exclusive on purpose. Chromium supports both
+   `scrollbar-color` and the ::-webkit-scrollbar pseudo-elements, and setting
+   the standard property to anything but `auto` makes it *ignore* the
+   pseudo-elements entirely — so the standard properties are fenced behind a
+   feature query that only a browser without ::-webkit-scrollbar (Firefox) can
+   enter. This is also why there is no plain `scrollbar-color` on html any more.
+   -------------------------------------------------------------------------- */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner { background: transparent; }
+/* The little end arrows are from another era and break the shape. */
+::-webkit-scrollbar-button { display: none; }
+
+::-webkit-scrollbar-thumb {
+  /* padding-box + a transparent border is what floats the thumb off the edge:
+     the background stops at the padding, the border keeps the hit area full
+     width. `border-width` is therefore the gap, and shrinking it on hover
+     fattens the thumb without moving anything. */
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+  /* Flat colour first: if custom properties don't reach this pseudo-element in
+     some browser, the gradient below is dropped as invalid and this is what is
+     left — a visible, on-palette bar rather than an invisible one. */
+  background-color: var(--ink-faint);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--tint) 80%, transparent),
+    color-mix(in oklab, var(--tint) 45%, var(--plasma))
+  );
+}
+
+::-webkit-scrollbar-thumb:hover {
+  border-width: 2px;
+  background-image: linear-gradient(180deg, var(--tint), color-mix(in oklab, var(--tint) 50%, var(--plasma)));
+}
+::-webkit-scrollbar-thumb:active { border-width: 2px; background-image: none; background-color: var(--ink); }
+
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    /* No gradient and no inset here — Firefox takes two flat colours and draws
+       its own shape, which is the right amount of control to hand over. */
+    scrollbar-color: color-mix(in oklab, var(--tint) 62%, var(--bg)) transparent;
+  }
+}
 
 /* --------------------------------------------------------------------------
    Lenis. These rules are required by the library itself (its dist/lenis.css),
