@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <title>rudi — macieira.cc</title>
-<meta name="description" content="Personal site of rudi (MacieiraPT). Mostly a gamer, starting a university bachelor's, building the dev side in public. Steam, Riot, Discord, YouTube, Twitch and GitHub in one place.">
+<meta name="description" content="Personal site of rudi (MacieiraPT). Macieira is Portuguese for apple tree — so the front page is one, and every apple on it is something about me. Steam, Discord and GitHub in one place.">
 <link rel="canonical" href="https://macieira.cc/">
 <meta name="theme-color" content="#08080a">
 <meta name="color-scheme" content="dark">
@@ -15,7 +15,7 @@
 <meta property="og:url" content="https://macieira.cc/">
 <meta property="og:site_name" content="macieira.cc">
 <meta property="og:title" content="rudi — macieira.cc">
-<meta property="og:description" content="Mostly a gamer. Starting a university bachelor's. Building the dev side in public.">
+<meta property="og:description" content="Macieira means apple tree. Pick an apple. Mostly a gamer, starting a university bachelor's, building the dev side in public.">
 <meta property="og:image" content="https://macieira.cc/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -94,9 +94,7 @@
   "nationality": "PT",
   "sameAs": [
     "https://github.com/MacieiraPT",
-    "https://steamcommunity.com/id/r_di/",
-    "https://www.youtube.com/@rudi_PT",
-    "https://www.twitch.tv/rudipt"
+    "https://steamcommunity.com/id/r_di/"
   ]
 }
 </script>
@@ -109,15 +107,26 @@
 <!--
   Icon sprite. Brand marks are the official ones (paths from simple-icons,
   CC0) and are used purely to identify the service each link points to.
+
+  #i-apple is the site's own mark. It is the only multi-coloured symbol here,
+  and it gets its colours from custom properties rather than `currentColor`:
+  a <use> element renders its symbol in a shadow tree that CSS selectors can't
+  reach, but inherited custom properties *do* cross that boundary. So one
+  symbol can be red-with-a-green-leaf everywhere, and any instance can still
+  re-tint itself by setting --apple / --leaf on the <svg> that uses it.
 -->
 <svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
   <defs>
+    <symbol id="i-apple" viewBox="0 0 48 48">
+      <path fill="var(--apple)" d="M24 15.6c-2.8-4.2-8.6-5.4-12.3-2-4.5 4.1-4.1 12.8-.4 19.6 2.4 4.4 5.6 7.2 8.3 6.2 1.7-.6 2.7-1.2 4.4-1.2s2.7.6 4.4 1.2c2.7 1 5.9-1.8 8.3-6.2 3.7-6.8 4.1-15.5-.4-19.6-3.7-3.4-9.5-2.2-12.3 2Z"/>
+      <!-- Specular highlight: what makes it read as fruit rather than a circle. -->
+      <ellipse cx="16.8" cy="22.4" rx="3.1" ry="4.9" fill="#fff" opacity=".26" transform="rotate(-26 16.8 22.4)"/>
+      <path fill="none" stroke="var(--bark)" stroke-width="2.3" stroke-linecap="round" d="M24 15.6C24.3 11 25.8 7.3 28.6 4.4"/>
+      <path fill="var(--leaf)" d="M26.2 10.6C29.5 5.9 34.9 4.7 38.4 6.9 37.7 11.8 33.1 14.7 27.9 12.7Z"/>
+    </symbol>
     <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
     <symbol id="i-steam" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.253 0-2.265-1.014-2.265-2.265z"/></symbol>
-    <symbol id="i-riot" viewBox="0 0 24 24"><path d="M13.458.86 0 7.093l3.353 12.761 2.552-.313-.701-8.024.838-.373 1.447 8.202 4.361-.535-.775-8.857.83-.37 1.591 9.025 4.412-.542-.849-9.708.84-.374 1.74 9.87L24 17.318V3.5Zm.316 19.356.222 1.256L24 23.14v-4.18l-10.22 1.256Z"/></symbol>
     <symbol id="i-discord" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></symbol>
-    <symbol id="i-youtube" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></symbol>
-    <symbol id="i-twitch" viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></symbol>
     <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5.5 5.5L20 6.5"/></symbol>
@@ -140,9 +149,17 @@
 
 <header class="masthead">
   <a class="masthead__brand" href="#top" data-anchor aria-label="macieira.cc — back to top">
-    <!-- Monogram: one continuous stroke so anime.js can draw it on like a pen line. -->
+    <!--
+      The mark: an apple, because macieira is Portuguese for apple tree.
+      Body and stem are single continuous strokes, which is what lets anime.js
+      draw them on like a pen line (js/modules/details.js); the fills arrive
+      behind the finished outline, driven by the hero timeline in GSAP so the
+      logo never depends on the lazily-loaded anime.js chunk to be red.
+    -->
     <svg class="monogram" viewBox="0 0 48 48" aria-hidden="true">
-      <path class="monogram__stroke" data-draw d="M6 39V9l18 20L42 9v30" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="monogram__body" data-draw d="M24 15.6c-2.8-4.2-8.6-5.4-12.3-2-4.5 4.1-4.1 12.8-.4 19.6 2.4 4.4 5.6 7.2 8.3 6.2 1.7-.6 2.7-1.2 4.4-1.2s2.7.6 4.4 1.2c2.7 1 5.9-1.8 8.3-6.2 3.7-6.8 4.1-15.5-.4-19.6-3.7-3.4-9.5-2.2-12.3 2Z" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="monogram__stem" data-draw d="M24 15.6C24.3 11 25.8 7.3 28.6 4.4" fill="none" stroke-width="2.8" stroke-linecap="round"/>
+      <path class="monogram__leaf" d="M26.2 10.6C29.5 5.9 34.9 4.7 38.4 6.9 37.7 11.8 33.1 14.7 27.9 12.7Z"/>
     </svg>
     <span class="masthead__wordmark">macieira<span class="dim">.cc</span></span>
   </a>
@@ -164,38 +181,215 @@
 <main id="top">
 
   <!-- ───────────────────────────────  HERO  ─────────────────────────────── -->
+  <!--
+    The tree. "Macieira" is Portuguese for apple tree, so the front page is
+    one, and the six apples are the introduction: pick one, read a fact.
+
+    How it degrades, which is what dictated the markup:
+      - The branches are ordinary stroked SVG paths, fully drawn in the file.
+        anime.js only *re-draws* them on arrival (js/modules/details.js), so a
+        failed chunk costs an animation, never the picture.
+      - The apples are real <button>s in normal document flow, positioned by
+        two custom properties each. Tab, Enter and Space work with no code.
+      - Every fact is in the HTML. With JavaScript running they become a deck
+        the buttons page through; without it they are simply a list of six
+        paragraphs, and the page still says everything it means to say.
+  -->
   <section class="hero" aria-labelledby="hero-name">
     <div class="hero__inner">
 
-      <p class="hero__kicker" data-hero="kicker">
-        <span class="dot" aria-hidden="true"></span>
-        Portugal
-        <span class="sep" aria-hidden="true">/</span>
-        <span data-clock aria-label="Local time in Portugal">--:--</span>
-        <span class="sep" aria-hidden="true">/</span>
-        player, first-year student
-      </p>
+      <div class="hero__stage">
 
-      <h1 class="hero__name" id="hero-name" data-hero="name" data-split>rudi</h1>
+        <div class="orchard" data-tree>
+          <svg class="orchard__art" viewBox="0 0 460 520" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+            <defs>
+              <radialGradient id="canopy">
+                <stop offset="0%"   stop-color="var(--leaf)" stop-opacity="0.20"/>
+                <stop offset="55%"  stop-color="var(--leaf)" stop-opacity="0.07"/>
+                <stop offset="100%" stop-color="var(--leaf)" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="rootshadow">
+                <stop offset="0%"   stop-color="var(--leaf)" stop-opacity="0.16"/>
+                <stop offset="100%" stop-color="var(--leaf)" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
 
-      <div class="hero__grid">
-        <p class="hero__lede" data-hero="lede">
-          <span class="hero__lede-lead">Mostly a gamer.</span> I'm starting a university
-          bachelor's, so this page is where the other half — the building half — is
-          going to grow, in public, from zero.
-        </p>
+            <!-- Foliage: four overlapping radial washes. No blur filter, which
+                 would cost a full-canvas offscreen pass on every repaint. -->
+            <g class="orchard__canopy" data-canopy>
+              <ellipse cx="232" cy="272" rx="216" ry="152" fill="url(#canopy)"/>
+              <ellipse cx="150" cy="284" rx="98"  ry="80"  fill="url(#canopy)"/>
+              <ellipse cx="318" cy="278" rx="102" ry="84"  fill="url(#canopy)"/>
+              <ellipse cx="234" cy="226" rx="90"  ry="72"  fill="url(#canopy)"/>
+            </g>
 
-        <dl class="hero__facts" data-hero="facts">
-          <div><dt>Riot ID</dt><dd class="mono">rudi#0001</dd></div>
-          <div><dt>Discord</dt><dd class="mono">rvdi</dd></div>
-          <div><dt>GitHub</dt><dd class="mono">@MacieiraPT</dd></div>
-        </dl>
+            <ellipse cx="230" cy="504" rx="156" ry="18" fill="url(#rootshadow)"/>
+
+            <!--
+              Trunk and branches, thickest first so the eye reads the taper —
+              and so the growth animation runs trunk → limbs → twigs for free.
+
+              pathLength="1" is what makes that animation possible in plain
+              CSS: it renormalises every path to a length of 1 regardless of
+              its real geometry, so one stylesheet rule (dasharray 1 /
+              dashoffset 1) hides all thirteen, and GSAP only has to tween one
+              number back to zero. No getTotalLength(), no per-path bookkeeping
+              and — the part that matters — no measurement that has to happen
+              in JS before the branches can be hidden, which is why they never
+              flash in fully drawn and then redraw themselves.
+            -->
+            <g class="orchard__wood" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path data-branch pathLength="1" stroke-width="15" d="M230 508C232 462 226 402 229 332"/>
+              <path data-branch pathLength="1" stroke-width="4"  d="M204 508C212 496 222 490 230 489c8 1 18 7 26 19"/>
+
+              <path data-branch pathLength="1" stroke-width="9"  d="M229 386C196 379 152 363 122 337c-10-9-18-22-24-34"/>
+              <path data-branch pathLength="1" stroke-width="9"  d="M229 389c35-8 81-24 111-48 10-9 18-24 24-36"/>
+              <path data-branch pathLength="1" stroke-width="8"  d="M229 353c-25-12-50-34-64-64-6-14-11-30-14-44"/>
+              <path data-branch pathLength="1" stroke-width="8"  d="M229 353c27-10 53-32 67-60 7-14 13-32 16-46"/>
+              <path data-branch pathLength="1" stroke-width="8"  d="M229 341c-3-30-1-66 2-94 0-10 1-22 1-32"/>
+
+              <!--
+                Twigs. Each one starts on a coordinate that appears *verbatim*
+                in a limb above — the joint between that limb's two curve
+                segments, or its end point. Anywhere else and the twig floats
+                a few pixels off the branch it is supposed to be growing from,
+                which is instantly obvious and impossible to eyeball fix.
+              -->
+              <path data-branch pathLength="1" stroke-width="5"  d="M296 293c-5 14-10 26-15 37"/>
+              <path data-branch pathLength="1" stroke-width="4"  d="M165 289c-14 6-25 16-32 28"/>
+              <path data-branch pathLength="1" stroke-width="4"  d="M231 247c9 11 15 23 18 36"/>
+              <path data-branch pathLength="1" stroke-width="3"  d="M122 337c-3 12-4 23-3 34"/>
+              <path data-branch pathLength="1" stroke-width="3"  d="M340 341c3 12 4 23 3 34"/>
+            </g>
+          </svg>
+
+          <!--
+            Six apples. --x/--y place each one at the tip of the branch it
+            hangs from; --sway staggers the idle bob so they don't breathe in
+            unison. The <li> owns the position, the <button> owns the motion —
+            keeping them apart is what stops the centring transform and the
+            pop-in scale from overwriting each other.
+          -->
+          <ul class="orchard__apples" data-tree-apples>
+            <li class="orchard__apple" style="--x:50.4%; --y:44.0%; --sway:0"    ><button class="apple" type="button" data-apple="name"    aria-controls="fact-name"   ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">the name</span></button></li>
+            <li class="orchard__apple" style="--x:67.8%; --y:50.2%; --sway:0.7"  ><button class="apple" type="button" data-apple="who"     aria-controls="fact-who"    ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">who</span></button></li>
+            <li class="orchard__apple" style="--x:32.8%; --y:49.8%; --sway:1.4"  ><button class="apple" type="button" data-apple="study"   aria-controls="fact-study"  ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">studying</span></button></li>
+            <li class="orchard__apple" style="--x:21.3%; --y:61.0%; --sway:2.1"  ><button class="apple" type="button" data-apple="steam"   aria-controls="fact-steam"  ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Steam</span></button></li>
+            <li class="orchard__apple" style="--x:61.1%; --y:66.2%; --sway:2.8"  ><button class="apple" type="button" data-apple="discord" aria-controls="fact-discord"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Discord</span></button></li>
+            <li class="orchard__apple" style="--x:79.1%; --y:61.3%; --sway:3.5"  ><button class="apple" type="button" data-apple="github"  aria-controls="fact-github" ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">GitHub</span></button></li>
+          </ul>
+        </div>
+
+        <div class="hero__copy">
+          <h1 class="hero__name" id="hero-name" data-hero="name" data-split>rudi</h1>
+
+          <p class="hero__lede" data-hero="lede">
+            <span class="hero__lede-lead">Mostly a gamer.</span> I'm starting a university
+            bachelor's, so this page is where the other half — the building half — is
+            going to grow, in public, from zero.
+          </p>
+
+          <div class="basket" data-hero="basket">
+            <div class="basket__deck" data-tree-facts>
+              <!--
+                Hidden in the file and un-hidden by js/modules/tree.js. Without
+                JS there is nothing to pick, so the invitation would be a lie —
+                and all six facts are already on screen underneath it.
+              -->
+              <p class="basket__prompt mono" data-tree-prompt hidden>
+                <span class="basket__prompt-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span>
+                Six apples on the tree. Pick one.
+              </p>
+
+              <article class="fact" id="fact-name" data-fact="name">
+                <p class="fact__label mono">01 — the name</p>
+                <h2 class="fact__title">Macieira means apple tree.</h2>
+                <p class="fact__body">
+                  It's my surname, in Portuguese. This page is the literal reading of it:
+                  one tree, and everything I'd tell you about myself hanging off it.
+                </p>
+              </article>
+
+              <article class="fact" id="fact-who" data-fact="who">
+                <p class="fact__label mono">02 — who</p>
+                <h2 class="fact__title">rudi, from Portugal.</h2>
+                <p class="fact__body">
+                  It's <span data-clock>--:--</span> where I am. Mostly a gamer, and I'm not
+                  going to pretend otherwise — that's honestly where the hours have gone so far.
+                </p>
+              </article>
+
+              <article class="fact" id="fact-study" data-fact="study">
+                <p class="fact__label mono">03 — studying</p>
+                <h2 class="fact__title">First year, just started.</h2>
+                <p class="fact__body">
+                  A university bachelor's, right at the beginning of it. Ask me again in
+                  a semester and there should be something here worth reading.
+                </p>
+              </article>
+
+              <article class="fact" id="fact-steam" data-fact="steam">
+                <p class="fact__label mono">04 — steam</p>
+                <h2 class="fact__title">Steam</h2>
+                <p class="fact__body">Where most of those hours are actually logged.</p>
+                <a class="btn btn--ghost fact__action" href="https://steamcommunity.com/id/r_di/" target="_blank" rel="noopener">
+                  <svg class="icon" aria-hidden="true"><use href="#i-steam"/></svg>
+                  <span>/id/r_di</span>
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow"/></svg>
+                </a>
+              </article>
+
+              <article class="fact" id="fact-discord" data-fact="discord">
+                <p class="fact__label mono">05 — discord</p>
+                <h2 class="fact__title">Discord</h2>
+                <p class="fact__body">The tab that never gets closed, and the fastest way to reach me.</p>
+                <button class="btn btn--ghost fact__action" type="button" data-copy="rvdi">
+                  <svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg>
+                  <span>rvdi</span>
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-copy"/></svg>
+                </button>
+              </article>
+
+              <article class="fact" id="fact-github" data-fact="github">
+                <p class="fact__label mono">06 — github</p>
+                <h2 class="fact__title">GitHub</h2>
+                <p class="fact__body">
+                  The building half. Whatever I ship lands here, and shows up further down
+                  this page on its own.
+                </p>
+                <a class="btn btn--ghost fact__action" href="https://github.com/MacieiraPT" target="_blank" rel="me noopener">
+                  <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
+                  <span>@MacieiraPT</span>
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow"/></svg>
+                </a>
+              </article>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <a class="hero__cue" href="#now" data-anchor data-hero="cue">
-        <span class="hero__cue-line" aria-hidden="true"></span>
-        <span>scroll</span>
-      </a>
+      <!--
+        Metadata sits under the tree rather than above it. The particle field
+        occupies the top-left of this section by design, and a line of 11 px
+        mono is the one thing on the page that cannot survive being read
+        through 26 000 additive points.
+      -->
+      <div class="hero__foot">
+        <a class="hero__cue" href="#now" data-anchor data-hero="cue">
+          <span class="hero__cue-line" aria-hidden="true"></span>
+          <span>scroll</span>
+        </a>
+
+        <p class="hero__kicker" data-hero="kicker">
+          <span class="dot" aria-hidden="true"></span>
+          Portugal
+          <span class="sep" aria-hidden="true">/</span>
+          <span data-clock aria-label="Local time in Portugal">--:--</span>
+          <span class="sep" aria-hidden="true">/</span>
+          player, first-year student
+        </p>
+      </div>
     </div>
   </section>
 
@@ -212,7 +406,7 @@
     <div class="cards">
       <article class="card" data-reveal>
         <p class="card__label">Playing</p>
-        <p class="card__body">Steam, Riot and a Discord tab that is never closed. That's where the hours have gone so far, and I'm not going to pretend otherwise.</p>
+        <p class="card__body">Steam, and a Discord tab that is never closed. That's where the hours have gone so far, and I'm not going to pretend otherwise.</p>
       </article>
       <article class="card" data-reveal>
         <p class="card__label">Studying</p>
@@ -230,7 +424,7 @@
     <div class="marquee__track" data-marquee-track>
       <span>games</span><span class="marquee__dot">◆</span>
       <span>learning in public</span><span class="marquee__dot">◆</span>
-      <span>rudi#0001</span><span class="marquee__dot">◆</span>
+      <span>macieira = apple tree</span><span class="marquee__dot">◆</span>
       <span>portugal</span><span class="marquee__dot">◆</span>
       <span>first commit energy</span><span class="marquee__dot">◆</span>
     </div>
@@ -240,7 +434,7 @@
   <section class="section section--play" id="play" aria-labelledby="play-title">
     <div class="section__head">
       <p class="label" data-reveal>02 — where to find me</p>
-      <h2 class="h2" id="play-title" data-reveal-lines>The gamer half. All of it, in one place.</h2>
+      <h2 class="h2" id="play-title" data-reveal-lines>Three places. That's the whole list.</h2>
     </div>
 
     <ul class="links" role="list">
@@ -254,20 +448,10 @@
         </a>
       </li>
 
-      <!-- Riot and Discord aren't linkable profiles, so they're copy targets instead. -->
-      <li class="link-row" data-reveal>
-        <button class="link-row__main" type="button" data-copy="rudi#0001">
-          <span class="link-row__idx mono">02</span>
-          <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-riot"/></svg>
-          <span class="link-row__name">Riot ID</span>
-          <span class="link-row__handle mono">rudi#0001</span>
-          <svg class="icon link-row__go link-row__go--copy" aria-hidden="true"><use href="#i-copy"/></svg>
-        </button>
-      </li>
-
+      <!-- Discord has no linkable profile page, so it's a copy target instead. -->
       <li class="link-row" data-reveal>
         <button class="link-row__main" type="button" data-copy="rvdi">
-          <span class="link-row__idx mono">03</span>
+          <span class="link-row__idx mono">02</span>
           <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-discord"/></svg>
           <span class="link-row__name">Discord</span>
           <span class="link-row__handle mono">rvdi</span>
@@ -276,21 +460,11 @@
       </li>
 
       <li class="link-row" data-reveal>
-        <a class="link-row__main" href="https://www.youtube.com/@rudi_PT" target="_blank" rel="noopener">
-          <span class="link-row__idx mono">04</span>
-          <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-youtube"/></svg>
-          <span class="link-row__name">YouTube</span>
-          <span class="link-row__handle mono">@rudi_PT</span>
-          <svg class="icon link-row__go" aria-hidden="true"><use href="#i-arrow"/></svg>
-        </a>
-      </li>
-
-      <li class="link-row" data-reveal>
-        <a class="link-row__main" href="https://www.twitch.tv/rudipt" target="_blank" rel="noopener">
-          <span class="link-row__idx mono">05</span>
-          <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-twitch"/></svg>
-          <span class="link-row__name">Twitch</span>
-          <span class="link-row__handle mono">/rudipt</span>
+        <a class="link-row__main" href="https://github.com/MacieiraPT" target="_blank" rel="me noopener">
+          <span class="link-row__idx mono">03</span>
+          <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-github"/></svg>
+          <span class="link-row__name">GitHub</span>
+          <span class="link-row__handle mono">@MacieiraPT</span>
           <svg class="icon link-row__go" aria-hidden="true"><use href="#i-arrow"/></svg>
         </a>
       </li>
@@ -444,7 +618,7 @@
   <div class="footer__top">
     <p class="label" data-reveal>04 — say hi</p>
     <p class="footer__big" data-reveal-lines>
-      Add me, watch a stream, or check the commits in a year and see how it went.
+      Add me, queue up, or check the commits in a year and see how it went.
     </p>
 
     <div class="footer__actions">
@@ -466,7 +640,7 @@
     .stickers, so they can be thrown around but never lost off-screen.
   -->
   <div class="stickers" data-stickers>
-    <span class="sticker sticker--1 mono" data-sticker>#0001</span>
+    <span class="sticker sticker--1" data-sticker aria-hidden="true"><svg class="sticker__apple" viewBox="0 0 48 48"><use href="#i-apple"/></svg></span>
     <span class="sticker sticker--2 mono" data-sticker>PT</span>
     <span class="sticker sticker--3 mono" data-sticker>gg</span>
     <p class="stickers__hint mono" aria-hidden="true">drag them</p>

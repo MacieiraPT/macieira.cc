@@ -13,6 +13,7 @@
 
 import { Group, MathUtils, PerspectiveCamera, Scene, Timer, Vector2, Vector3, WebGLRenderer } from 'three';
 import { createParticleField } from './particles.js';
+import { APPLE_SILHOUETTE } from '../data/apple.js';
 import { env } from '../modules/env.js';
 
 const CAMERA_FOV = 38;
@@ -76,7 +77,8 @@ export function mountScene(canvas, { onReady } = {}) {
   const styles = getComputedStyle(document.documentElement);
   const field = createParticleField({
     count,
-    glyph: 'M', // Macieira — the same mark as the masthead monogram
+    // The same mark as the masthead and the hero: macieira, an apple tree.
+    shape: APPLE_SILHOUETTE,
     colorA: styles.getPropertyValue('--acid').trim() || '#cdfb45',
     colorB: styles.getPropertyValue('--plasma').trim() || '#7d5cff',
     pixelRatio,
@@ -218,15 +220,17 @@ export function mountScene(canvas, { onReady } = {}) {
     pointerEased.lerp(pointer, Math.min(1, delta * 3.5));
     burstEnergy *= Math.exp(-delta * 3.2);
 
-    // Locked to the glyph: 0 while the field is loose, 1 once it has resolved.
+    // Locked to the apple: 0 while the field is loose, 1 once it has resolved.
     const settle = MathUtils.clamp(phase - 1, 0, 1);
     const journey = MathUtils.clamp(phase, 0, 2) / 2;
 
-    // The cloud starts off to one side of the wordmark and moves to centre as
-    // it becomes the letterform. On phones there is no room beside the type,
-    // so it sits above it instead.
-    group.position.x = MathUtils.lerp(env.smallScreen ? 0 : 2.7, 0, journey);
-    group.position.y = MathUtils.lerp(env.smallScreen ? 2.4 : 1.1, 0, journey);
+    // The cloud starts high over the tree — the left half of the hero, where
+    // the only thing it can land on is canopy — and travels to centre as it
+    // becomes the apple. Keeping it off the right column is what lets the
+    // wordmark and the fact cards there stay legible without a scrim behind
+    // them. On phones the hero is one column, so it goes straight overhead.
+    group.position.x = MathUtils.lerp(env.smallScreen ? 0 : -2.9, 0, journey);
+    group.position.y = MathUtils.lerp(env.smallScreen ? 4.0 : 2.2, 0, journey);
 
     spin += delta * 0.1 * (1 - settle);
     group.rotation.y = MathUtils.lerp(spin, 0, settle) + pointerEased.x * 0.22;
@@ -277,7 +281,7 @@ export function mountScene(canvas, { onReady } = {}) {
   /* ---------------------------------------------------------------------- */
 
   return {
-    /** Scroll position, 0 (orb) → 1 (wave) → 2 (glyph). */
+    /** Scroll position, 0 (orb) → 1 (wave) → 2 (apple). */
     setPhase(value) {
       targetPhase = value;
     },

@@ -30,6 +30,7 @@ import {
   initReveals,
   initTint,
 } from './modules/reveals.js';
+import { initTree } from './modules/tree.js';
 import { initClock, initCopyButtons } from './modules/ui.js';
 import { initWork } from './modules/work.js';
 
@@ -84,6 +85,10 @@ root.classList.add('booted');
 safely('copy buttons', initCopyButtons);
 safely('clock', initClock);
 safely('work grid', initWork);
+// Before the font wait below, not after: the six facts all ship in the HTML,
+// and this is what collapses them into a deck. A second of them stacked up
+// while a webfont downloads would be a worse first impression than the wait.
+safely('apple tree', initTree);
 
 /* -------------------------------------------------------------------------- */
 /* 2. Scroll layer                                                             */
@@ -167,8 +172,8 @@ async function mountBackdrop() {
    * Two scrubbed triggers, deliberately non-overlapping, map the page onto
    * the field's morph:
    *   hero → play : the orb loosens into a drifting wave field
-   *   play → seam : the field pulls together into the "M"
-   * It then stays as the letterform behind the dev section, dimmed so the
+   *   play → seam : the field pulls together into the apple
+   * It then stays as the apple behind the dev section, dimmed so the
    * GitHub panel keeps its contrast.
    */
   ScrollTrigger.create({

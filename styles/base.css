@@ -53,6 +53,16 @@
   --acid:      #cdfb45;
   --plasma:    #7d5cff;
 
+  /* The orchard. `macieira` is Portuguese for apple tree, so these three are
+     brand colours rather than illustration colours: the logo, the fruit in
+     the hero and the particle field all read from them. --leaf is the acid
+     accent on purpose — a neon-green leaf against the red is what keeps the
+     tree inside this palette instead of turning the page into a nature doc. */
+  --apple:      #e4392f;
+  --apple-deep: #96201a;
+  --leaf:       var(--acid);
+  --bark:       #8b7b69;
+
   --line:        rgb(255 255 255 / 0.10);
   --line-strong: rgb(255 255 255 / 0.20);
 
@@ -220,6 +230,27 @@ html.js:not(.reduced-motion):not(.boot-failed) [data-reveal-lines] > .line > .li
 }
 html.js:not(.reduced-motion):not(.boot-failed) [data-hero] {
   opacity: 0;
+}
+
+/* The tree's own hidden state.
+   Only the *fills* and the fruit start hidden — never the branches. The wood
+   is stroked in the markup and stays that way, so anime.js redrawing it is
+   pure decoration on a picture that is already there. The fills and the
+   apples are released by the hero timeline in js/modules/hero.js, which is on
+   the critical path; nothing here waits on the lazily-imported anime.js. */
+html.js:not(.reduced-motion):not(.boot-failed) .monogram__body,
+html.js:not(.reduced-motion):not(.boot-failed) .monogram__leaf {
+  fill-opacity: 0;
+}
+html.js:not(.reduced-motion):not(.boot-failed) .orchard__canopy { opacity: 0; }
+/* Uniform because every branch declares pathLength="1" — see index.html. */
+html.js:not(.reduced-motion):not(.boot-failed) [data-branch] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+html.js:not(.reduced-motion):not(.boot-failed) .apple {
+  opacity: 0;
+  transform: scale(0.3);
 }
 
 /* Line-mask wrappers created by the splitter in js/modules/reveals.js */

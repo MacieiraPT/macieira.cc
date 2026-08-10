@@ -102,7 +102,19 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
   font-weight: 600;
   letter-spacing: -0.01em;
 }
-.monogram { width: 26px; height: 26px; color: var(--tint); }
+/* The apple mark. Stroke and fill are the same colour, so the anime.js
+   draw-on reads as the outline of the fruit rather than as an outline *around*
+   it, and the fill arriving afterwards looks like it is being poured in. */
+.monogram { width: 27px; height: 27px; overflow: visible; }
+.monogram__body { fill: var(--apple); stroke: var(--apple); }
+.monogram__stem { stroke: var(--bark); }
+.monogram__leaf { fill: var(--leaf); }
+.masthead__brand:hover .monogram { animation: apple-nudge 0.7s var(--ease-out); }
+@keyframes apple-nudge {
+  30% { transform: rotate(-7deg) scale(1.06); }
+  65% { transform: rotate(4deg)  scale(1.02); }
+}
+
 .masthead__wordmark { font-size: 0.98rem; }
 
 .masthead__nav {
@@ -176,10 +188,33 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
 .hero {
   min-height: 100svh;
   display: flex;
-  align-items: flex-end;
-  padding: calc(var(--gutter) * 2.6) var(--gutter) clamp(2rem, 5vh, 4rem);
+  align-items: center;
+  /* Enough to clear the fixed masthead, and no more — the tree needs the
+     height far more than the top of the page needs the air. */
+  padding: calc(var(--gutter) * 1.5 + 2.5rem) var(--gutter) clamp(1.5rem, 4vh, 3rem);
 }
 .hero__inner { width: 100%; max-width: var(--measure); margin-inline: auto; }
+
+/* Tree on the left, everything you can read on the right. The tree column is
+   given slightly more room because it is the thing being looked at. */
+.hero__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+  margin-top: clamp(1rem, 3vh, 2.5rem);
+}
+.hero__copy { display: grid; justify-items: start; gap: clamp(1rem, 2.2vh, 1.75rem); }
+
+/* Cue on the left, metadata on the right, both under the stage. */
+.hero__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem clamp(1rem, 3vw, 3rem);
+  margin-top: clamp(1.25rem, 3vh, 2.25rem);
+}
 
 .hero__kicker {
   display: flex;
@@ -191,13 +226,13 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-dim);
-  margin-bottom: clamp(1.5rem, 4vh, 3rem);
 }
 
 /* The wordmark. Archivo's width axis is pushed wide so it reads as a poster
-   rather than as body copy scaled up. */
+   rather than as body copy scaled up. It shares the fold with the tree now,
+   so it is sized against its own column instead of the whole viewport. */
 .hero__name {
-  font-size: clamp(5.5rem, 25.5vw, 27rem);
+  font-size: clamp(4rem, 10.5vw, 11rem);
   font-weight: 800;
   font-variation-settings: 'wdth' 118;
   line-height: 0.76;
@@ -206,43 +241,20 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
   color: var(--ink);
 }
 
-.hero__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: clamp(1.5rem, 4vw, 4rem);
-  margin-top: clamp(1.75rem, 4vh, 3rem);
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--line);
-}
-
 .hero__lede {
-  max-width: 44ch;
+  max-width: 42ch;
   color: var(--ink-dim);
   text-wrap: pretty;
+  padding-top: clamp(0.75rem, 1.5vh, 1.25rem);
+  border-top: 1px solid var(--line);
 }
 /* Emphasis on the sentence, not on whatever happens to fit the first line. */
 .hero__lede-lead { color: var(--ink); }
-
-.hero__facts {
-  display: flex;
-  gap: clamp(1.25rem, 3vw, 3rem);
-}
-.hero__facts dt {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  margin-bottom: 0.35rem;
-}
-.hero__facts dd { font-size: 0.92rem; }
 
 .hero__cue {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  margin-top: clamp(2rem, 5vh, 3.5rem);
   font-family: var(--font-mono);
   font-size: var(--step-label);
   letter-spacing: 0.2em;
@@ -261,9 +273,197 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
   50%      { transform: scaleX(1); opacity: 1; }
 }
 
-@media (max-width: 860px) {
-  .hero__grid { grid-template-columns: 1fr; align-items: start; }
-  .hero__facts { flex-wrap: wrap; gap: 1.25rem 2rem; }
+/* --------------------------------------------------------------------------
+   The orchard — the interactive half of the hero
+   --------------------------------------------------------------------------
+   Two layers in one box: an <svg> that draws the tree, and a <ul> of real
+   buttons positioned on top of it. The SVG's aspect ratio is pinned to its
+   viewBox so the percentage coordinates on each apple land on the same branch
+   tip at every width — the whole reason the fruit isn't drawn inside the SVG.
+   -------------------------------------------------------------------------- */
+.orchard {
+  position: relative;
+  /* width + aspect-ratio, never height + aspect-ratio: the apples are placed
+     as percentages of this box, so it has to match the viewBox exactly or
+     every one of them drifts off its branch. The viewport-height term is
+     therefore expressed as a *max-width* — 460/520 of the height budget —
+     which keeps the whole tree on screen without touching the ratio. */
+  width: 100%;
+  max-width: min(640px, 55svh);
+  margin-inline: auto;
+  aspect-ratio: 460 / 520;
+}
+.orchard__art { width: 100%; height: 100%; }
+
+.orchard__wood {
+  stroke: color-mix(in oklab, var(--bark) 72%, transparent);
+}
+
+.orchard__apples { position: absolute; inset: 0; margin: 0; }
+
+/* The <li> holds the position, the <button> holds the motion. Keeping the
+   centring translate off the button is what lets GSAP own `scale` and
+   `rotate` on it without having to re-declare the offset every frame. */
+.orchard__apple {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+}
+
+.apple {
+  --apple-size: clamp(30px, 5.4vw, 46px);
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 0;
+  cursor: pointer;
+  /* Fruit hangs from a branch: rotation reads right around the stem. */
+  transform-origin: 50% 8%;
+  touch-action: manipulation;
+}
+.apple:focus-visible { outline: none; }
+
+.apple__fruit {
+  position: relative;
+  display: block;
+  width: var(--apple-size);
+  height: var(--apple-size);
+  transition: filter 0.35s var(--ease-out);
+  filter: drop-shadow(0 6px 14px color-mix(in oklab, var(--apple-deep) 55%, transparent));
+}
+.apple__fruit svg { width: 100%; height: 100%; overflow: visible; }
+
+/* Hit target padded out to a comfortable size without inflating the artwork. */
+.apple__fruit::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+}
+
+/* Focus ring drawn on the fruit rather than the button box, so it traces the
+   apple instead of the tag underneath it. */
+.apple:focus-visible .apple__fruit::after {
+  outline: 2px solid var(--leaf);
+  outline-offset: 2px;
+}
+
+.apple__tag {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--bg) 82%, transparent);
+  color: var(--ink-dim);
+  white-space: nowrap;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.58rem;
+  /* Opacity, not display/visibility: the label stays in the accessibility
+     tree, so the button always has a name even while the tag is invisible. */
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+}
+.apple:hover .apple__tag,
+.apple:focus-visible .apple__tag,
+.apple[aria-expanded='true'] .apple__tag {
+  opacity: 1;
+  transform: none;
+}
+
+.apple:hover .apple__fruit,
+.apple:focus-visible .apple__fruit {
+  filter: drop-shadow(0 8px 22px color-mix(in oklab, var(--apple) 65%, transparent));
+}
+
+/* The picked apple. A ring rather than a scale, because scale is GSAP's
+   property here and CSS must not fight it for the transform. */
+.apple[aria-expanded='true'] .apple__fruit::after {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--leaf) 55%, transparent);
+}
+.apple[aria-expanded='true'] .apple__tag {
+  border-color: color-mix(in oklab, var(--leaf) 45%, transparent);
+  color: var(--ink);
+}
+
+/* Below this the tags collide with each other and with the fruit. */
+@media (max-width: 620px) {
+  .apple__tag { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   The basket — what a picked apple says
+   -------------------------------------------------------------------------- */
+.basket {
+  width: 100%;
+  padding: clamp(1.1rem, 2vw, 1.6rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--bg-raise) 72%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.basket__prompt {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--ink-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.basket__prompt[hidden] { display: none; }
+.basket__prompt-mark { width: 24px; height: 24px; flex: none; }
+.basket__prompt-mark svg { width: 100%; height: 100%; }
+
+/* With JS the deck holds one card at a time and the height would jump on
+   every pick; a floor keeps the column still, and centring stops the one-line
+   invitation from sitting in the top corner of an otherwise empty panel.
+   Without JS the six facts stack and neither rule ever comes into play. */
+html.js .basket__deck {
+  display: grid;
+  align-content: center;
+  min-height: 9.5rem;
+}
+
+/* `display: grid` on a class outranks the user-agent's `[hidden]` rule, so
+   the attribute has to be honoured explicitly or js/modules/tree.js would set
+   `hidden` on cards that stay perfectly visible. */
+.fact { display: grid; justify-items: start; gap: 0.6rem; }
+.fact[hidden] { display: none; }
+/* No JS: the deck is a list, so the cards need separating from each other. */
+.fact + .fact {
+  margin-top: 1.4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
+}
+html.js .fact + .fact { margin: 0; padding: 0; border-top: 0; }
+
+.fact__label { color: var(--tint); letter-spacing: 0.2em; text-transform: uppercase; }
+.fact__title {
+  font-size: clamp(1.2rem, 1rem + 1vw, 1.85rem);
+  font-weight: 600;
+  font-variation-settings: 'wdth' 96;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.fact__body { color: var(--ink-dim); font-size: 0.98rem; max-width: 42ch; text-wrap: pretty; }
+.fact__action { margin-top: 0.35rem; padding: 0.6rem 0.95rem; font-size: 0.86rem; }
+
+/* One column: name, then the tree, then what the tree has to say — so a pick
+   never pushes the apple you just tapped off the screen.
+   `display: contents` dissolves the copy wrapper into the stage grid, which
+   is what lets the basket sort *below* the tree while the markup (and so the
+   tab order) still reads name → apples → facts. */
+@media (max-width: 980px) {
+  .hero__stage { grid-template-columns: 1fr; gap: clamp(1.25rem, 3vh, 2rem); }
+  .hero__copy { display: contents; }
+  .hero__name { order: 1; font-size: clamp(4.5rem, 20vw, 12rem); }
+  .hero__lede { order: 1; }
+  .orchard { order: 2; max-width: min(440px, 35svh); }
+  .basket { order: 3; }
 }
 
 /* --------------------------------------------------------------------------
@@ -673,9 +873,10 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
   box-shadow: 0 12px 30px -12px rgb(0 0 0 / 0.7);
 }
 .sticker:active { cursor: grabbing; }
-.sticker--1 { left: 6%;  top: 22%; background: var(--acid); }
+.sticker__apple { width: 42px; height: 42px; }
+.sticker--1 { left: 6%;  top: 22%; background: var(--ink); }
 .sticker--2 { left: 32%; top: 46%; background: var(--plasma); color: var(--ink); }
-.sticker--3 { left: 58%; top: 18%; background: var(--ink); }
+.sticker--3 { left: 58%; top: 18%; background: var(--acid); }
 
 /* Colophon ----------------------------------------------------------------- */
 .colophon {

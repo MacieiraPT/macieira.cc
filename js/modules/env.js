@@ -77,7 +77,7 @@ export function whenIdle(fn, timeout = 2000) {
 
 /**
  * Waits for webfonts, but never longer than `limit`. Anything that measures
- * text (line splitting, canvas glyph sampling) has to run after the real
+ * text (line splitting) has to run after the real
  * face is in — but not at the cost of a stuck page on a bad connection.
  */
 export function fontsReady(limit = 1500) {
