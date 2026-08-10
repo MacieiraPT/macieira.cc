@@ -310,13 +310,14 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
 /* The light around the tree. It belongs to neither tree: the SVG and the
    canvas trade places underneath it, and it carries the composition through
    the handover — and on its own, when there is no WebGL at all. */
+/* Centred and symmetrical, because the tree in front of it now turns. An
+   earlier version had offset blobs matched to a fixed three-quarter view; the
+   moment the camera could orbit, they stopped lining up with anything. */
 .orchard__glow {
   pointer-events: none;
   background:
-    radial-gradient(44% 32% at 50% 44%, color-mix(in oklab, var(--leaf) 17%, transparent), transparent 70%),
-    radial-gradient(26% 21% at 28% 52%, color-mix(in oklab, var(--leaf) 13%, transparent), transparent 72%),
-    radial-gradient(27% 22% at 72% 50%, color-mix(in oklab, var(--leaf) 13%, transparent), transparent 72%),
-    radial-gradient(30% 4.5% at 50% 88%, color-mix(in oklab, var(--leaf) 14%, transparent), transparent 76%);
+    radial-gradient(46% 34% at 50% 42%, color-mix(in oklab, var(--leaf) 16%, transparent), transparent 72%),
+    radial-gradient(30% 8% at 50% 78%, color-mix(in oklab, var(--leaf) 10%, transparent), transparent 80%);
 }
 
 .orchard__canvas {
@@ -453,12 +454,28 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
 .orchard.is-3d .orchard__art { opacity: 0; }
 
 .orchard.is-3d .orchard__apple {
-  /* Projected pixels, applied as a transform so moving six buttons every
+  /* Projected pixels, applied as a transform so moving seven buttons every
      frame costs compositing rather than layout. */
   left: 0;
   top: 0;
   transform: translate3d(var(--px, 0px), var(--py, 0px), 0) translate(-50%, -50%);
+  /* --reveal is 1 when the apple faces the camera and 0 once it has turned
+     behind the trunk. js/modules/tree.js drops pointer-events with it, so a
+     fruit you can't see is never a hit target you can't see either. */
+  opacity: var(--reveal, 1);
 }
+
+/* The tree turns under the pointer. Grabbing is on the whole box, not just the
+   canvas, so a drag that starts over an apple turns the tree rather than
+   dead-ending on a button (the click that would follow is swallowed). */
+.orchard.is-3d {
+  cursor: grab;
+  /* pan-y hands vertical gestures to the page and keeps horizontal ones, so a
+     phone can still scroll past a tree that fills most of the screen. Pitch is
+     mouse-only as a result, which is the right trade. */
+  touch-action: pan-y;
+}
+.orchard.is-3d.is-turning { cursor: grabbing; }
 
 /* --apple-size is written to .orchard on resize, from the fruit's projected
    diameter, so the hit area matches what is on screen. */

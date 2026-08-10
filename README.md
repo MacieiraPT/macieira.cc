@@ -115,64 +115,107 @@ or a click.
 
 ## The tree
 
-The front page is one component in two implementations, and the interesting part is what
-they share.
+The front page is one component in two implementations, and the interesting
+part is what they share.
 
-**The buttons are always HTML.** All seven apples are real `<button>`s in `index.html`,
-and all seven facts are real `<article>`s. `js/modules/tree.js` — critical path, no WebGL
-anywhere in it — owns the picking, the card deck and the ARIA, positioning the buttons over
-the inline SVG tree with two custom properties each. That alone is a finished, working
-feature.
+**The buttons are always HTML.** All seven apples are real `<button>`s in
+`index.html`, and all seven facts are real `<article>`s. `js/modules/tree.js` —
+critical path, no WebGL anywhere in it — owns the picking, the card deck and the
+ARIA. On its own it drives the inline SVG tree, positioning each button with two
+custom properties. That alone is a finished, working feature.
 
-**The 3D tree is a renderer, not a rewrite.** `js/scene/orchard.js` builds the tree out of
-tapered tube geometry — trunk, seven fruit-bearing limbs, sixteen twigs, a buttress flare
-and seven surface roots — plus a canopy of ~2 400 instanced leaves, and then does one thing
-to the page: every frame it projects each apple's world position to screen coordinates and
-calls `tree.place()`. The buttons move to sit on the mesh. That is the whole coupling —
-the renderer never touches the DOM and never learns what a fact is, and `tree.js` never
-learns what a camera is.
+**The 3D tree is a renderer, not a rewrite.** `js/scene/orchard.js` grows the
+tree, then does one thing to the page: every frame it projects each apple's
+world position to screen coordinates and calls `tree.place()`. The buttons move
+to sit on the mesh. That is the whole coupling — the renderer never touches the
+DOM and never learns what a fact is, and `tree.js` never learns what a camera
+is. Tab order, Enter, Space, focus rings and screen-reader output are identical
+either way, because they are the same elements either way.
 
-**The SVG tree is never shown when the 3D one is coming.** `tree.expectRenderer()` hides it
-before first paint; only a missing WebGL context or a chunk that fails to load brings it
-back. It is a fallback, not a loading state.
+**The SVG tree is never shown when the 3D one is coming.**
+`tree.expectRenderer()` hides it before first paint; only a missing WebGL
+context or a chunk that fails to load brings it back. It is a fallback, not a
+loading state.
 
-The payoff is that tab order, Enter, Space, focus rings and screen-reader output are
-identical in both modes, because they are the same elements either way. There is no
-raycaster, and no canvas reimplementing what a button already does.
+### Grown, not drawn
 
-A few things worth knowing before editing it:
+The tree used to be a hand-written list of branches. Every child had to *start*
+on a coordinate copied out of its parent, which was a promise rather than a
+guarantee — and the root flare was a separate, wider cylinder butted onto the
+bottom of the trunk, which is exactly as seamless as that sounds.
 
-- **Branch geometry is hand-authored**, in both trees, because six limbs have to end where
-  a button has to be. A prettier recursive generator moves the fruit every time you touch
-  it.
-- **`pathLength="1"`** on the SVG branches renormalises every path to a length of 1, so one
-  stylesheet rule hides all eighteen and GSAP tweens a single number back to zero — no
-  `getTotalLength()`, and no measurement that has to happen in JS before they can be
-  hidden, which is why they never flash in drawn and then redraw themselves.
-- **The tube taper** is not a Three.js feature. `TubeGeometry` has one radius for its whole
-  length; `branchGeometry()` recovers each ring's centre from the curve and pulls the ring
-  in toward it, which is the difference between a branch and a length of pipe.
-- **The hit area floors at 44 px.** An apple projected onto a phone screen is about 25 px
-  across — a good apple and a hopeless button — so the padding grows as the fruit shrinks.
-- **Every apple hangs off the front of the crown**, and the leaf scatter cuts a corridor
-  through the foliage in front of each one. Without both, roughly a third of the buttons
-  end up behind a hedge: proximity culling alone doesn't help, because a leaf a third of a
-  unit *in front of* an apple is nowhere near it in 3D and completely on top of it on
-  screen.
-- **Leaves are one `InstancedMesh`** — ~2 400 of them in a single draw call, scattered
-  through the volume around each branch rather than onto its surface. On the surface they
-  read as a garland wound round a stick; it is the spread that makes a canopy.
-- **Roots are generated, limbs are not.** A loop is fine for roots because nothing depends
-  on where one ends; the limbs are hand-authored because a button depends on every tip.
-  The flare under the trunk is just a branch with its radii inverted, so the taper runs
-  the other way.
-- **Bark and fruit carry vertex colours.** Paler young wood at the tips, faceting round
-  each ring, and on the apples a gradient from deep at the shoulders to warm underneath
-  with faint striping. That gradient is most of what stops a red sphere reading as a
-  tomato once the profile is right.
-- **A frame-time watchdog** drops the pixel ratio, then halves the foliage, if the average
-  frame goes over 26 ms. The leaves are nearly all of the triangles and the only part that
-  can be cut without the tree stopping being a tree.
+One recursive generator now grows the whole thing from `SEED`, and continuity is
+structural:
+
+- every child begins at its parent's end point, backed a little way *into* it,
+  so the tubes overlap instead of meeting;
+- a sphere sits at every fork, sized to the parent's end radius, so no angle of
+  split can open a gap;
+- radii follow the **pipe model** — a fork's children share out the parent's
+  cross-section — so limbs thin the way a real one does. The exponent is the
+  single most expressive number in the file: lower makes a broom, higher makes
+  a candelabra;
+- the trunk widens into its roots along one continuous radius curve, and the
+  roots start *inside* it;
+- the children of a fork are spaced **evenly** around the parent's direction.
+  This is the one that matters most for the silhouette. Letting each child pick
+  a random perpendicular lets two of three set off the same way, the error
+  compounds at every depth, and the crown ends up hanging off one side.
+
+The seed is fixed, so the tree is identical on every load and in every browser.
+Change `SEED` and you get a different tree immediately — which is also the
+fastest way to fix a layout you don't like.
+
+### The apples are hidden, and that is the point
+
+There is no clearing cut in front of the fruit any more. Apples hang where the
+tree grew them, which means some are behind it at any moment and most are partly
+under leaves. Finding them is the interaction.
+
+That has a cost, and it is paid for three ways:
+
+- **Orbit.** Drag anywhere on the tree to turn it — unlimited in yaw, clamped in
+  pitch, with inertia on release and a slow idle drift so it reads as turnable
+  before anyone touches it. The camera moves; the tree never does, or looking
+  down at it would tilt the trunk off vertical.
+- **Honest buttons.** Each apple gets a `reveal` every frame from how far its
+  bearing is from the camera's. `tree.place()` fades the button with it *and*
+  drops `pointer-events`, so a fruit you cannot see is never a hit target you
+  cannot see either. The same clamp fades any apple that swings past the edge of
+  the canvas, which would otherwise drift over the text beside it.
+- **Keyboard, in reverse.** Tab still reaches all seven. Focusing one that has
+  turned away spins the tree until it faces you — which is both the accessible
+  answer and the nicest thing in the scene.
+
+Two smaller things worth knowing:
+
+- **The idle spin stops while an apple is hovered or focused.** A target that
+  drifts under the cursor as you reach for it is a target you miss, and a slow
+  drift is worse than a fast one because it looks stationary until you click.
+- **A drag that starts on an apple must not pick it.** A capture-phase listener
+  swallows the click when the pointer travelled more than a few pixels.
+
+### And the rest
+
+- **Leaves are one `InstancedMesh`** — a couple of thousand in a single draw
+  call, scattered through the volume *around* each outer branch. Laid on the
+  surface they read as a garland wound round a stick; it is the spread that
+  makes a canopy. The only culling left keeps foliage from growing through the
+  fruit, and the bubble that leaves is what makes an apple recognisable once you
+  have turned it into view.
+- **The tube taper is not a Three.js feature.** `TubeGeometry` has one radius
+  for its whole length; `branchGeometry()` recovers each ring's centre from the
+  curve and pulls the ring in toward it. The trunk passes a power curve instead
+  of a straight line, and that is where the root flare comes from.
+- **Bark and fruit carry vertex colours.** Paler young wood at the tips,
+  faceting round each ring, and on the apples a gradient from deep at the
+  shoulders to warm underneath with faint striping — most of what stops a red
+  sphere reading as a tomato once the profile is right.
+- **The hit area floors at 44 px.** A projected apple is about 25 px across on a
+  phone — a good apple and a hopeless button — so the padding grows as the fruit
+  shrinks.
+- **A frame-time watchdog** drops the pixel ratio, then halves the foliage, if
+  the average frame goes over 26 ms.
 
 ---
 
@@ -231,28 +274,16 @@ Also plain HTML: each one is an `<article class="fact" id="fact-…" data-fact="
 matching name. `js/modules/tree.js` pairs them up by that value and does nothing else —
 there is no list of facts in JavaScript to keep in step.
 
-**To move an apple you have to move it twice**, because there are two trees — though in
-practice only the 3D one is ever seen:
+**You cannot place an apple exactly any more, and that is on purpose.** The
+generator picks which seven branch tips get fruit, in `chooseFruit()`: best
+candidate per sector of the compass, never two closer together than
+`MIN_SEPARATION`, outermost preferred. If the spread is wrong, change `SEED`
+until it isn't — that is a one-character edit and the whole tree re-grows
+deterministically.
 
-- **3D** — the last point of the matching entry in `LIMBS` in `js/scene/orchard.js`. The
-  apple hangs from wherever that limb ends, and the button is projected onto it, so there
-  is nothing else to keep in step. Keep the tip's `z` positive, or the fruit ends up behind
-  the canopy.
-- **2D fallback** — the `--x` / `--y` on its `<li>` in `index.html`. Percentages of the
-  tree's box, which is locked to the SVG's 460 × 520 viewBox, so `--x: 50%` really is
-  `x = 230`.
-
-In both, a limb or twig must *start* on a coordinate that appears verbatim in its parent's
-path — a Catmull-Rom curve and an SVG path both pass through their control points, so
-sharing one is what makes the join seamless. Anywhere else and it floats.
-
-**To add an eighth**, add an `<li>`, an `<article>`, and an entry in `LIMBS` with a
-matching `key`. Nothing else needs touching.
-
-**The age in the `who` card is computed**, from a single birth date in
-`js/modules/ui.js`. A typed number is correct for at most a year and nobody remembers to
-come back and change it; the markup ships a plausible value so the sentence still reads if
-the script never runs.
+The 2D fallback still uses the `--x` / `--y` percentages on each `<li>` in
+`index.html`. They are percentages of the tree's box, which is locked to the
+SVG's 460 × 520 viewBox, so `--x: 50%` really is `x = 230` in the drawing.
 
 ### Change the copy
 
