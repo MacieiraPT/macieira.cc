@@ -1,8 +1,11 @@
 /**
  * tree.js — the tree is the introduction.
  *
- * Six apples, six things worth knowing. Picking one swaps the card beside the
- * wordmark; picking the same one again puts it back on the branch.
+ * Seven apples, seven things worth knowing. Picking one swaps the card beside
+ * the wordmark; picking the same one again puts it back on the branch.
+ *
+ * In 3D they hang in the canopy where the tree grew them, which means some of
+ * them are behind it at any moment. `place()` below is what keeps that honest.
  *
  * This module is on the critical path and knows nothing about WebGL. It owns
  * the buttons, the card deck and the ARIA, and it works completely on its own
@@ -233,6 +236,9 @@ export function initTree() {
   };
 
   return {
+    /** The .orchard box — a renderer hangs its drag handling off this. */
+    element: root,
+
     get picked() {
       return picked;
     },
@@ -282,25 +288,40 @@ export function initTree() {
       if (!projected) return;
       projected = false;
       root.classList.remove('is-3d', 'is-pending');
-      buttons.forEach((button) => {
-        button.parentElement?.style.removeProperty('--px');
-        button.parentElement?.style.removeProperty('--py');
-        button.parentElement?.style.removeProperty('z-index');
+      cells.forEach((cell) => {
+        cell.style.removeProperty('--px');
+        cell.style.removeProperty('--py');
+        cell.style.removeProperty('--reveal');
+        cell.style.removeProperty('z-index');
+        cell.style.removeProperty('pointer-events');
       });
       startBob();
     },
 
     /**
      * Where one apple is on screen, in CSS pixels within the tree's box.
-     * @param {number} depth normalised device z — nearer fruit sorts on top
+     *
+     * @param {number} depth  normalised device z — nearer fruit sorts on top
+     * @param {number} reveal 1 when the apple faces the camera, 0 when it has
+     *   turned behind the trunk. Drives opacity *and* pointer events: a button
+     *   you cannot see must not be a button you can click, or the tree becomes
+     *   a minefield of invisible hit targets. It stays focusable either way —
+     *   the renderer turns the tree to face whatever the keyboard lands on.
      */
-    place(key, x, y, depth) {
+    place(key, x, y, depth, reveal = 1) {
       const cell = cells.get(key);
       if (!cell) return;
       cell.style.setProperty('--px', `${x.toFixed(1)}px`);
       cell.style.setProperty('--py', `${y.toFixed(1)}px`);
+      cell.style.setProperty('--reveal', reveal.toFixed(3));
+
       const layer = String(Math.round((1 - depth) * 2000));
       if (cell.style.zIndex !== layer) cell.style.zIndex = layer;
+
+      // pointer-events can't read a custom property, so this one is a plain
+      // toggle — written only when it changes.
+      const clickable = reveal > 0.12 ? '' : 'none';
+      if (cell.style.pointerEvents !== clickable) cell.style.pointerEvents = clickable;
     },
 
     /**
