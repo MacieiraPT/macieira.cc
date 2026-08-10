@@ -191,7 +191,7 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
   align-items: center;
   /* Enough to clear the fixed masthead, and no more — the tree needs the
      height far more than the top of the page needs the air. */
-  padding: calc(var(--gutter) * 1.5 + 2.5rem) var(--gutter) clamp(1.5rem, 4vh, 3rem);
+  padding: calc(var(--gutter) * 0.9 + 2.6rem) var(--gutter) clamp(1.25rem, 3vh, 2.5rem);
 }
 .hero__inner { width: 100%; max-width: var(--measure); margin-inline: auto; }
 
@@ -199,10 +199,10 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
    given slightly more room because it is the thing being looked at. */
 .hero__stage {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(1.5rem, 4vw, 4.5rem);
-  margin-top: clamp(1rem, 3vh, 2.5rem);
+  gap: clamp(1.5rem, 3vw, 3.5rem);
+  margin-top: clamp(0.5rem, 2vh, 1.5rem);
 }
 .hero__copy { display: grid; justify-items: start; gap: clamp(1rem, 2.2vh, 1.75rem); }
 
@@ -289,7 +289,7 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
      therefore expressed as a *max-width* — 460/520 of the height budget —
      which keeps the whole tree on screen without touching the ratio. */
   width: 100%;
-  max-width: min(640px, 55svh);
+  max-width: min(820px, 68svh);
   margin-inline: auto;
   aspect-ratio: 460 / 520;
 }
@@ -325,7 +325,23 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
 }
 .orchard__canvas.is-live { opacity: 1; }
 
-.orchard__apples { position: absolute; inset: 0; margin: 0; }
+.orchard__apples {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  transition: opacity 0.5s var(--ease-out);
+}
+
+/* A renderer is on its way (js/modules/tree.js sets this before the chunk has
+   even downloaded). The SVG tree and the flat fruit are a fallback for
+   browsers that can't run the real one — not a loading state — so they are
+   never painted on the way to it. The glow carries the space meanwhile, and
+   only abandonRenderer() brings them back. */
+.orchard.is-pending .orchard__art,
+.orchard.is-pending .orchard__apples {
+  opacity: 0;
+  pointer-events: none;
+}
 
 /* The <li> holds the position, the <button> holds the motion. Keeping the
    centring translate off the button is what lets GSAP own `scale` and
@@ -541,7 +557,7 @@ html.js .fact + .fact { margin: 0; padding: 0; border-top: 0; }
   .hero__copy { display: contents; }
   .hero__name { order: 1; font-size: clamp(4.5rem, 20vw, 12rem); }
   .hero__lede { order: 1; }
-  .orchard { order: 2; max-width: min(440px, 35svh); }
+  .orchard { order: 2; max-width: min(560px, 42svh); }
   .basket { order: 3; }
 }
 

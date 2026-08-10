@@ -62,21 +62,17 @@ one big idea on the first screen instead of five small ones.
 
 ```
 js/main.js  ──▶ GSAP + ScrollTrigger + Lenis + app        critical path, ~70 kB gzip
-            ──▶ (idle, WebGL) js/scene/orchard.js  ─┐
-            ──▶ (idle) js/modules/github.js         │     live data, no library, ~4 kB
-            ──▶ (idle) js/modules/details.js ──▶ anime.js         ~23 kB
-            ──▶ (idle, WebGL) js/scene/index.js    ─┴──▶ Three.js  ~135 kB
+            ──▶ (at once, WebGL) js/scene/orchard.js ─┐
+            ──▶ (idle) js/modules/github.js           │   live data, no library, ~4 kB
+            ──▶ (idle) js/modules/details.js ──▶ anime.js       ~23 kB
+            ──▶ (idle, WebGL) js/scene/index.js      ─┴──▶ Three.js  ~135 kB
 ```
 
-The two WebGL scenes share the Three.js chunk, so whichever gets there first pays for it
-and the other is nearly free.
+The 3D tree is the one deferred chunk that is asked for **immediately** rather than at
+idle, because it is the front page. Everything else waits for `requestIdleCallback`.
 
-**The tree itself is on the critical path** — the SVG one, in `index.html`, with working
-buttons. Only the *3D* tree is deferred. That split is the rule the whole page is built
-on: anything that ends with content on screen belongs to the layer that always runs. The
-SVG tree's branches, its fruit and the logo's red fill are released by the GSAP timeline
-in `js/modules/hero.js`; the idle passes only ever replace something that already works
-with something better looking.
+The two WebGL scenes share the Three.js chunk, so the field is nearly free by the time it
+asks. They also compete for a context — see the priority note below.
 
 `js/modules/env.js` holds the one remaining gate: the scenes run unless the browser cannot
 give a WebGL context at all. Nothing else stops them — not reduced motion, not Data Saver,
@@ -89,13 +85,13 @@ console, because "the particles don't show up on my machine" is otherwise unansw
 many live WebGL contexts a page may hold (Safari and some mobile GPUs are strict, and
 software rasterisers often allow exactly one) and when the cap is one, whoever asks first
 wins. The tree is above the fold and it is content; the field is atmosphere and already has
-a full CSS fallback painted behind it. So the tree asks at 1.2 s and the field at 2.5 s,
-and if the field loses it degrades to gradients without a word.
+a full CSS fallback painted behind it. So the tree asks straight away and the field at
+2.5 s, and if the field loses it degrades to gradients without a word.
 
-`prefers-reduced-motion` still governs everything *else* — no smooth scrolling, no intro,
-no reveals, no sticker physics. The two WebGL scenes are the deliberate exception, and even
-they scale back: the tree drops its sway, its bob and its pointer parallax, and stops
-drawing frames entirely between interactions.
+**`prefers-reduced-motion` does not touch the tree.** It still governs everything else —
+no smooth scrolling, no intro, no reveals, no sticker physics — but the tree sways, bobs,
+follows the pointer and swings when picked for everyone, exactly like the particle field.
+Both are the identity of the site rather than decoration on top of it.
 
 ---
 
@@ -110,11 +106,16 @@ anywhere in it — owns the picking, the card deck and the ARIA, positioning the
 the inline SVG tree with two custom properties each. That alone is a finished, working
 feature.
 
-**The 3D tree is a renderer, not a rewrite.** `js/scene/orchard.js` mounts at idle, builds
-the tree out of tapered tube geometry, and then does one thing to the page: every frame it
-projects each apple's world position to screen coordinates and calls `tree.place()`. The
-buttons move to sit on the mesh. That is the whole coupling — the renderer never touches
-the DOM and never learns what a fact is, and `tree.js` never learns what a camera is.
+**The 3D tree is a renderer, not a rewrite.** `js/scene/orchard.js` builds the tree out of
+tapered tube geometry and a canopy of ~1000 instanced leaves, and then does one thing to
+the page: every frame it projects each apple's world position to screen coordinates and
+calls `tree.place()`. The buttons move to sit on the mesh. That is the whole coupling —
+the renderer never touches the DOM and never learns what a fact is, and `tree.js` never
+learns what a camera is.
+
+**The SVG tree is never shown when the 3D one is coming.** `tree.expectRenderer()` hides it
+before first paint; only a missing WebGL context or a chunk that fails to load brings it
+back. It is a fallback, not a loading state.
 
 The payoff is that tab order, Enter, Space, focus rings and screen-reader output are
 identical in both modes, because they are the same elements either way. There is no
@@ -134,6 +135,17 @@ A few things worth knowing before editing it:
   in toward it, which is the difference between a branch and a length of pipe.
 - **The hit area floors at 44 px.** An apple projected onto a phone screen is about 25 px
   across — a good apple and a hopeless button — so the padding grows as the fruit shrinks.
+- **Every apple hangs off the front of the crown**, and the leaf scatter cuts a corridor
+  through the foliage in front of each one. Without both, roughly a third of the buttons
+  end up behind a hedge: proximity culling alone doesn't help, because a leaf a third of a
+  unit *in front of* an apple is nowhere near it in 3D and completely on top of it on
+  screen.
+- **Leaves are one `InstancedMesh`** — ~1000 of them in a single draw call, scattered
+  through the volume around each branch rather than onto its surface. On the surface they
+  read as a garland wound round a stick; it is the spread that makes a canopy.
+- **A frame-time watchdog** drops the pixel ratio, then halves the foliage, if the average
+  frame goes over 26 ms. The leaves are nearly all of the triangles and the only part that
+  can be cut without the tree stopping being a tree.
 
 ---
 
@@ -192,13 +204,16 @@ Also plain HTML: each one is an `<article class="fact" id="fact-…" data-fact="
 matching name. `js/modules/tree.js` pairs them up by that value and does nothing else —
 there is no list of facts in JavaScript to keep in step.
 
-**To move an apple you have to move it twice**, because there are two trees:
+**To move an apple you have to move it twice**, because there are two trees — though in
+practice only the 3D one is ever seen:
 
-- **2D** — the `--x` / `--y` on its `<li>` in `index.html`. Percentages of the tree's box,
-  which is locked to the SVG's 460 × 520 viewBox, so `--x: 50%` really is `x = 230`.
 - **3D** — the last point of the matching entry in `LIMBS` in `js/scene/orchard.js`. The
   apple hangs from wherever that limb ends, and the button is projected onto it, so there
-  is nothing else to keep in step.
+  is nothing else to keep in step. Keep the tip's `z` positive, or the fruit ends up behind
+  the canopy.
+- **2D fallback** — the `--x` / `--y` on its `<li>` in `index.html`. Percentages of the
+  tree's box, which is locked to the SVG's 460 × 520 viewBox, so `--x: 50%` really is
+  `x = 230`.
 
 In both, a limb or twig must *start* on a coordinate that appears verbatim in its parent's
 path — a Catmull-Rom curve and an SVG path both pass through their control points, so
@@ -310,16 +325,16 @@ node tools/og.mjs
 | Situation | What the visitor gets |
 | --- | --- |
 | JavaScript disabled | The whole page, fully readable — including the SVG tree, fully drawn, and all six apple facts as a plain list. Nothing is hidden without JS. |
-| No WebGL, or the 3D chunk never arrives | The SVG tree stays, with working buttons. The difference is dimensional, not functional. |
+| No WebGL, or the 3D chunk never arrives | The SVG tree is revealed instead, with working buttons. It is plainer, and it is the only case anybody sees it. |
 | Only one WebGL context available | The tree gets it; the field falls back to CSS gradients. See the priority note above. |
 | anime.js never arrives | The tree, the logo and the seam stay exactly as drawn; only the pen-stroke animations are lost. |
 | JS fails to boot | A failsafe in `<head>` releases the hidden state after 1.5 s. |
-| `prefers-reduced-motion` | No Lenis, no intro, no reveals, no sticker physics. Native scrolling, everything visible. Apples still pick — they just don't swing or bob, and the tree stops drawing frames between interactions. |
+| `prefers-reduced-motion` | No Lenis, no intro, no reveals, no sticker physics. Native scrolling, everything visible. The tree is unaffected — deliberately. |
 | No WebGL at all | Three.js is never downloaded; the CSS backdrop carries the look and the console says so. |
 | No GPU — acceleration off, VM, remote desktop, blocklisted driver | Still runs, on the software renderer, at 6k particles and 1× pixel ratio. |
 | GPU drops the context mid-session | The field hands back to the CSS backdrop; the tree hands back to the SVG, buttons and all. |
 | GitHub API down or rate-limited | The panel says `offline` and explains; the profile link still works. |
-| Frame times over ~26 ms | The scene drops to 1× pixel ratio, then to 55% of the points. |
+| Frame times over ~26 ms | The field drops to 1× pixel ratio, then to 55% of the points. The tree drops to 1×, then to half the leaves. |
 
 ---
 

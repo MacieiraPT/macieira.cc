@@ -17,11 +17,15 @@
  *
  * With JavaScript off none of this runs and all six facts are simply on the
  * page, which is the same content in a longer form.
+ *
+ * Nothing in here checks `prefers-reduced-motion`. The tree is the identity of
+ * the site rather than decoration on top of it, and it animates for everyone —
+ * the same exemption the WebGL field already had. The setting still governs
+ * the rest of the page.
  */
 
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { env } from './env.js';
 
 export function initTree() {
   const root = document.querySelector('[data-tree]');
@@ -67,7 +71,6 @@ export function initTree() {
 
   function show(card) {
     card.hidden = false;
-    if (env.reducedMotion) return;
 
     // Children stagger rather than the card as a whole, so the label, headline
     // and body arrive in reading order.
@@ -115,7 +118,7 @@ export function initTree() {
    * this would fight the projection for the same transform.
    */
   function swing(button) {
-    if (env.reducedMotion || projected) return;
+    if (projected) return;
     gsap.fromTo(
       button,
       { rotate: -15, scale: 1.14 },
@@ -128,7 +131,7 @@ export function initTree() {
   /* ---------------------------------------------------------------------- */
 
   function startBob() {
-    if (env.reducedMotion || projected) return;
+    if (projected) return;
 
     bobs = buttons.map((button) => {
       const fruit = button.querySelector('.apple__fruit');
@@ -240,6 +243,22 @@ export function initTree() {
     onPick: (fn) => subscribe(pickListeners, fn),
 
     /**
+     * A renderer is on its way. The SVG tree hides *now*, before it has ever
+     * been painted, because it is a fallback and not a loading state — showing
+     * a flat line drawing for 400 ms and then swapping it for the real thing
+     * is worse than showing the glow and nothing else. Only `abandonRenderer`
+     * puts it back.
+     */
+    expectRenderer() {
+      root.classList.add('is-pending');
+    },
+
+    /** No context, or the chunk never arrived. The SVG is all there is. */
+    abandonRenderer() {
+      root.classList.remove('is-pending');
+    },
+
+    /**
      * Hand placement to a renderer. The buttons stop being positioned by the
      * percentages in the markup and start being moved by `place()`; the SVG
      * tree and the flat apple artwork go away (see the `.is-3d` rules in
@@ -249,8 +268,12 @@ export function initTree() {
       if (projected) return;
       projected = true;
       stopBob();
+      // The hero intro may still be part-way through fading these in. Killing
+      // its tween and then clearing the transform would leave them stranded at
+      // whatever opacity it had reached, so the end state is written directly.
       gsap.killTweensOf(buttons);
-      gsap.set(buttons, { clearProps: 'transform' });
+      gsap.set(buttons, { opacity: 1, scale: 1, rotate: 0 });
+      root.classList.remove('is-pending');
       root.classList.add('is-3d');
     },
 
@@ -258,7 +281,7 @@ export function initTree() {
     endProjection() {
       if (!projected) return;
       projected = false;
-      root.classList.remove('is-3d');
+      root.classList.remove('is-3d', 'is-pending');
       buttons.forEach((button) => {
         button.parentElement?.style.removeProperty('--px');
         button.parentElement?.style.removeProperty('--py');
