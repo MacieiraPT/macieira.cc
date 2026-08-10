@@ -232,12 +232,12 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
    rather than as body copy scaled up. It shares the fold with the tree now,
    so it is sized against its own column instead of the whole viewport. */
 .hero__name {
-  font-size: clamp(4rem, 10.5vw, 11rem);
+  font-size: clamp(2.75rem, 7.9vw, 9rem);
   font-weight: 800;
   font-variation-settings: 'wdth' 118;
   line-height: 0.76;
   letter-spacing: -0.055em;
-  margin-left: -0.055em;                 /* optical alignment of the 'r' stem */
+  margin-left: -0.055em;                 /* optical alignment of the 'R' stem */
   color: var(--ink);
 }
 
@@ -572,7 +572,7 @@ html.js .fact + .fact { margin: 0; padding: 0; border-top: 0; }
 @media (max-width: 980px) {
   .hero__stage { grid-template-columns: 1fr; gap: clamp(1.25rem, 3vh, 2rem); }
   .hero__copy { display: contents; }
-  .hero__name { order: 1; font-size: clamp(4.5rem, 20vw, 12rem); }
+  .hero__name { order: 1; font-size: clamp(2.5rem, 17.5vw, 11rem); }
   .hero__lede { order: 1; }
   .orchard { order: 2; max-width: min(560px, 42svh); }
   .basket { order: 3; }

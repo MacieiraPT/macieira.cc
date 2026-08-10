@@ -88,7 +88,12 @@ export function splitLines(el) {
 /**
  * Wraps each character. The whole string stays available to assistive tech via
  * aria-label, and the pieces are hidden from it — otherwise a screen reader
- * reads "r u d i".
+ * reads "R o d r i g o".
+ *
+ * Characters are grouped per word, because every mask is an inline-block and
+ * the browser will happily break a line between any two of them — a two-word
+ * name would wrap as "Rodrig / o Macieira". The `.word` box is `nowrap`, so
+ * the only break opportunity left is the real space between words.
  */
 export function splitChars(el) {
   remember(el);
@@ -97,17 +102,32 @@ export function splitChars(el) {
 
   el.setAttribute('aria-label', text);
   const fragment = document.createDocumentFragment();
-  const inners = [...text].map((character) => {
-    const mask = document.createElement('span');
-    mask.className = 'char';
-    mask.setAttribute('aria-hidden', 'true');
-    const inner = document.createElement('span');
-    inner.className = 'char__inner';
-    inner.textContent = character;
-    mask.append(inner);
-    fragment.append(mask);
-    return inner;
+  const inners = [];
+
+  // split on the spaces but keep them, so they can be re-emitted as real text
+  // nodes rather than as zero-width inline-blocks.
+  text.split(/(\s+)/).forEach((chunk) => {
+    if (!chunk) return;
+    if (/^\s+$/.test(chunk)) {
+      fragment.append(document.createTextNode(' '));
+      return;
+    }
+    const word = document.createElement('span');
+    word.className = 'word';
+    for (const character of chunk) {
+      const mask = document.createElement('span');
+      mask.className = 'char';
+      mask.setAttribute('aria-hidden', 'true');
+      const inner = document.createElement('span');
+      inner.className = 'char__inner';
+      inner.textContent = character;
+      mask.append(inner);
+      word.append(mask);
+      inners.push(inner);
+    }
+    fragment.append(word);
   });
+
   el.replaceChildren(fragment);
 
   return inners;

@@ -257,6 +257,8 @@ html.js:not(.boot-failed) .apple {
 .line { display: block; overflow: hidden; padding-bottom: 0.06em; }
 .line__inner { display: block; will-change: transform; }
 
-/* Per-character wrappers for the hero wordmark */
+/* Per-character wrappers for the hero wordmark. The word box keeps the line
+   from breaking between two character masks — see splitChars() in split.js. */
+.word { display: inline-block; white-space: nowrap; }
 .char { display: inline-block; will-change: transform; }
 .char__inner { display: inline-block; }

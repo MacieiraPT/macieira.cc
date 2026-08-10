@@ -43,7 +43,7 @@ whose seven apples are the only introduction there is.
 
 ## What this is
 
-The personal site of **rudi** — a developer in Portugal, 18, early in the work and
+The personal site of **Rodrigo Macieira** — a developer in Portugal, 18, early in the work and
 building where it can be seen. It lives at **[macieira.cc](https://macieira.cc)**.
 
 The brief was small and stubborn: put **one big idea on the first screen** instead of five
@@ -161,7 +161,7 @@ motion that starts without a scroll or a click.
 
 ## Whose site this is
 
-**rudi** — *Programador de Informática* (Level 4, Quadro Nacional de Qualificações),
+**Rodrigo Macieira** — *Programador de Informática* (Level 4, Quadro Nacional de Qualificações),
 Portugal. Currently on real-time graphics for the web, and the performance work that keeps
 them running on a phone as well as a desktop.
 
