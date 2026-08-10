@@ -101,9 +101,9 @@ html {
   scrollbar-color: var(--ink-faint) transparent;
 }
 
-/* Native smooth scroll only matters when Lenis is *not* running
-   (reduced motion, or JS off) — otherwise the two fight each other. */
-html:where(.no-js, .reduced-motion) { scroll-behavior: smooth; }
+/* Native smooth scroll only matters when Lenis is *not* running (JS off) —
+   otherwise the two fight each other. */
+html:where(.no-js) { scroll-behavior: smooth; }
 
 body {
   background: var(--bg);
@@ -216,19 +216,19 @@ html.lenis, html.lenis body { height: auto; }
 /* --------------------------------------------------------------------------
    Reveal contract
    --------------------------------------------------------------------------
-   Elements only start hidden when JS is running AND motion is welcome.
-   Without JS, with reduced motion, or if the module fails to boot
+   Elements only start hidden when JS is running.
+   Without JS, or if the module fails to boot
    (html.boot-failed, set by the failsafe in index.html), everything is
    simply visible — no animation library is load-bearing for reading the page.
    -------------------------------------------------------------------------- */
-html.js:not(.reduced-motion):not(.boot-failed) [data-reveal] {
+html.js:not(.boot-failed) [data-reveal] {
   opacity: 0;
   transform: translateY(28px);
 }
-html.js:not(.reduced-motion):not(.boot-failed) [data-reveal-lines] > .line > .line__inner {
+html.js:not(.boot-failed) [data-reveal-lines] > .line > .line__inner {
   transform: translateY(105%);
 }
-html.js:not(.reduced-motion):not(.boot-failed) [data-hero] {
+html.js:not(.boot-failed) [data-hero] {
   opacity: 0;
 }
 
@@ -238,17 +238,17 @@ html.js:not(.reduced-motion):not(.boot-failed) [data-hero] {
    pure decoration on a picture that is already there. The fills and the
    apples are released by the hero timeline in js/modules/hero.js, which is on
    the critical path; nothing here waits on the lazily-imported anime.js. */
-html.js:not(.reduced-motion):not(.boot-failed) .monogram__body,
-html.js:not(.reduced-motion):not(.boot-failed) .monogram__leaf {
+html.js:not(.boot-failed) .monogram__body,
+html.js:not(.boot-failed) .monogram__leaf {
   fill-opacity: 0;
 }
-html.js:not(.reduced-motion):not(.boot-failed) .orchard__glow { opacity: 0; }
+html.js:not(.boot-failed) .orchard__glow { opacity: 0; }
 /* Uniform because every branch declares pathLength="1" — see index.html. */
-html.js:not(.reduced-motion):not(.boot-failed) [data-branch] {
+html.js:not(.boot-failed) [data-branch] {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }
-html.js:not(.reduced-motion):not(.boot-failed) .apple {
+html.js:not(.boot-failed) .apple {
   opacity: 0;
   transform: scale(0.3);
 }
@@ -260,11 +260,3 @@ html.js:not(.reduced-motion):not(.boot-failed) .apple {
 /* Per-character wrappers for the hero wordmark */
 .char { display: inline-block; will-change: transform; }
 .char__inner { display: inline-block; }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}

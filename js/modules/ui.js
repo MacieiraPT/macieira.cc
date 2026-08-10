@@ -76,6 +76,35 @@ export function initCopyButtons() {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Age                                                                         */
+/* -------------------------------------------------------------------------- */
+
+/** 28 June 2008. The only place a birthday appears; the page renders a number. */
+const BORN = { year: 2008, month: 5, day: 28 }; // month is 0-indexed
+
+/**
+ * Fills [data-age] with the current age.
+ *
+ * Computed rather than typed, for the same reason the GitHub panel is fetched
+ * rather than typed: a hard-coded number is correct for at most one year, and
+ * nobody remembers to come back and change it. The markup ships a plausible
+ * value so the sentence still reads if this never runs.
+ */
+export function initAge() {
+  const outputs = document.querySelectorAll('[data-age]');
+  if (!outputs.length) return;
+
+  const now = new Date();
+  let age = now.getFullYear() - BORN.year;
+  const month = now.getMonth();
+  if (month < BORN.month || (month === BORN.month && now.getDate() < BORN.day)) age -= 1;
+
+  outputs.forEach((output) => {
+    output.textContent = String(age);
+  });
+}
+
+/* -------------------------------------------------------------------------- */
 /* Local clock                                                                 */
 /* -------------------------------------------------------------------------- */
 

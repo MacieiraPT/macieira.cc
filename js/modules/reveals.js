@@ -22,11 +22,6 @@ import { splitLines, revert } from './split.js';
 /* -------------------------------------------------------------------------- */
 
 export function initReveals() {
-  // Reduced motion: the CSS contract never hid anything, and fromTo's
-  // immediate render below *would* — hiding content until it's scrolled to is
-  // exactly what this preference exists to prevent. Nothing to enhance here.
-  if (env.reducedMotion) return;
-
   // Simple blocks. ScrollTrigger.batch groups elements that cross the line in
   // the same frame into one staggered tween — far cheaper than one trigger
   // per card, and it reads better too.
@@ -113,14 +108,13 @@ export function initReveals() {
 
 /**
  * Pins the dev section's left column while the GitHub panel scrolls past it.
- * gsap.matchMedia() scopes the whole thing to wide screens *and* to visitors
- * who want motion — leaving the media query, or asking for reduced motion,
- * reverts it cleanly back to normal document flow.
+ * gsap.matchMedia() scopes the whole thing to wide screens; leaving that
+ * media query reverts it cleanly back to normal document flow.
  */
 export function initPin() {
   const mm = gsap.matchMedia();
 
-  mm.add('(min-width: 981px) and (prefers-reduced-motion: no-preference)', () => {
+  mm.add('(min-width: 981px)', () => {
     const section = document.querySelector('.dev');
     const rail = document.querySelector('[data-pin-rail] .dev__rail-inner');
     if (!section || !rail) return;
@@ -212,11 +206,6 @@ export function initMarquee() {
     ease: 'none',
     repeat: -1,
   });
-
-  if (env.reducedMotion) {
-    loop.pause();
-    return;
-  }
 
   const skewTo = gsap.quickTo(track, 'skewX', { duration: 0.6, ease: 'power3.out' });
 

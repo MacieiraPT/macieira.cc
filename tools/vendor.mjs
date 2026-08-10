@@ -13,6 +13,10 @@
  * inside index.html, so application code reads exactly like it would in a
  * bundled project (`import gsap from 'gsap'`).
  *
+ * This script also **rewrites that import map**, stamping each entry with the
+ * bundle's content hash. /vendor is served `immutable` for a year, so the URL
+ * has to change when the bytes do — see the note above the rewrite below.
+ *
  * Why bundle at all instead of copying the published dist files?
  *   - gsap only ships un-minified ESM (~110 kB gzip across its files);
  *     bundling + minifying gets the same modules down to ~44 kB gzip.
@@ -27,7 +31,8 @@
  */
 
 import { build } from 'esbuild';
-import { mkdir, readFile, stat } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
@@ -96,6 +101,8 @@ const bundles = [
 
 await mkdir(outdir, { recursive: true });
 
+/** file name → short content hash, used to version the import map below. */
+const stamps = {};
 let total = 0;
 for (const bundle of bundles) {
   const versions = await Promise.all(
@@ -120,9 +127,11 @@ for (const bundle of bundles) {
   });
 
   const path = join(outdir, bundle.file);
+  const bytes = await readFile(path);
   const raw = (await stat(path)).size;
-  const gz = gzipSync(await readFile(path)).length;
+  const gz = gzipSync(bytes).length;
   total += gz;
+  stamps[bundle.file] = createHash('sha256').update(bytes).digest('hex').slice(0, 8);
   console.log(
     `  ${bundle.file.padEnd(16)} ${String(Math.round(raw / 1024)).padStart(5)} kB` +
       ` → ${String(Math.round(gz / 1024)).padStart(4)} kB gzip   (${versions.join(', ')})`
@@ -130,3 +139,41 @@ for (const bundle of bundles) {
 }
 
 console.log(`  ${'—'.repeat(16)} ${String(Math.round(total / 1024)).padStart(24)} kB gzip total`);
+
+/* -------------------------------------------------------------------------- */
+/* Cache busting                                                               */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Stamp the import map in index.html with each bundle's content hash.
+ *
+ * This is not a nicety. `_headers` serves /vendor/* as `immutable` for a year,
+ * which is only safe if the URL changes when the bytes do — and the file names
+ * here never change. Without this, rebuilding a bundle strands every returning
+ * visitor on the copy they already have, for a year. That is not a theoretical
+ * failure: adding three.js exports for the 3D tree shipped an orchard module
+ * that imported symbols the cached bundle didn't export, and every browser
+ * that had visited before silently fell back to the flat SVG tree.
+ *
+ * A query string is enough — caches key on the full URL — and it keeps the
+ * file names in /vendor readable, which hashed file names would not.
+ */
+const indexPath = join(root, 'index.html');
+const html = await readFile(indexPath, 'utf8');
+
+let stamped = 0;
+const updated = html.replace(
+  /"\/vendor\/([\w.-]+\.mjs)(?:\?v=[0-9a-f]+)?"/g,
+  (match, file) => {
+    if (!stamps[file]) return match; // not something this script builds
+    stamped += 1;
+    return `"/vendor/${file}?v=${stamps[file]}"`;
+  }
+);
+
+if (updated !== html) {
+  await writeFile(indexPath, updated);
+  console.log(`\n  import map restamped — ${stamped} entries in index.html`);
+} else {
+  console.log(`\n  import map already current (${stamped} entries)`);
+}

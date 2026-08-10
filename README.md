@@ -4,8 +4,8 @@ Personal site for **rudi** ([@MacieiraPT](https://github.com/MacieiraPT)) — de
 Portugal. An introduction on one half, a dev presence that grows over time on the other.
 
 *Macieira* is Portuguese for **apple tree**, and it's the surname. So the mark is a red
-apple, and the front page is one: a WebGL tree whose six apples are real buttons — click
-one, read a card. Three links only — Steam, Discord, GitHub.
+apple, and the front page is one: a WebGL tree whose seven apples are real buttons —
+click one, read a card. Three links only — Steam, Discord, GitHub.
 
 Static HTML, CSS and ES modules. **No build step is required to deploy**: what's in the
 repository is what ships.
@@ -32,7 +32,7 @@ import map need a real origin.
 | --- | --- | --- |
 | [Lenis](https://github.com/darkroomengineering/lenis) | 1.3.26 | The inertia in the scroll. It is the base *feel* of the page, so nothing else animates on its own clock. |
 | [GSAP](https://gsap.com) + ScrollTrigger | 3.15.0 | The hero intro, every scroll-triggered reveal, the pinned rail in the dev section, the progress bar. |
-| [Three.js](https://threejs.org) | 0.185.1 | Two scenes. The tree in the hero — tapered tube branches, lit fruit. And the field behind everything: 26k points morphing between an orb, a wave and the **apple**. |
+| [Three.js](https://threejs.org) | 0.185.1 | Two scenes. The tree in the hero — tapered branches, roots, 2 400 instanced leaves, lit fruit. And the field behind everything: 26k points morphing from a haze into a wave and then the **apple**. |
 | [anime.js](https://animejs.com) | 4.5.0 | The fine detail: SVG line-drawing, the apple → GitHub morph at the seam, and the spring-physics draggable stickers. |
 
 They are deliberately **not** interchangeable here. The clearest place to see them working
@@ -57,6 +57,18 @@ would not.
 
 What was taken directly: the discipline of loading almost nothing up front, and of putting
 one big idea on the first screen instead of five small ones.
+
+### Cache busting — read this before touching /vendor
+
+`_headers` serves `/vendor/*` as `immutable` for a year. That is only safe because
+`npm run vendor` hashes each bundle and **rewrites the import map in `index.html`** with a
+`?v=<hash>` on every entry, so the URL changes when the bytes do.
+
+This is not hypothetical hygiene. Adding the three.js exports for the 3D tree shipped an
+orchard module that imported symbols the *cached* bundle didn't export — so every browser
+that had visited before threw on import and silently fell back to the flat SVG tree, while
+a fresh browser looked perfect. If you ever hand-edit a file in `/vendor`, run
+`npm run vendor` afterwards or the stamp will lie.
 
 ### How they load
 
@@ -88,10 +100,16 @@ wins. The tree is above the fold and it is content; the field is atmosphere and 
 a full CSS fallback painted behind it. So the tree asks straight away and the field at
 2.5 s, and if the field loses it degrades to gradients without a word.
 
-**`prefers-reduced-motion` does not touch the tree.** It still governs everything else —
-no smooth scrolling, no intro, no reveals, no sticker physics — but the tree sways, bobs,
-follows the pointer and swings when picked for everyone, exactly like the particle field.
-Both are the identity of the site rather than decoration on top of it.
+**`prefers-reduced-motion` is not honoured anywhere on this site.** That is a deliberate
+decision by the owner, recorded in `js/modules/env.js` rather than left to be rediscovered
+as a bug. It used to switch off Lenis, the hero intro, the scroll reveals and the sticker
+physics; it now switches off nothing. The smooth scroll *is* the feel of the page, and half
+of it animating while the other half sat still read as broken rather than as considerate.
+
+What that trades away: visitors who set the preference for vestibular reasons get the full
+thing. The honest mitigation is that nothing here is large-amplitude or unexpected — no
+parallax on body text, no autoplaying transitions, no motion that starts without a scroll
+or a click.
 
 ---
 
@@ -100,15 +118,16 @@ Both are the identity of the site rather than decoration on top of it.
 The front page is one component in two implementations, and the interesting part is what
 they share.
 
-**The buttons are always HTML.** All six apples are real `<button>`s in `index.html`, and
-all six facts are real `<article>`s. `js/modules/tree.js` — critical path, no WebGL
+**The buttons are always HTML.** All seven apples are real `<button>`s in `index.html`,
+and all seven facts are real `<article>`s. `js/modules/tree.js` — critical path, no WebGL
 anywhere in it — owns the picking, the card deck and the ARIA, positioning the buttons over
 the inline SVG tree with two custom properties each. That alone is a finished, working
 feature.
 
 **The 3D tree is a renderer, not a rewrite.** `js/scene/orchard.js` builds the tree out of
-tapered tube geometry and a canopy of ~1000 instanced leaves, and then does one thing to
-the page: every frame it projects each apple's world position to screen coordinates and
+tapered tube geometry — trunk, seven fruit-bearing limbs, sixteen twigs, a buttress flare
+and seven surface roots — plus a canopy of ~2 400 instanced leaves, and then does one thing
+to the page: every frame it projects each apple's world position to screen coordinates and
 calls `tree.place()`. The buttons move to sit on the mesh. That is the whole coupling —
 the renderer never touches the DOM and never learns what a fact is, and `tree.js` never
 learns what a camera is.
@@ -140,9 +159,17 @@ A few things worth knowing before editing it:
   end up behind a hedge: proximity culling alone doesn't help, because a leaf a third of a
   unit *in front of* an apple is nowhere near it in 3D and completely on top of it on
   screen.
-- **Leaves are one `InstancedMesh`** — ~1000 of them in a single draw call, scattered
+- **Leaves are one `InstancedMesh`** — ~2 400 of them in a single draw call, scattered
   through the volume around each branch rather than onto its surface. On the surface they
   read as a garland wound round a stick; it is the spread that makes a canopy.
+- **Roots are generated, limbs are not.** A loop is fine for roots because nothing depends
+  on where one ends; the limbs are hand-authored because a button depends on every tip.
+  The flare under the trunk is just a branch with its radii inverted, so the taper runs
+  the other way.
+- **Bark and fruit carry vertex colours.** Paler young wood at the tips, faceting round
+  each ring, and on the apples a gradient from deep at the shoulders to warm underneath
+  with faint striping. That gradient is most of what stops a red sphere reading as a
+  tomato once the profile is right.
 - **A frame-time watchdog** drops the pixel ratio, then halves the foliage, if the average
   frame goes over 26 ms. The leaves are nearly all of the triangles and the only part that
   can be cut without the tree stopping being a tree.
@@ -219,8 +246,13 @@ In both, a limb or twig must *start* on a coordinate that appears verbatim in it
 path — a Catmull-Rom curve and an SVG path both pass through their control points, so
 sharing one is what makes the join seamless. Anywhere else and it floats.
 
-**To add a seventh**, add an `<li>`, an `<article>`, and an entry in `LIMBS` with a
+**To add an eighth**, add an `<li>`, an `<article>`, and an entry in `LIMBS` with a
 matching `key`. Nothing else needs touching.
+
+**The age in the `who` card is computed**, from a single birth date in
+`js/modules/ui.js`. A typed number is correct for at most a year and nobody remembers to
+come back and change it; the markup ships a plausible value so the sentence still reads if
+the script never runs.
 
 ### Change the copy
 
@@ -329,7 +361,7 @@ node tools/og.mjs
 | Only one WebGL context available | The tree gets it; the field falls back to CSS gradients. See the priority note above. |
 | anime.js never arrives | The tree, the logo and the seam stay exactly as drawn; only the pen-stroke animations are lost. |
 | JS fails to boot | A failsafe in `<head>` releases the hidden state after 1.5 s. |
-| `prefers-reduced-motion` | No Lenis, no intro, no reveals, no sticker physics. Native scrolling, everything visible. The tree is unaffected — deliberately. |
+| `prefers-reduced-motion` | Nothing. The setting is deliberately not honoured — see the note above. |
 | No WebGL at all | Three.js is never downloaded; the CSS backdrop carries the look and the console says so. |
 | No GPU — acceleration off, VM, remote desktop, blocklisted driver | Still runs, on the software renderer, at 6k particles and 1× pixel ratio. |
 | GPU drops the context mid-session | The field hands back to the CSS backdrop; the tree hands back to the SVG, buttons and all. |

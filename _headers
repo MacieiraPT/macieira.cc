@@ -13,7 +13,11 @@
   # remaining directives are where the actual protection is.
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://avatars.githubusercontent.com; font-src 'self'; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 
-# Content-addressed by version: safe to cache forever.
+# Safe to cache forever ONLY because the import map in index.html stamps every
+# entry with the bundle's content hash (?v=...), which `npm run vendor` rewrites
+# on every build. Without that stamp these file names never change, and shipping
+# a rebuilt bundle strands returning visitors on the copy they already have —
+# for a year. Do not add anything to /vendor that isn't stamped that way.
 /vendor/*
   Cache-Control: public, max-age=31536000, immutable
 

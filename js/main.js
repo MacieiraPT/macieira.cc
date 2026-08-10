@@ -25,7 +25,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-import { allowMotion, allowWebGL, fontsReady, webglBlockReason, whenIdle } from './modules/env.js';
+import { allowWebGL, fontsReady, webglBlockReason, whenIdle } from './modules/env.js';
 import { createSmoothScroll, initAnchors } from './modules/smooth-scroll.js';
 import { playIntro } from './modules/hero.js';
 import {
@@ -38,7 +38,7 @@ import {
   initTint,
 } from './modules/reveals.js';
 import { initTree } from './modules/tree.js';
-import { initClock, initCopyButtons } from './modules/ui.js';
+import { initAge, initClock, initCopyButtons } from './modules/ui.js';
 import { initWork } from './modules/work.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -91,6 +91,7 @@ root.classList.add('booted');
 
 safely('copy buttons', initCopyButtons);
 safely('clock', initClock);
+safely('age', initAge);
 safely('work grid', initWork);
 // Before the font wait below, not after: the six facts all ship in the HTML,
 // and this is what collapses them into a deck. A second of them stacked up
@@ -122,9 +123,9 @@ if (tree && allowWebGL) {
 /* 2. Scroll layer                                                             */
 /* -------------------------------------------------------------------------- */
 
-// Reduced motion gets the browser's own scrolling — inertia is exactly the
-// kind of thing that setting exists to switch off.
-const lenis = allowMotion ? safely('smooth scroll', createSmoothScroll) ?? null : null;
+// Unconditional: the inertia is the feel of the page, and it is what every
+// scroll-linked thing below measures against. See the note in env.js.
+const lenis = safely('smooth scroll', createSmoothScroll) ?? null;
 safely('anchor links', () => initAnchors(lenis));
 
 /* -------------------------------------------------------------------------- */

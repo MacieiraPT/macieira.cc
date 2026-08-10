@@ -65,9 +65,9 @@ const FOV = 32;
  * trunk's base lands at ~88% down the canvas, where the ground glow in
  * site.css is painted. Get it wrong and the tree floats above its own shadow.
  */
-const FRAME_W = 1.7;
-const FRAME_H = 1.44;
-const CENTRE_Y = 1.46;
+const FRAME_W = 1.94;
+const FRAME_H = 1.6;
+const CENTRE_Y = 1.66;
 
 /** Above this average frame time the watchdog starts giving things up. */
 const SLOW_FRAME_MS = 26;
@@ -116,12 +116,14 @@ const TRUNK = {
  * the only angle anyone looks at this from.
  */
 const LIMBS = [
-  { key: 'name',    from: 0.056, to: 0.021, leaves: 62, spread: 0.34, points: [[0, 0.98, 0], [0.03, 1.5, 0.08], [0.05, 2, 0.2], [0.05, 2.4, 0.3]] },
-  { key: 'work',    from: 0.054, to: 0.02,  leaves: 62, spread: 0.34, points: [[0.02, 0.95, 0], [0.3, 1.35, -0.02], [0.66, 1.72, 0.1], [0.98, 1.98, 0.28]] },
-  { key: 'stack',   from: 0.054, to: 0.02,  leaves: 62, spread: 0.34, points: [[-0.02, 0.95, 0.02], [-0.3, 1.35, 0.04], [-0.66, 1.72, 0.16], [-0.98, 1.98, 0.3]] },
-  { key: 'steam',   from: 0.058, to: 0.022, leaves: 66, spread: 0.35, points: [[-0.03, 0.84, 0], [-0.48, 1.05, -0.02], [-1.02, 1.24, 0.12], [-1.42, 1.34, 0.32]] },
-  { key: 'github',  from: 0.058, to: 0.022, leaves: 66, spread: 0.35, points: [[0.03, 0.82, 0], [0.5, 1.02, 0.02], [1.04, 1.22, 0.16], [1.45, 1.32, 0.34]] },
-  { key: 'discord', from: 0.03,  to: 0.015, leaves: 40, spread: 0.3,  points: [[0.3, 1.35, -0.02], [0.42, 1.22, 0.1], [0.5, 1.08, 0.24], [0.54, 0.98, 0.36]] },
+  { key: 'name',     from: 0.056, to: 0.021, leaves: 62, spread: 0.34, points: [[0, 0.98, 0], [0.03, 1.5, 0.08], [0.05, 2, 0.2], [0.05, 2.4, 0.3]] },
+  { key: 'stack',    from: 0.054, to: 0.02,  leaves: 62, spread: 0.34, points: [[0.02, 0.95, 0], [0.3, 1.35, -0.02], [0.66, 1.72, 0.1], [0.98, 1.98, 0.28]] },
+  { key: 'training', from: 0.054, to: 0.02,  leaves: 62, spread: 0.34, points: [[-0.02, 0.95, 0.02], [-0.3, 1.35, 0.04], [-0.66, 1.72, 0.16], [-0.98, 1.98, 0.3]] },
+  { key: 'steam',    from: 0.058, to: 0.022, leaves: 66, spread: 0.35, points: [[-0.03, 0.84, 0], [-0.48, 1.05, -0.02], [-1.02, 1.24, 0.12], [-1.42, 1.34, 0.32]] },
+  { key: 'github',   from: 0.058, to: 0.022, leaves: 66, spread: 0.35, points: [[0.03, 0.82, 0], [0.5, 1.02, 0.02], [1.04, 1.22, 0.16], [1.45, 1.32, 0.34]] },
+  // A matched pair hanging off the two inner limbs, low and to the front.
+  { key: 'discord',  from: 0.03,  to: 0.015, leaves: 40, spread: 0.3,  points: [[0.3, 1.35, -0.02], [0.42, 1.22, 0.1], [0.5, 1.08, 0.24], [0.54, 0.98, 0.36]] },
+  { key: 'who',      from: 0.03,  to: 0.015, leaves: 40, spread: 0.3,  points: [[-0.3, 1.35, 0.04], [-0.42, 1.22, 0.14], [-0.5, 1.08, 0.28], [-0.54, 0.98, 0.4]] },
 ];
 
 /** Bare twigs. They carry the crown, and most of the foliage. */
@@ -144,7 +146,38 @@ const TWIGS = [
   { from: 0.016, to: 0.007, leaves: 58, spread: 0.4,  points: [[0.05, 2, 0.2], [0.3, 2.16, 0.08], [0.5, 2.24, -0.06]] },
 ];
 
-const ALL_BRANCHES = [TRUNK, ...LIMBS, ...TWIGS];
+/**
+ * The base: a buttress that widens *downward* (radii run from `from` at the
+ * top of the curve to `to` at the bottom, so inverting them flares the trunk
+ * where it meets the ground) and seven surface roots spreading off it.
+ *
+ * These are generated rather than written out, unlike everything above. The
+ * rule there was that a button depends on where each limb ends; nothing at all
+ * depends on where a root ends, so a loop is fine — and it makes the count
+ * trivial to change.
+ */
+const ROOTS = [
+  { from: 0.118, to: 0.2, leaves: 0, spread: 0, points: [[0, 0.34, 0], [0.012, 0.18, 0.008], [0, 0.015, 0]] },
+  ...[0.35, 1.25, 2.15, 3.05, 3.85, 4.65, 5.55].map((angle, i) => {
+    const reach = 0.3 + ((i * 7) % 5) * 0.04;
+    const sx = Math.sin(angle);
+    const sz = Math.cos(angle);
+    return {
+      from: 0.052,
+      to: 0.014,
+      leaves: 0,
+      spread: 0,
+      points: [
+        [sx * 0.06, 0.21, sz * 0.06],
+        [sx * 0.17, 0.08, sz * 0.17],
+        [sx * reach * 0.72, 0.018, sz * reach * 0.72],
+        [sx * reach, -0.012, sz * reach],
+      ],
+    };
+  }),
+];
+
+const ALL_BRANCHES = [TRUNK, ...ROOTS, ...LIMBS, ...TWIGS];
 
 /* -------------------------------------------------------------------------- */
 /* Geometry                                                                    */
@@ -186,7 +219,25 @@ function branchGeometry(curve, { from, to }, quality) {
     }
   }
 
+  // Bark tone, baked per vertex. Young wood at the tips is paler than the
+  // trunk, and the ring-angle term fakes the facets that stop a tube from
+  // reading as extruded plastic. Cheaper than a texture and it needs no
+  // second material — three multiplies these into the shared bark colour.
+  const tint = new Float32Array(position.count * 3);
+  for (let i = 0; i <= tubular; i += 1) {
+    const along = 0.78 + 0.42 * (i / tubular);
+    for (let j = 0; j <= radial; j += 1) {
+      const index = i * (radial + 1) + j;
+      const facet = 0.9 + 0.16 * Math.abs(Math.sin(j * 2.7));
+      const shade = along * facet;
+      tint[index * 3] = shade;
+      tint[index * 3 + 1] = shade * 0.985;
+      tint[index * 3 + 2] = shade * 0.96;
+    }
+  }
+
   position.needsUpdate = true;
+  geometry.setAttribute('color', new Float32BufferAttribute(tint, 3));
   geometry.computeVertexNormals();
   return geometry;
 }
@@ -292,8 +343,8 @@ export function mountOrchard(canvas, tree) {
   // Small canvas, hard edges, no fill-rate problem — so unlike the particle
   // field this one can afford MSAA and a real pixel ratio.
   const quality = env.smallScreen
-    ? { tubular: 26, radial: 6, appleSeg: 16, leaves: 0.55 }
-    : { tubular: 40, radial: 9, appleSeg: 26, leaves: 1 };
+    ? { tubular: 26, radial: 6, appleSeg: 18, leaves: 1.1 }
+    : { tubular: 40, radial: 10, appleSeg: 28, leaves: 2.4 };
 
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setClearAlpha(0);
@@ -316,6 +367,7 @@ export function mountOrchard(canvas, tree) {
   const barkMaterial = new MeshPhongMaterial({
     color: new Color(token('--bark', '#8b7b69')).multiplyScalar(0.34),
     shininess: 2,
+    vertexColors: true,
   });
 
   // White, because every leaf's actual colour is a per-instance value that
@@ -452,8 +504,8 @@ export function mountOrchard(canvas, tree) {
         // Deep, desaturated green with a wide spread of brightness. The acid
         // token is a UI accent — used literally for a thousand leaves it turns
         // the hero into a highlighter.
-        colour.copy(leafBase).multiplyScalar(0.07 + Math.pow(Math.random(), 1.6) * 0.33);
-        colour.offsetHSL(0.048 + Math.random() * 0.055, -0.24, 0);
+        colour.copy(leafBase).multiplyScalar(0.06 + Math.pow(Math.random(), 1.7) * 0.3);
+        colour.offsetHSL(0.05 + Math.random() * 0.055, -0.3, 0);
         mesh.setColorAt(index, colour);
         index += 1;
       }
