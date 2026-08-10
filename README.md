@@ -6,8 +6,8 @@
 
 **A personal site that is also an apple tree.**
 
-*Macieira* is Portuguese for **apple tree** — and it's the surname.
-So the front page isn't a photo and a paragraph. It's a tree, grown in your browser,
+*Macieira* is Portuguese for **apple tree**, and it's my surname.
+So the front page isn't a photo and a paragraph. It's a tree,
 whose seven apples are the only introduction there is.
 
 [**↗ Visit the site**](https://macieira.cc) · [@MacieiraPT](https://github.com/MacieiraPT)
