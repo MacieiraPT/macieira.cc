@@ -39,6 +39,7 @@ import {
   initReveals,
   initTint,
 } from './modules/reveals.js';
+import { initScrollbar } from './modules/scrollbar.js';
 import { initTree } from './modules/tree.js';
 import { initAge, initClock, initCopyButtons } from './modules/ui.js';
 import { initWork } from './modules/work.js';
@@ -134,6 +135,9 @@ if (tree && allowWebGL) {
 // scroll-linked thing below measures against. See the note in env.js.
 const lenis = safely('smooth scroll', createSmoothScroll) ?? null;
 safely('anchor links', () => initAnchors(lenis));
+// After Lenis, because the bar hands it a target during a drag — and early,
+// because taking the native scrollbar away reflows the page by its width.
+safely('scrollbar', () => initScrollbar(lenis));
 
 /* -------------------------------------------------------------------------- */
 /* 3. Choreography (after fonts, because line splitting measures text)         */

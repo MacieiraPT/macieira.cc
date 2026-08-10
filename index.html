@@ -149,6 +149,18 @@
 <div class="progress" aria-hidden="true"><span class="progress__bar" data-progress-bar></span></div>
 
 <!--
+  The scrollbar. The browser's own is taken away in base.css and this replaces
+  it, because a native scrollbar cannot be made to look the same in Firefox and
+  in Chromium — see js/modules/scrollbar.js, which also un-hides this.
+
+  aria-hidden: it is a pointer affordance for a document that is already fully
+  reachable by keyboard, exactly like the progress bar above it.
+-->
+<div class="scrollbar" data-scrollbar aria-hidden="true" hidden>
+  <span class="scrollbar__thumb" data-scrollbar-thumb></span>
+</div>
+
+<!--
   WebGL canvas. Fixed behind everything, lazily populated by js/scene/*.
   If WebGL is unavailable the canvas stays empty and .backdrop's CSS gradients
   carry the whole look on their own.

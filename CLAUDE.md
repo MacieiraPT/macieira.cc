@@ -24,7 +24,7 @@ index.html            all copy and markup; nothing readable is rendered by JS
 styles/base.css       tokens, reset, typography, the reveal contract
 styles/site.css       chrome, sections, components
 js/main.js            boot order and nothing else
-js/modules/           env · lang · smooth-scroll · hero · reveals · split · tree · github · details · work · ui
+js/modules/           env · lang · smooth-scroll · scrollbar · hero · reveals · split · tree · github · details · work · ui
 js/scene/             orchard (3D tree) · index (field lifecycle) · particles · shaders
 js/data/projects.js   the file to edit to add work
 vendor/               pre-built ES modules, mapped to bare specifiers by the import map
@@ -64,11 +64,13 @@ at runtime can't be in the markup, so those strings — and only those — go in
 the bottom of `lang.js`. A module that renders its own text has to re-render on
 `onLanguageChange()`; `github.js`, `work.js`, `ui.js` and `reveals.js` already do.
 
-**Never put a plain `scrollbar-color` on `html`.** Chromium supports it *and* the
-`::-webkit-scrollbar` pseudo-elements, and setting the standard property to anything but
-`auto` makes it ignore the pseudo-elements — silently dropping the custom scrollbar in
-every Chromium browser. The standard properties are fenced behind
-`@supports not selector(::-webkit-scrollbar)` in `base.css` so only Firefox reads them.
+**The scrollbar is an element, not a styled native one.** Styling the browser's own can't
+be made to match across engines — Firefox has only `scrollbar-width`/`scrollbar-color`,
+Chromium and Safari have `::-webkit-scrollbar`, and in Chromium setting the standard
+property silently disables the pseudo-elements. So `base.css` removes the native bar and
+`js/modules/scrollbar.js` draws the replacement. The removal is gated on
+`html.js:not(.boot-failed)` and the markup ships `hidden`: ungate either one and a page
+whose JS failed has no scrollbar at all.
 
 **The GitHub panel must stay tokenless.** A token in a static site is a public token;
 `js/modules/github.js` works within the 60 req/hour anonymous limit with a 30-minute
