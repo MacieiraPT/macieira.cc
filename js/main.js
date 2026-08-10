@@ -35,17 +35,55 @@ import { initWork } from './modules/work.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Tells the failsafe in index.html that the module graph is alive, which
-// releases the CSS rules that keep reveal targets hidden.
-document.documentElement.classList.add('booted');
+const root = document.documentElement;
+
+/* -------------------------------------------------------------------------- */
+/* 0. The safety net                                                           */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * base.css hides animated elements while the page boots, on the promise that
+ * JS will bring them back. `boot-failed` is how that promise gets released.
+ *
+ * The inline failsafe in index.html covers a module graph that never loads.
+ * This covers everything after it — because the failure that actually matters
+ * is subtler: the modules load, `booted` disarms the failsafe, and *then* one
+ * call throws in one browser. Everything downstream never runs, the hiding
+ * rules stay on, and the page is blank in that browser and perfect in every
+ * other. Content visibility is not allowed to depend on any of this working.
+ */
+function releaseHiddenContent() {
+  root.classList.add('boot-failed');
+}
+
+window.addEventListener('error', (event) => {
+  // Failed resource loads bubble here too; only script errors mean the
+  // choreography is compromised.
+  if (event instanceof ErrorEvent) releaseHiddenContent();
+});
+window.addEventListener('unhandledrejection', releaseHiddenContent);
+
+/** Runs one feature in isolation: a failure costs that feature, not the page. */
+function safely(label, fn) {
+  try {
+    return fn();
+  } catch (error) {
+    console.warn(`[macieira.cc] ${label} failed:`, error);
+    releaseHiddenContent();
+    return undefined;
+  }
+}
+
+// Tells the inline failsafe that the module graph is alive.
+root.classList.add('booted');
 
 /* -------------------------------------------------------------------------- */
 /* 1. Baseline interactions                                                    */
 /* -------------------------------------------------------------------------- */
 
-initCopyButtons();
-initClock();
-initWork();
+safely('copy buttons', initCopyButtons);
+safely('clock', initClock);
+safely('work grid', initWork);
 
 /* -------------------------------------------------------------------------- */
 /* 2. Scroll layer                                                             */
@@ -53,26 +91,26 @@ initWork();
 
 // Reduced motion gets the browser's own scrolling — inertia is exactly the
 // kind of thing that setting exists to switch off.
-const lenis = allowMotion ? createSmoothScroll() : null;
-initAnchors(lenis);
+const lenis = allowMotion ? safely('smooth scroll', createSmoothScroll) ?? null : null;
+safely('anchor links', () => initAnchors(lenis));
 
 /* -------------------------------------------------------------------------- */
 /* 3. Choreography (after fonts, because line splitting measures text)         */
 /* -------------------------------------------------------------------------- */
 
-await fontsReady();
+await fontsReady().catch(() => {});
 
-initReveals();
-initPin();
-initProgress();
-initNav();
-initTint();
-initMarquee();
-initMagnetic();
-playIntro();
+safely('reveals', initReveals);
+safely('pinned rail', initPin);
+safely('progress bar', initProgress);
+safely('nav state', initNav);
+safely('accent tint', initTint);
+safely('marquee', initMarquee);
+safely('magnetic buttons', initMagnetic);
+safely('hero intro', playIntro);
 
 // Fonts swapping in changes every measurement ScrollTrigger took at setup.
-ScrollTrigger.refresh();
+safely('scroll refresh', () => ScrollTrigger.refresh());
 
 /* -------------------------------------------------------------------------- */
 /* 4. Deferred enhancements                                                    */
