@@ -144,6 +144,65 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
   .masthead__nav { display: none; }
 }
 
+/* Language switch ----------------------------------------------------------
+   Two buttons and a chip that slides between them. The chip is a separate
+   element rather than a background on the pressed button so it can *travel*:
+   a background swap is a cut, and this is the one control on the page that
+   should look like it moved.
+
+   Which side it sits on comes from html[data-lang], written by
+   js/modules/lang.js — the control is never told its own state, and the whole
+   thing survives being toggled from anywhere else. */
+.lang {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--bg-raise) 70%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+/* Ships hidden — see the note in index.html. `display: inline-flex` above
+   would otherwise outrank the user-agent's [hidden] rule. */
+.lang[hidden] { display: none; }
+
+.lang__thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 999px;
+  background: var(--tint);
+  pointer-events: none;
+  transition: transform 0.5s var(--ease-out), background-color 0.4s var(--ease-out);
+}
+html[data-lang='pt'] .lang__thumb { transform: translateX(100%); }
+
+.lang__btn {
+  position: relative;                /* over the chip */
+  z-index: 1;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  color: var(--ink-dim);
+  cursor: pointer;
+  transition: color 0.35s var(--ease-out);
+}
+.lang__btn:hover { color: var(--ink); }
+/* Against the chip, and the chip is the accent — so this is the one place on
+   the page where type goes dark. */
+.lang__btn[aria-pressed='true'],
+.lang__btn[aria-pressed='true']:hover { color: #0a0a0c; }
+
+.masthead__end { display: flex; align-items: center; gap: clamp(0.5rem, 1vw, 0.75rem); }
+
 /* --------------------------------------------------------------------------
    Buttons
    -------------------------------------------------------------------------- */

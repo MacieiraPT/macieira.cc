@@ -8,11 +8,23 @@
  */
 
 import { projects } from '../data/projects.js';
+import { language, onLanguageChange } from './lang.js';
 
 export function initWork() {
   const grid = document.querySelector('[data-work-grid]');
   const note = document.querySelector('.work__note');
   if (!grid || !projects.length) return;
+
+  render(grid);
+  // Entries may carry a `pt` block; the ones that don't simply stay as they
+  // were written, which is the right default for a project name.
+  onLanguageChange(() => render(grid));
+
+  if (note) note.remove(); // the "empty on purpose" line has outlived its usefulness
+}
+
+function render(grid) {
+  const pt = language() === 'pt';
 
   grid.replaceChildren(
     ...projects.map((project) => {
@@ -34,11 +46,11 @@ export function initWork() {
 
       const title = document.createElement('p');
       title.className = 'work-card__title';
-      title.textContent = project.title;
+      title.textContent = (pt && project.pt?.title) || project.title;
 
       const summary = document.createElement('p');
       summary.className = 'work-card__text';
-      summary.textContent = project.summary;
+      summary.textContent = (pt && project.pt?.summary) || project.summary;
       card.append(title, summary);
 
       if (project.tags?.length) {
@@ -56,6 +68,4 @@ export function initWork() {
       return card;
     })
   );
-
-  if (note) note.remove(); // the "empty on purpose" line has outlived its usefulness
 }

@@ -4,6 +4,8 @@
  * No animation library involved.
  */
 
+import { locale, onLanguageChange, t } from './lang.js';
+
 /* -------------------------------------------------------------------------- */
 /* Copy to clipboard                                                           */
 /* -------------------------------------------------------------------------- */
@@ -57,11 +59,11 @@ export function initCopyButtons() {
     button.addEventListener('click', async () => {
       const ok = await copyText(value);
       if (!ok) {
-        showToast(`Couldn't copy — it's ${value}`);
+        showToast(t('copyFailed', value));
         return;
       }
 
-      showToast(`Copied ${value}`);
+      showToast(t('copied', value));
       button.classList.add('is-copied');
       // Swap the icon to a checkmark for the length of the toast.
       const icon = button.querySelector('use');
@@ -111,17 +113,24 @@ export function initAge() {
 /**
  * Shows the time where I actually am, rather than the visitor's clock.
  * Pinned to the Europe/Lisbon zone so it stays right across DST.
+ *
+ * 24-hour in both languages — the format is fixed, only the locale that draws
+ * the digits follows the switch.
  */
 export function initClock() {
   const outputs = document.querySelectorAll('[data-clock]');
   if (!outputs.length) return;
 
-  const format = new Intl.DateTimeFormat('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: 'Europe/Lisbon',
-  });
+  let format = formatter();
+
+  function formatter() {
+    return new Intl.DateTimeFormat(locale(), {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Europe/Lisbon',
+    });
+  }
 
   const tick = () => {
     const now = format.format(new Date());
@@ -129,6 +138,11 @@ export function initClock() {
       output.textContent = now;
     });
   };
+
+  onLanguageChange(() => {
+    format = formatter();
+    tick();
+  });
 
   tick();
   // Align the first update to the top of the next minute, then run per minute.

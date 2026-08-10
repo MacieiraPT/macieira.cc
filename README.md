@@ -34,6 +34,7 @@ whose seven apples are the only introduction there is.
 - [What this is](#what-this-is)
 - [The tree](#the-tree)
 - [What's on the page](#whats-on-the-page)
+- [Two languages](#two-languages)
 - [Under the hood](#under-the-hood)
 - [When things break](#when-things-break)
 - [Whose site this is](#whose-site-this-is)
@@ -107,6 +108,33 @@ a wave, and settling into the shape of the apple mark.
 
 ---
 
+## Two languages
+
+The whole page reads in **English and European Portuguese**, switched from the pill in the
+masthead. A Portuguese browser lands in Portuguese without touching it, the choice is
+remembered, and `?lang=pt` forces it — which is what makes a Portuguese link shareable.
+
+The translation is not a JSON file and not a second page. Every translatable element
+carries its Portuguese next to its English, in the markup:
+
+```html
+<p class="card__label" data-pt="Publicado">Shipped</p>
+```
+
+English is what ships in the document, so a visitor with no JavaScript — or a crawler —
+gets the finished page and never a flash of translation keys; switching swaps one attribute
+for the other. The English is copied back into `data-en` on boot, before anything else has
+touched the DOM, which is also what lets *cloned* content (the marquee duplicates its own
+track) arrive knowing both languages instead of being stranded in whichever one happened to
+be showing.
+
+It isn't only the copy. The headlines are re-split and re-measured for the new line breaks,
+the clock and the GitHub panel's counters and relative dates change locale, and the panel
+redraws itself from the response it already had — no second request to say the same thing
+in Portuguese.
+
+---
+
 ## Under the hood
 
 No framework. No bundler. No CMS. What's in the repository is exactly what the browser gets.
@@ -144,7 +172,7 @@ Every degradation is a designed state, not an accident:
 
 | Situation | What you get |
 | --- | --- |
-| **JavaScript disabled** | The entire page, fully readable — including a hand-drawn SVG tree with working buttons and all the facts as plain text. Nothing is hidden without JS. |
+| **JavaScript disabled** | The entire page, fully readable in English — including a hand-drawn SVG tree with working buttons and all the facts as plain text. Nothing is hidden without JS, and the language switch takes itself off the page rather than pretending to work. |
 | **No WebGL** | The SVG tree takes over, buttons and all. Three.js is never even downloaded. |
 | **Only one WebGL context** | The tree wins it — it's content. The particle field falls back to CSS gradients without a word. |
 | **No GPU at all** | Still runs, on the software renderer, at a lower particle count. |

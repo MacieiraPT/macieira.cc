@@ -24,7 +24,7 @@ index.html            all copy and markup; nothing readable is rendered by JS
 styles/base.css       tokens, reset, typography, the reveal contract
 styles/site.css       chrome, sections, components
 js/main.js            boot order and nothing else
-js/modules/           env · smooth-scroll · hero · reveals · split · tree · github · details · work · ui
+js/modules/           env · lang · smooth-scroll · hero · reveals · split · tree · github · details · work · ui
 js/scene/             orchard (3D tree) · index (field lifecycle) · particles · shaders
 js/data/projects.js   the file to edit to add work
 vendor/               pre-built ES modules, mapped to bare specifiers by the import map
@@ -55,6 +55,21 @@ recorded in `js/modules/env.js`. Do not "fix" it.
 **New external hosts need a CSP edit.** `_headers` allows only `api.github.com` and
 `avatars.githubusercontent.com`.
 
+**Portuguese lives in `index.html`, not in a JS string table.** Every translatable
+element carries `data-pt="…"` (or `data-pt-aria-label` / `-title` / `-alt`) beside its
+English, and `js/modules/lang.js` copies the shipped English into `data-en` on boot before
+anything else touches the DOM. Two things follow: `data-pt` replaces an element's *whole*
+content, so a sentence with a tag inside it needs a span per piece; and anything JS writes
+at runtime can't be in the markup, so those strings — and only those — go in the table at
+the bottom of `lang.js`. A module that renders its own text has to re-render on
+`onLanguageChange()`; `github.js`, `work.js`, `ui.js` and `reveals.js` already do.
+
+**Never put a plain `scrollbar-color` on `html`.** Chromium supports it *and* the
+`::-webkit-scrollbar` pseudo-elements, and setting the standard property to anything but
+`auto` makes it ignore the pseudo-elements — silently dropping the custom scrollbar in
+every Chromium browser. The standard properties are fenced behind
+`@supports not selector(::-webkit-scrollbar)` in `base.css` so only Firefox reads them.
+
 **The GitHub panel must stay tokenless.** A token in a static site is a public token;
 `js/modules/github.js` works within the 60 req/hour anonymous limit with a 30-minute
 `localStorage` cache.
@@ -80,7 +95,8 @@ down, and content visibility must never depend on JS succeeding.
 
 ## Editing conventions
 
-- Copy, links, handles and facts are plain HTML in `index.html`.
+- Copy, links, handles and facts are plain HTML in `index.html` — in both languages. New
+  copy needs a `data-pt` on the same element, or it stays English when the page switches.
 - Add work by appending an object to the array in `js/data/projects.js`; the placeholders
   disappear on their own.
 - Colours live in the `:root` block of `styles/base.css`. The WebGL scenes read `--acid`
