@@ -77,6 +77,62 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
 }
 
 /* --------------------------------------------------------------------------
+   Scrollbar
+   --------------------------------------------------------------------------
+   A short bar in the middle of the right edge rather than a full-height rail:
+   a fixed length of travel, so it looks the same on a laptop and on a 4K
+   monitor, and it stays out of the way of the masthead and the footer instead
+   of running behind both. The native one is removed in base.css.
+
+   It sleeps by default and js/modules/scrollbar.js wakes it while the page is
+   moving. Only the opacity animates — the thumb's position is a transform
+   written per frame, and nothing here may fight it for that property.
+   -------------------------------------------------------------------------- */
+.scrollbar {
+  position: fixed;
+  z-index: 45;
+  top: 50%;
+  right: clamp(9px, 1vw, 16px);
+  width: 4px;
+  height: clamp(112px, 17vh, 190px);
+  transform: translateY(-50%);       /* centred without repeating the clamp */
+  border-radius: 999px;
+  background: var(--line);           /* the track */
+  cursor: pointer;
+  touch-action: none;                /* a drag on the bar is not a page scroll */
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out), width 0.25s var(--ease-out);
+}
+.scrollbar[hidden] { display: none; }
+
+.scrollbar.is-awake,
+.scrollbar:hover,
+.scrollbar.is-dragging { opacity: 1; }
+
+/* Nothing to scroll: no bar, and no hover state to bring one back. */
+.scrollbar.is-inert { opacity: 0; pointer-events: none; }
+
+/* Fattens under the pointer, from the centre line out, so the thumb stays put
+   while the target gets easier to hit. */
+.scrollbar:hover,
+.scrollbar.is-dragging { width: 6px; }
+
+.scrollbar__thumb {
+  display: block;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--ink);
+  /* height and translate3d are written by the module */
+}
+.scrollbar.is-dragging .scrollbar__thumb { background: var(--tint); }
+
+/* Touch already has its own inertia and no pointer to grab with, so the bar
+   stays as a read-out there and never eats a swipe. */
+@media (hover: none) {
+  .scrollbar { pointer-events: none; }
+}
+
+/* --------------------------------------------------------------------------
    Masthead
    -------------------------------------------------------------------------- */
 .masthead {

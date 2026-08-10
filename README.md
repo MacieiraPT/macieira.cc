@@ -172,7 +172,7 @@ Every degradation is a designed state, not an accident:
 
 | Situation | What you get |
 | --- | --- |
-| **JavaScript disabled** | The entire page, fully readable in English — including a hand-drawn SVG tree with working buttons and all the facts as plain text. Nothing is hidden without JS, and the language switch takes itself off the page rather than pretending to work. |
+| **JavaScript disabled** | The entire page, fully readable in English — including a hand-drawn SVG tree with working buttons and all the facts as plain text. Nothing is hidden without JS; the language switch takes itself off the page rather than pretending to work, and the browser's own scrollbar stays where it is instead of being removed for a replacement that will never arrive. |
 | **No WebGL** | The SVG tree takes over, buttons and all. Three.js is never even downloaded. |
 | **Only one WebGL context** | The tree wins it — it's content. The particle field falls back to CSS gradients without a word. |
 | **No GPU at all** | Still runs, on the software renderer, at a lower particle count. |
