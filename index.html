@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>rudi — macieira.cc</title>
+<meta name="description" content="Personal site of rudi (MacieiraPT). Mostly a gamer, starting a university bachelor's, building the dev side in public. Steam, Riot, Discord, YouTube, Twitch and GitHub in one place.">
+<link rel="canonical" href="https://macieira.cc/">
+<meta name="theme-color" content="#08080a">
+<meta name="color-scheme" content="dark">
+
+<!-- Social cards -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://macieira.cc/">
+<meta property="og:site_name" content="macieira.cc">
+<meta property="og:title" content="rudi — macieira.cc">
+<meta property="og:description" content="Mostly a gamer. Starting a university bachelor's. Building the dev side in public.">
+<meta property="og:image" content="https://macieira.cc/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+
+<!--
+  Fonts are self-hosted (latin subsets of the variable builds) so there is no
+  third-party request on the critical path. Only the display face is
+  preloaded — the mono face is used for small labels and can swap in late.
+-->
+<link rel="preload" href="/assets/fonts/archivo-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+
+<link rel="stylesheet" href="/styles/base.css">
+<link rel="stylesheet" href="/styles/site.css">
+
+<!--
+  Import map: application code imports bare specifiers exactly as it would in
+  a bundled project, but the browser resolves them to the pre-built ES modules
+  in /vendor. No bundler, no CDN, no build step at deploy time.
+  `gsap` and `gsap/ScrollTrigger` deliberately point at the same file so core
+  and plugin share one module instance (see tools/vendor.mjs).
+-->
+<script type="importmap">
+{
+  "imports": {
+    "gsap": "/vendor/gsap.min.mjs",
+    "gsap/ScrollTrigger": "/vendor/gsap.min.mjs",
+    "lenis": "/vendor/lenis.min.mjs",
+    "animejs": "/vendor/anime.min.mjs",
+    "three": "/vendor/three.min.mjs"
+  }
+}
+</script>
+
+<!--
+  Runs before first paint. Everything below is a *capability* flag, never a
+  behaviour: CSS uses these classes to decide what may animate, so a browser
+  without JS (or a visitor who asked for reduced motion) gets the finished,
+  fully readable page instead of a stack of invisible elements.
+-->
+<script>
+  (function () {
+    var root = document.documentElement;
+    var flags = ['js'];
+    try {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) flags.push('reduced-motion');
+      if (window.matchMedia('(hover: none)').matches) flags.push('coarse-pointer');
+    } catch (e) { /* ancient browser: fall through to the static page */ }
+    root.classList.remove('no-js');
+    root.classList.add.apply(root.classList, flags);
+
+    // Failsafe: if the module graph never boots (a syntax error, a blocked
+    // import, an ancient browser without import maps), release the CSS rules
+    // that keep animated elements hidden. A page nobody can read is a much
+    // worse outcome than a page with no animation.
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        if (!root.classList.contains('booted')) root.classList.add('boot-failed');
+      }, 1500);
+    });
+  })();
+</script>
+
+<script type="module" src="/js/main.js"></script>
+
+<!-- Structured data: helps the "who is this person" question for search + future job applications. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "alternateName": "rudi",
+  "url": "https://macieira.cc/",
+  "nationality": "PT",
+  "sameAs": [
+    "https://github.com/MacieiraPT",
+    "https://steamcommunity.com/id/r_di/",
+    "https://www.youtube.com/@rudi_PT",
+    "https://www.twitch.tv/rudipt"
+  ]
+}
+</script>
+</head>
+
+<body>
+
+<a class="skip-link" href="#now">Skip to content</a>
+
+<!--
+  Icon sprite. Brand marks are the official ones (paths from simple-icons,
+  CC0) and are used purely to identify the service each link points to.
+-->
+<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+    <symbol id="i-steam" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.253 0-2.265-1.014-2.265-2.265z"/></symbol>
+    <symbol id="i-riot" viewBox="0 0 24 24"><path d="M13.458.86 0 7.093l3.353 12.761 2.552-.313-.701-8.024.838-.373 1.447 8.202 4.361-.535-.775-8.857.83-.37 1.591 9.025 4.412-.542-.849-9.708.84-.374 1.74 9.87L24 17.318V3.5Zm.316 19.356.222 1.256L24 23.14v-4.18l-10.22 1.256Z"/></symbol>
+    <symbol id="i-discord" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></symbol>
+    <symbol id="i-youtube" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></symbol>
+    <symbol id="i-twitch" viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5.5 5.5L20 6.5"/></symbol>
+  </defs>
+</svg>
+
+<!-- Scroll progress: width is driven by ScrollTrigger, see js/modules/reveals.js -->
+<div class="progress" aria-hidden="true"><span class="progress__bar" data-progress-bar></span></div>
+
+<!--
+  WebGL canvas. Fixed behind everything, lazily populated by js/scene/*.
+  If WebGL is unavailable the canvas stays empty and .backdrop's CSS gradients
+  carry the whole look on their own.
+-->
+<div class="backdrop" aria-hidden="true">
+  <div class="backdrop__glow"></div>
+  <canvas class="backdrop__canvas" data-scene-canvas></canvas>
+  <div class="backdrop__grain"></div>
+</div>
+
+<header class="masthead">
+  <a class="masthead__brand" href="#top" data-anchor aria-label="macieira.cc — back to top">
+    <!-- Monogram: one continuous stroke so anime.js can draw it on like a pen line. -->
+    <svg class="monogram" viewBox="0 0 48 48" aria-hidden="true">
+      <path class="monogram__stroke" data-draw d="M6 39V9l18 20L42 9v30" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="masthead__wordmark">macieira<span class="dim">.cc</span></span>
+  </a>
+
+  <nav class="masthead__nav" aria-label="Sections">
+    <a href="#now" data-anchor><span class="idx">01</span> now</a>
+    <a href="#play" data-anchor><span class="idx">02</span> play</a>
+    <a href="#dev" data-anchor><span class="idx">03</span> dev</a>
+  </nav>
+
+  <!-- GitHub is the one link that gets a persistent, weighted slot in the chrome. -->
+  <a class="btn btn--ghost masthead__gh" href="https://github.com/MacieiraPT" rel="me noopener" target="_blank" data-magnetic>
+    <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
+    <span>GitHub</span>
+    <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow"/></svg>
+  </a>
+</header>
+
+<main id="top">
+
+  <!-- ───────────────────────────────  HERO  ─────────────────────────────── -->
+  <section class="hero" aria-labelledby="hero-name">
+    <div class="hero__inner">
+
+      <p class="hero__kicker" data-hero="kicker">
+        <span class="dot" aria-hidden="true"></span>
+        Portugal
+        <span class="sep" aria-hidden="true">/</span>
+        <span data-clock aria-label="Local time in Portugal">--:--</span>
+        <span class="sep" aria-hidden="true">/</span>
+        player, first-year student
+      </p>
+
+      <h1 class="hero__name" id="hero-name" data-hero="name" data-split>rudi</h1>
+
+      <div class="hero__grid">
+        <p class="hero__lede" data-hero="lede">
+          <span class="hero__lede-lead">Mostly a gamer.</span> I'm starting a university
+          bachelor's, so this page is where the other half — the building half — is
+          going to grow, in public, from zero.
+        </p>
+
+        <dl class="hero__facts" data-hero="facts">
+          <div><dt>Riot ID</dt><dd class="mono">rudi#0001</dd></div>
+          <div><dt>Discord</dt><dd class="mono">rvdi</dd></div>
+          <div><dt>GitHub</dt><dd class="mono">@MacieiraPT</dd></div>
+        </dl>
+      </div>
+
+      <a class="hero__cue" href="#now" data-anchor data-hero="cue">
+        <span class="hero__cue-line" aria-hidden="true"></span>
+        <span>scroll</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ───────────────────────────────  01 NOW  ────────────────────────────── -->
+  <section class="section section--now" id="now" aria-labelledby="now-title">
+    <div class="section__head">
+      <p class="label" data-reveal>01 — where I'm at</p>
+      <h2 class="h2" id="now-title" data-reveal-lines>
+        No portfolio yet. That's the honest version, and the whole point of putting
+        this up now.
+      </h2>
+    </div>
+
+    <div class="cards">
+      <article class="card" data-reveal>
+        <p class="card__label">Playing</p>
+        <p class="card__body">Steam, Riot and a Discord tab that is never closed. That's where the hours have gone so far, and I'm not going to pretend otherwise.</p>
+      </article>
+      <article class="card" data-reveal>
+        <p class="card__label">Studying</p>
+        <p class="card__body">Starting a university bachelor's — first year, right at the beginning of it. Ask me again in a semester.</p>
+      </article>
+      <article class="card card--accent" data-reveal>
+        <p class="card__label">Building</p>
+        <p class="card__body">This site is the first thing I've actually shipped. Whatever comes next lands on GitHub, and shows up further down this page automatically.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Velocity marquee: speed and skew are driven by the Lenis scroll velocity. -->
+  <div class="marquee" aria-hidden="true" data-marquee>
+    <div class="marquee__track" data-marquee-track>
+      <span>games</span><span class="marquee__dot">◆</span>
+      <span>learning in public</span><span class="marquee__dot">◆</span>
+      <span>rudi#0001</span><span class="marquee__dot">◆</span>
+      <span>portugal</span><span class="marquee__dot">◆</span>
+      <span>first commit energy</span><span class="marquee__dot">◆</span>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────────  02 PLAY  ───────────────────────────── -->
+  <section class="section section--play" id="play" aria-labelledby="play-title">
+    <div class="section__head">
+      <p class="label" data-reveal>02 — where to find me</p>
+      <h2 class="h2" id="play-title" data-reveal-lines>The gamer half. All of it, in one place.</h2>
+    </div>
+
+    <ul class="links" role="list">
+      <li class="link-row" data-reveal>
+        <a class="link-row__main" href="https://steamcommunity.com/id/r_di/" target="_blank" rel="noopener">
+          <span class="link-row__idx mono">01</span>
+          <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-steam"/></svg>
+          <span class="link-row__name">Steam</span>
+          <span class="link-row__handle mono">/id/r_di</span>
+          <svg class="icon link-row__go" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </a>
+      </li>
+
+      <!-- Riot and Discord aren't linkable profiles, so they're copy targets instead. -->
+      <li class="link-row" data-reveal>
+        <button class="link-row__main" type="button" data-copy="rudi#0001">
+          <span class="link-row__idx mono">02</span>
+          <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-riot"/></svg>
+          <span class="link-row__name">Riot ID</span>
+          <span class="link-row__handle mono">rudi#0001</span>
+          <svg class="icon link-row__go link-row__go--copy" aria-hidden="true"><use href="#i-copy"/></svg>
+        </button>
+      </li>
+
+      <li class="link-row" data-reveal>
+        <button class="link-row__main" type="button" data-copy="rvdi">
+          <span class="link-row__idx mono">03</span>
+          <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-discord"/></svg>
+          <span class="link-row__name">Discord</span>
+          <span class="link-row__handle mono">rvdi</span>
+          <svg class="icon link-row__go link-row__go--copy" aria-hidden="true"><use href="#i-copy"/></svg>
+        </button>
+      </li>
+
+      <li class="link-row" data-reveal>
+        <a class="link-row__main" href="https://www.youtube.com/@rudi_PT" target="_blank" rel="noopener">
+          <span class="link-row__idx mono">04</span>
+          <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-youtube"/></svg>
+          <span class="link-row__name">YouTube</span>
+          <span class="link-row__handle mono">@rudi_PT</span>
+          <svg class="icon link-row__go" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </a>
+      </li>
+
+      <li class="link-row" data-reveal>
+        <a class="link-row__main" href="https://www.twitch.tv/rudipt" target="_blank" rel="noopener">
+          <span class="link-row__idx mono">05</span>
+          <svg class="icon link-row__icon" aria-hidden="true"><use href="#i-twitch"/></svg>
+          <span class="link-row__name">Twitch</span>
+          <span class="link-row__handle mono">/rudipt</span>
+          <svg class="icon link-row__go" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ──────────────────────────  PLAY → BUILD SEAM  ──────────────────────── -->
+  <!--
+    The transition between the two halves of the page, and the home of the
+    anime.js work: the seam draws itself on, and the glyph morphs from a
+    controller into the GitHub mark.
+  -->
+  <div class="seam" data-seam>
+    <svg class="seam__line" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true">
+      <path data-draw d="M0 20C180 20 240 6 420 6s260 28 460 28 220-14 320-14" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+    </svg>
+
+    <button class="seam__toggle" type="button" data-morph-toggle aria-pressed="false">
+      <svg class="seam__glyph" viewBox="0 0 24 24" aria-hidden="true">
+        <!-- The visible shape. anime.js morphs its `d` between the two hidden templates below. -->
+        <path data-morph-shape d="M7.9 6.2h8.2c2.7 0 5 1.9 5.5 4.5l1 5.1c.4 2.1-1.2 4-3.3 4-1.1 0-2.1-.5-2.7-1.4l-1.4-1.9H8.8l-1.4 1.9c-.6.9-1.6 1.4-2.7 1.4-2.1 0-3.7-1.9-3.3-4l1-5.1c.5-2.6 2.8-4.5 5.5-4.5Z"/>
+      </svg>
+      <span class="seam__caption">
+        <span class="seam__state" data-morph-label>controller</span>
+        <span class="seam__hint mono">tap to switch sides</span>
+      </span>
+    </button>
+
+    <!-- Morph templates, never rendered. Single continuous paths so the resampled morph stays clean. -->
+    <svg class="sprite" aria-hidden="true" width="0" height="0"><defs>
+      <path id="shape-pad" d="M7.9 6.2h8.2c2.7 0 5 1.9 5.5 4.5l1 5.1c.4 2.1-1.2 4-3.3 4-1.1 0-2.1-.5-2.7-1.4l-1.4-1.9H8.8l-1.4 1.9c-.6.9-1.6 1.4-2.7 1.4-2.1 0-3.7-1.9-3.3-4l1-5.1c.5-2.6 2.8-4.5 5.5-4.5Z"/>
+      <path id="shape-gh" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+    </defs></svg>
+  </div>
+
+  <!-- ───────────────────────────────  03 DEV  ────────────────────────────── -->
+  <section class="section section--dev" id="dev" aria-labelledby="dev-title">
+    <div class="dev">
+
+      <!-- Left rail gets pinned by ScrollTrigger on wide screens. -->
+      <div class="dev__rail" data-pin-rail>
+        <div class="dev__rail-inner">
+          <p class="label" data-reveal>03 — the dev side</p>
+          <h2 class="h2" id="dev-title" data-reveal-lines>
+            Day one of this, publicly logged.
+          </h2>
+          <p class="prose" data-reveal>
+            Everything under this heading is live from the GitHub API, not typed in
+            by hand — so it can only ever say what's actually true. Right now that
+            might not be much. That's fine: the number goes up from here, and I'd
+            rather show the real starting line than a fake one.
+          </p>
+          <a class="btn btn--solid" href="https://github.com/MacieiraPT" target="_blank" rel="me noopener" data-magnetic data-reveal>
+            <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
+            <span>github.com/MacieiraPT</span>
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="dev__body">
+
+        <!--
+          Live GitHub panel. Ships with honest static placeholders so it reads
+          fine before (or entirely without) the fetch; js/modules/github.js
+          fills in the real values and flips [data-gh-state].
+        -->
+        <section class="gh" data-gh aria-labelledby="gh-title" data-gh-state="idle">
+          <header class="gh__head">
+            <div class="gh__id">
+              <span class="gh__avatar" data-gh-avatar aria-hidden="true"></span>
+              <span>
+                <h3 class="gh__title" id="gh-title">@MacieiraPT</h3>
+                <p class="gh__sub mono" data-gh-sub>github.com/MacieiraPT</p>
+              </span>
+            </div>
+            <p class="gh__live mono" data-gh-status>
+              <span class="dot" aria-hidden="true"></span><span data-gh-status-text>connecting…</span>
+            </p>
+          </header>
+
+          <dl class="gh__stats">
+            <div><dt>Public repos</dt><dd data-gh-stat="repos">—</dd></div>
+            <div><dt>Followers</dt><dd data-gh-stat="followers">—</dd></div>
+            <div><dt>On GitHub since</dt><dd data-gh-stat="since">—</dd></div>
+          </dl>
+
+          <div class="gh__activity">
+            <p class="gh__activity-head">
+              <span class="label">Public activity</span>
+              <span class="mono dim" data-gh-activity-note>last 14 days</span>
+            </p>
+            <!--
+              Fourteen flat bars ship in the markup so the panel still looks
+              deliberate when the API can't be reached. github.js replaces
+              them with the real ones and grows them into place.
+            -->
+            <div class="spark" data-gh-spark role="img" aria-label="Public GitHub activity over the last 14 days">
+              <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
+              <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
+              <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
+              <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
+              <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
+              <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
+              <span class="spark__bar" data-empty="true"></span><span class="spark__bar" data-empty="true"></span>
+            </div>
+          </div>
+
+          <div class="gh__repos" data-gh-repos>
+            <p class="gh__empty">
+              Latest repositories will appear here as soon as there are public ones.
+            </p>
+          </div>
+
+          <p class="gh__note mono" data-gh-note></p>
+        </section>
+
+        <!--
+          The slot the dev side grows into. Cards are rendered from
+          js/data/projects.js — adding one object there adds one card here,
+          and the empty state disappears on its own.
+        -->
+        <section class="work" aria-labelledby="work-title" data-work>
+          <h3 class="work__title label" id="work-title" data-reveal>Selected work</h3>
+          <div class="work__grid" data-work-grid>
+            <article class="work-card work-card--ghost">
+              <p class="work-card__slot mono">slot 01</p>
+              <p class="work-card__text">Reserved for the first thing worth showing.</p>
+            </article>
+            <article class="work-card work-card--ghost">
+              <p class="work-card__slot mono">slot 02</p>
+              <p class="work-card__text">Coursework that turns out better than expected.</p>
+            </article>
+            <article class="work-card work-card--ghost">
+              <p class="work-card__slot mono">slot 03</p>
+              <p class="work-card__text">Something broken, then fixed, then written up.</p>
+            </article>
+          </div>
+          <p class="work__note mono" data-reveal>
+            Empty on purpose — this grid is wired to <span class="dim">js/data/projects.js</span>.
+          </p>
+        </section>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ────────────────────────────────  FOOTER  ───────────────────────────────- -->
+<footer class="footer" id="say-hi">
+  <div class="footer__top">
+    <p class="label" data-reveal>04 — say hi</p>
+    <p class="footer__big" data-reveal-lines>
+      Add me, watch a stream, or check the commits in a year and see how it went.
+    </p>
+
+    <div class="footer__actions">
+      <button class="btn btn--solid" type="button" data-copy="rvdi" data-reveal>
+        <svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg>
+        <span>rvdi</span>
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#i-copy"/></svg>
+      </button>
+      <a class="btn btn--ghost" href="https://github.com/MacieiraPT" target="_blank" rel="me noopener" data-reveal>
+        <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
+        <span>@MacieiraPT</span>
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!--
+    Physical corner: anime.js draggables with a spring release. Bounded to
+    .stickers, so they can be thrown around but never lost off-screen.
+  -->
+  <div class="stickers" data-stickers>
+    <span class="sticker sticker--1 mono" data-sticker>#0001</span>
+    <span class="sticker sticker--2 mono" data-sticker>PT</span>
+    <span class="sticker sticker--3 mono" data-sticker>gg</span>
+    <p class="stickers__hint mono" aria-hidden="true">drag them</p>
+  </div>
+
+  <div class="colophon">
+    <p class="mono">
+      Built with <span class="dim">Three.js</span>, <span class="dim">GSAP</span>,
+      <span class="dim">Lenis</span> and <span class="dim">anime.js</span>.
+      Static, hosted on Cloudflare Pages.
+    </p>
+    <p class="mono">
+      <span data-clock>--:--</span> in Portugal
+      <span class="sep" aria-hidden="true">/</span>
+      <a href="#top" data-anchor>back to top</a>
+    </p>
+  </div>
+</footer>
+
+<!-- Copy-to-clipboard feedback, announced to screen readers. -->
+<div class="toast" data-toast role="status" aria-live="polite"></div>
+
+</body>
+</html>

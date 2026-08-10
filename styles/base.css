@@ -1,0 +1,234 @@
+/* ==========================================================================
+   base.css — design tokens, reset, typography, shared primitives.
+   Component and section styles live in site.css.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Fonts. Self-hosted latin subsets of two variable faces:
+   Archivo carries a width axis (62–125) which is what makes the hero
+   wordmark possible without shipping a second display font.
+   -------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Archivo';
+  src: url('/assets/fonts/archivo-latin-var.woff2') format('woff2-variations');
+  font-weight: 400 900;
+  font-stretch: 62% 125%;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/assets/fonts/jetbrains-mono-latin-var.woff2') format('woff2-variations');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --------------------------------------------------------------------------
+   Tokens
+   -------------------------------------------------------------------------- */
+/* Registering the accent as a real colour is what lets it *transition* when
+   JS swaps it at the play → build boundary. Browsers without @property just
+   get an instant switch, which is a perfectly good fallback. */
+@property --tint {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #cdfb45;
+}
+
+:root {
+  /* Palette. Two accents doing actual work: acid = the playing half,
+     plasma = the building half. The WebGL scene and the page tint both
+     interpolate between them as you scroll, so colour carries the narrative. */
+  --bg:        #08080a;
+  --bg-raise:  #0d0d11;
+  --ink:       #f3f1ec;
+  --ink-dim:   #9a9aa6;
+  --ink-faint: #5d5d68;
+  --acid:      #cdfb45;
+  --plasma:    #7d5cff;
+
+  --line:        rgb(255 255 255 / 0.10);
+  --line-strong: rgb(255 255 255 / 0.20);
+
+  /* Live tint: reveals.js writes this on <html> as sections come into view. */
+  --tint: var(--acid);
+  transition: --tint 0.9s var(--ease-out);
+
+  /* Rhythm */
+  --gutter: clamp(1.25rem, 4.2vw, 5rem);
+  --measure: 1680px;
+  --section-y: clamp(6rem, 16vh, 13rem);
+  --radius: 14px;
+
+  /* Type */
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --step-label: clamp(0.66rem, 0.72vw, 0.75rem);
+  --step-body: clamp(1rem, 0.95rem + 0.25vw, 1.18rem);
+  --step-h2: clamp(1.9rem, 1.1rem + 3.4vw, 4.25rem);
+  --step-h3: clamp(1.15rem, 1rem + 0.8vw, 1.6rem);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* --------------------------------------------------------------------------
+   Reset
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+* { margin: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--ink-faint) transparent;
+}
+
+/* Native smooth scroll only matters when Lenis is *not* running
+   (reduced motion, or JS off) — otherwise the two fight each other. */
+html:where(.no-js, .reduced-motion) { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--step-body);
+  font-variation-settings: 'wdth' 100;
+  line-height: 1.55;
+  min-height: 100svh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img, svg, canvas { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; background: none; border: 0; }
+a { color: inherit; text-decoration: none; }
+ul { padding: 0; list-style: none; }
+dl, dd { margin: 0; }
+
+:focus-visible {
+  outline: 2px solid var(--tint);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection { background: var(--tint); color: #0a0a0c; }
+
+/* --------------------------------------------------------------------------
+   Lenis. These rules are required by the library itself (its dist/lenis.css),
+   inlined here so the page ships one stylesheet fewer.
+   -------------------------------------------------------------------------- */
+html.lenis, html.lenis body { height: auto; }
+.lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
+/* --------------------------------------------------------------------------
+   Typography primitives
+   -------------------------------------------------------------------------- */
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.h2 {
+  font-size: var(--step-h2);
+  font-weight: 600;
+  font-variation-settings: 'wdth' 96;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  max-width: 18ch;
+}
+
+.prose {
+  color: var(--ink-dim);
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+.dim { color: var(--ink-dim); }
+.sep { color: var(--ink-faint); }
+
+.icon { width: 20px; height: 20px; fill: currentColor; flex: none; }
+.icon--sm { width: 13px; height: 13px; }
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Small pulsing status dot, reused by the hero kicker and the GitHub panel. */
+.dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--tint);
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--tint) 60%, transparent);
+  animation: pulse 2.6s var(--ease-inout) infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--tint) 55%, transparent); }
+  50%      { box-shadow: 0 0 0 5px color-mix(in oklab, var(--tint) 0%, transparent); }
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem; left: 0.75rem;
+  z-index: 100;
+  padding: 0.7rem 1rem;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border-radius: 8px;
+  transform: translateY(-160%);
+  transition: transform 0.25s var(--ease-out);
+}
+.skip-link:focus-visible { transform: none; }
+
+/* --------------------------------------------------------------------------
+   Reveal contract
+   --------------------------------------------------------------------------
+   Elements only start hidden when JS is running AND motion is welcome.
+   Without JS, with reduced motion, or if the module fails to boot
+   (html.boot-failed, set by the failsafe in index.html), everything is
+   simply visible — no animation library is load-bearing for reading the page.
+   -------------------------------------------------------------------------- */
+html.js:not(.reduced-motion):not(.boot-failed) [data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+}
+html.js:not(.reduced-motion):not(.boot-failed) [data-reveal-lines] > .line > .line__inner {
+  transform: translateY(105%);
+}
+html.js:not(.reduced-motion):not(.boot-failed) [data-hero] {
+  opacity: 0;
+}
+
+/* Line-mask wrappers created by the splitter in js/modules/reveals.js */
+.line { display: block; overflow: hidden; padding-bottom: 0.06em; }
+.line__inner { display: block; will-change: transform; }
+
+/* Per-character wrappers for the hero wordmark */
+.char { display: inline-block; will-change: transform; }
+.char__inner { display: inline-block; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,1 +1,215 @@
 # macieira.cc
+
+Personal site for **rudi** ([@MacieiraPT](https://github.com/MacieiraPT)) — a gamer's links
+page on one half, a dev presence that grows over time on the other.
+
+Static HTML, CSS and ES modules. **No build step is required to deploy**: what's in the
+repository is what ships.
+
+---
+
+## Running it locally
+
+Any static file server works. The one shortcut in `package.json` needs nothing installed:
+
+```bash
+npm run dev          # python3 -m http.server 4321
+# → http://localhost:4321
+```
+
+Opening `index.html` directly from the filesystem will **not** work — ES modules and the
+import map need a real origin.
+
+---
+
+## The stack, and why each piece is there
+
+| Library | Version | Job on this page |
+| --- | --- | --- |
+| [Lenis](https://github.com/darkroomengineering/lenis) | 1.3.26 | The inertia in the scroll. It is the base *feel* of the page, so nothing else animates on its own clock. |
+| [GSAP](https://gsap.com) + ScrollTrigger | 3.15.0 | The hero intro, every scroll-triggered reveal, the pinned rail in the dev section, the progress bar. |
+| [Three.js](https://threejs.org) | 0.185.1 | The WebGL field behind everything: 26k points that morph between an orb, a wave field and the letter **M**, and shove away from the cursor. |
+| [anime.js](https://animejs.com) | 4.5.0 | The fine detail: SVG line-drawing, the controller → GitHub morph at the seam, and the spring-physics draggable stickers. |
+
+They are deliberately **not** interchangeable here. The clearest place to see them working
+as one system is the marquee between sections 01 and 02: GSAP runs the loop, its speed and
+skew come from Lenis' scroll velocity, and ScrollTrigger decides when to reset it.
+
+### How they load
+
+```
+js/main.js  ──▶ GSAP + ScrollTrigger + Lenis + app      critical path, ~63 kB gzip
+            ──▶ (idle) js/modules/github.js             live data, no library, ~4 kB
+            ──▶ (idle) js/modules/details.js ──▶ anime.js          ~25 kB
+            ──▶ (idle, if the device agrees) js/scene/* ──▶ Three.js  ~136 kB
+```
+
+`js/modules/env.js` is the gate. The WebGL scene is skipped entirely on
+`prefers-reduced-motion`, with Data Saver on, on ≤2 GB devices, and when there is no WebGL
+context — and the CSS backdrop it sits on is a designed fallback, not an empty box.
+
+---
+
+## Layout
+
+```
+index.html            all copy and markup — nothing is rendered by JS that matters for reading
+styles/base.css       tokens, reset, typography, the reveal contract
+styles/site.css       chrome, sections, components
+js/main.js            boot order and nothing else
+js/modules/           env · smooth-scroll · hero · reveals · split · github · details · work · ui
+js/scene/             index (lifecycle + loop) · particles (geometry) · shaders (GLSL)
+js/data/projects.js   ← the file to edit when there's work worth showing
+vendor/               pre-built ES modules, mapped to bare specifiers by the import map
+assets/               fonts, favicon, social card
+tools/                vendor.mjs (rebuild vendor/) · og.mjs (rebuild the social card)
+_headers              Cloudflare Pages caching + security headers
+```
+
+---
+
+## Editing it
+
+### Add a project
+
+Open `js/data/projects.js` and add one object to the array:
+
+```js
+export const projects = [
+  {
+    title: 'Semester 1 — algorithms',
+    summary: 'Sorting and search exercises worked through in C, with notes.',
+    url: 'https://github.com/MacieiraPT/…',
+    year: 2026,
+    tags: ['C', 'coursework'],
+  },
+];
+```
+
+A card appears in "Selected work" and the three placeholder slots disappear on their own.
+Nothing else needs touching.
+
+### Change a link or a handle
+
+They're plain HTML in `index.html`, in the `02 — where to find me` section. Handles that
+aren't linkable profiles (Riot, Discord) are `<button data-copy="…">` — the value in
+`data-copy` is what lands on the clipboard.
+
+### Change the copy
+
+Also plain HTML. Headlines marked `data-reveal-lines` are split into lines by JS at runtime;
+write them as normal text and don't put tags inside them.
+
+### Change the colours
+
+`styles/base.css`, the `:root` block. `--acid` (the playing half) and `--plasma` (the
+building half) are used by the CSS, and read by the WebGL scene at mount — change them once
+and the particles follow.
+
+---
+
+## The live GitHub panel
+
+`js/modules/github.js` reads three unauthenticated endpoints: the profile, recent
+repositories, and public events bucketed into a 14-day activity strip.
+
+- **No token, by design.** A token in a static site is a public token. That caps the page at
+  GitHub's 60 requests/hour *per IP*, so responses are cached in `localStorage` for 30
+  minutes and a rate-limited response falls back to that cache.
+- **Zero repos is a real state**, not an error — the panel says so plainly.
+- **Anything can fail.** If the API is unreachable the panel keeps its markup, flips to
+  `offline`, and explains itself. The GitHub link never depended on the fetch.
+
+To point it at a different account, change `USER` at the top of the file.
+
+---
+
+## Deploying to Cloudflare Pages
+
+Connect the repository in the Cloudflare dashboard (Workers & Pages → Create → Pages →
+Connect to Git) and use:
+
+| Setting | Value |
+| --- | --- |
+| Framework preset | None |
+| Build command | *(leave empty)* |
+| Build output directory | `/` |
+
+Then add `macieira.cc` under **Custom domains**. Cloudflare handles the DNS record and the
+certificate. `_headers` is picked up automatically — it sets a year of immutable caching on
+`vendor/` and the fonts, and a content security policy that only allows the two external
+hosts the page actually uses (`api.github.com` and GitHub's avatar CDN).
+
+Wrangler works too, if you'd rather deploy from the terminal:
+
+```bash
+npx wrangler pages deploy . --project-name=macieira-cc
+```
+
+---
+
+## Rebuilding the vendored libraries
+
+`vendor/` is committed, so this is only needed to bump a version.
+
+```bash
+npm install          # pulls the pinned versions
+npm run vendor       # re-bundles them into vendor/
+```
+
+`tools/vendor.mjs` bundles each library with esbuild: GSAP because it only ships
+un-minified ES modules (110 kB gzip → 44 kB), Three.js and anime.js because tree-shaking
+them against the exact APIs used here cuts about a third off both.
+
+⚠️ Because Three.js and anime.js are tree-shaken against explicit export lists, **using a new
+API from either means adding it to the list in `tools/vendor.mjs` and re-running
+`npm run vendor`.** The browser makes this obvious — `does not provide an export named …`.
+
+The social card is regenerated separately, and rarely:
+
+```bash
+npx playwright@latest install chromium
+node tools/og.mjs
+```
+
+---
+
+## What happens when things go wrong
+
+| Situation | What the visitor gets |
+| --- | --- |
+| JavaScript disabled | The whole page, fully readable. Nothing is hidden without JS. |
+| JS fails to boot | A failsafe in `<head>` releases the hidden state after 1.5 s. |
+| `prefers-reduced-motion` | No Lenis, no intro, no reveals, no WebGL. Native scrolling, everything visible. |
+| No WebGL / Data Saver / low memory | Three.js is never downloaded; the CSS backdrop carries the look. |
+| GPU drops the context mid-session | The scene stops and hands back to the CSS backdrop. |
+| GitHub API down or rate-limited | The panel says `offline` and explains; the profile link still works. |
+| Frame times over ~26 ms | The scene drops to 1× pixel ratio, then to 55% of the points. |
+
+---
+
+## Rough budget
+
+| | gzip | blocks first paint? |
+| --- | --- | --- |
+| HTML + CSS | 16 kB | yes |
+| Critical JS — GSAP + ScrollTrigger + Lenis + app | 63 kB | no (`type="module"` is deferred) |
+| Display font (preloaded; the mono face swaps in) | 127 kB for both | no |
+| GitHub panel (idle) | 4 kB | no |
+| anime.js + details (idle) | 25 kB | no |
+| Three.js + scene (idle, capability-gated) | 136 kB | no |
+
+Re-measure any time with:
+
+```bash
+python3 -c "import gzip,glob;print(sum(len(gzip.compress(open(p,'rb').read())) for p in glob.glob('js/**/*.js',recursive=True)+glob.glob('vendor/*.mjs'))//1024,'kB')"
+```
+
+---
+
+## Credits
+
+Brand icon paths from [simple-icons](https://simple-icons.org) (CC0); each mark identifies
+the service its link points to. Type is [Archivo](https://fonts.google.com/specimen/Archivo)
+and [JetBrains Mono](https://www.jetbrains.com/lp/mono/), both OFL, self-hosted as latin
+subsets.

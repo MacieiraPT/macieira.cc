@@ -1,0 +1,717 @@
+/* ==========================================================================
+   site.css — chrome, sections and components.
+   Tokens, reset and primitives live in base.css.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Backdrop
+   --------------------------------------------------------------------------
+   Three layers, fixed behind everything:
+     1. .backdrop__glow  — CSS-only gradient wash that follows --tint.
+                           This alone is the full fallback when WebGL is out.
+     2. .backdrop__canvas — the three.js particle field, faded in by the
+                            scene module once it has actually rendered a frame.
+     3. .backdrop__grain — static film grain to kill gradient banding.
+   -------------------------------------------------------------------------- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.backdrop__glow {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(46% 42% at 22% 18%, color-mix(in oklab, var(--tint) 22%, transparent) 0%, transparent 70%),
+    radial-gradient(40% 45% at 82% 72%, color-mix(in oklab, var(--plasma) 20%, transparent) 0%, transparent 72%),
+    radial-gradient(70% 60% at 50% 120%, color-mix(in oklab, var(--tint) 10%, transparent) 0%, transparent 70%);
+  filter: blur(30px) saturate(120%);
+  opacity: 0.55;
+  transition: opacity 0.8s var(--ease-out);
+}
+
+.backdrop__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;                       /* raised by js/scene once the first frame is up */
+  transition: opacity 1.2s var(--ease-out);
+}
+.backdrop__canvas.is-live { opacity: 1; }
+
+/* With a live particle field the CSS wash steps back so it doesn't wash it out. */
+html.scene-live .backdrop__glow { opacity: 0.32; }
+
+.backdrop__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Everything above the backdrop. */
+.masthead, main, .footer, .toast, .progress { position: relative; z-index: 1; }
+
+/* --------------------------------------------------------------------------
+   Scroll progress
+   -------------------------------------------------------------------------- */
+.progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  z-index: 40;
+  background: var(--line);
+}
+.progress__bar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--acid), var(--plasma));
+}
+
+/* --------------------------------------------------------------------------
+   Masthead
+   -------------------------------------------------------------------------- */
+.masthead {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: clamp(0.9rem, 1.6vw, 1.4rem) var(--gutter);
+  /* Fade the page out behind the bar rather than using a hard background. */
+  background: linear-gradient(to bottom, color-mix(in oklab, var(--bg) 88%, transparent), transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+.masthead__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.monogram { width: 26px; height: 26px; color: var(--tint); }
+.masthead__wordmark { font-size: 0.98rem; }
+
+.masthead__nav {
+  display: flex;
+  gap: clamp(1rem, 2.4vw, 2.2rem);
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.masthead__nav a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  padding-block: 0.25rem;
+  transition: color 0.3s var(--ease-out);
+}
+.masthead__nav a:hover,
+.masthead__nav a.is-current { color: var(--ink); }
+.masthead__nav .idx { color: var(--ink-faint); font-size: 0.85em; }
+.masthead__nav a.is-current .idx { color: var(--tint); }
+
+/* Below this the bar can't hold three items without them colliding. The
+   sections are one scroll apart anyway, and the skip link still jumps. */
+@media (max-width: 720px) {
+  .masthead__nav { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.72rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.35s var(--ease-out), color 0.35s var(--ease-out),
+              border-color 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+}
+.btn .icon { width: 17px; height: 17px; }
+.btn:hover { border-color: var(--tint); }
+
+.btn--ghost:hover { background: color-mix(in oklab, var(--tint) 12%, transparent); }
+
+.btn--solid {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+  font-weight: 600;
+}
+.btn--solid:hover { background: var(--tint); border-color: var(--tint); color: #0a0a0c; }
+
+.masthead__gh { padding: 0.6rem 0.95rem; }
+@media (max-width: 720px) {
+  .masthead__gh span { display: none; }
+  .masthead__gh { padding: 0.6rem; }
+  .masthead__gh .icon--sm { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+.hero {
+  min-height: 100svh;
+  display: flex;
+  align-items: flex-end;
+  padding: calc(var(--gutter) * 2.6) var(--gutter) clamp(2rem, 5vh, 4rem);
+}
+.hero__inner { width: 100%; max-width: var(--measure); margin-inline: auto; }
+
+.hero__kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: clamp(1.5rem, 4vh, 3rem);
+}
+
+/* The wordmark. Archivo's width axis is pushed wide so it reads as a poster
+   rather than as body copy scaled up. */
+.hero__name {
+  font-size: clamp(5.5rem, 25.5vw, 27rem);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 118;
+  line-height: 0.76;
+  letter-spacing: -0.055em;
+  margin-left: -0.055em;                 /* optical alignment of the 'r' stem */
+  color: var(--ink);
+}
+
+.hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  margin-top: clamp(1.75rem, 4vh, 3rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.hero__lede {
+  max-width: 44ch;
+  color: var(--ink-dim);
+  text-wrap: pretty;
+}
+/* Emphasis on the sentence, not on whatever happens to fit the first line. */
+.hero__lede-lead { color: var(--ink); }
+
+.hero__facts {
+  display: flex;
+  gap: clamp(1.25rem, 3vw, 3rem);
+}
+.hero__facts dt {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.35rem;
+}
+.hero__facts dd { font-size: 0.92rem; }
+
+.hero__cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: clamp(2rem, 5vh, 3.5rem);
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.hero__cue-line {
+  width: 54px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--tint), transparent);
+  transform-origin: 0 50%;
+  animation: cue 2.8s var(--ease-inout) infinite;
+}
+@keyframes cue {
+  0%, 100% { transform: scaleX(0.4); opacity: 0.5; }
+  50%      { transform: scaleX(1); opacity: 1; }
+}
+
+@media (max-width: 860px) {
+  .hero__grid { grid-template-columns: 1fr; align-items: start; }
+  .hero__facts { flex-wrap: wrap; gap: 1.25rem 2rem; }
+}
+
+/* --------------------------------------------------------------------------
+   Sections
+   -------------------------------------------------------------------------- */
+.section {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding: var(--section-y) var(--gutter);
+}
+.section__head { margin-bottom: clamp(2.5rem, 6vh, 5rem); }
+.section__head .label { margin-bottom: 1.25rem; }
+
+/* Cards -------------------------------------------------------------------- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: clamp(0.75rem, 1.4vw, 1.25rem);
+}
+.card {
+  padding: clamp(1.4rem, 2.2vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--bg-raise) 70%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+}
+.card:hover { border-color: var(--line-strong); transform: translateY(-3px); }
+.card__label {
+  font-family: var(--font-mono);
+  font-size: var(--step-label);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--tint);
+  margin-bottom: 1rem;
+}
+.card__body { color: var(--ink-dim); font-size: 1rem; text-wrap: pretty; }
+.card--accent { border-color: color-mix(in oklab, var(--tint) 35%, transparent); }
+
+/* Marquee ------------------------------------------------------------------
+   Full-bleed strip whose position and skew are driven by Lenis' scroll
+   velocity in js/modules/reveals.js. */
+.marquee {
+  overflow: hidden;
+  border-block: 1px solid var(--line);
+  padding-block: clamp(0.6rem, 1.4vh, 1.1rem);
+  user-select: none;
+}
+.marquee__track {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  width: max-content;
+  will-change: transform;
+  font-size: clamp(1.75rem, 5.5vw, 4.5rem);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 88;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: lowercase;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--line-strong);
+}
+.marquee__dot {
+  -webkit-text-stroke: 0;
+  color: var(--tint);
+  font-size: 0.35em;
+}
+
+/* --------------------------------------------------------------------------
+   Link rows
+   -------------------------------------------------------------------------- */
+.links { border-top: 1px solid var(--line); }
+.link-row { border-bottom: 1px solid var(--line); }
+
+.link-row__main {
+  display: grid;
+  grid-template-columns: 3.5rem 1.75rem minmax(0, 1fr) auto 2.5rem;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.75rem);
+  width: 100%;
+  padding: clamp(1.1rem, 2.4vw, 1.9rem) clamp(0.5rem, 1.5vw, 1.25rem);
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  transition: padding-left 0.45s var(--ease-out), color 0.45s var(--ease-out);
+}
+/* Accent wash that wipes in from the left on hover. */
+.link-row__main::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, color-mix(in oklab, var(--tint) 14%, transparent), transparent 65%);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.5s var(--ease-out);
+}
+.link-row__main:hover::before,
+.link-row__main:focus-visible::before { transform: scaleX(1); }
+.link-row__main:hover { padding-left: clamp(1rem, 2.5vw, 2rem); }
+
+.link-row__idx { color: var(--ink-faint); }
+.link-row__icon { width: 22px; height: 22px; color: var(--ink-dim); transition: color 0.4s var(--ease-out); }
+.link-row__main:hover .link-row__icon { color: var(--tint); }
+
+.link-row__name {
+  font-size: clamp(1.5rem, 3.6vw, 2.9rem);
+  font-weight: 600;
+  font-variation-settings: 'wdth' 92;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+.link-row__handle { color: var(--ink-dim); }
+
+.link-row__go {
+  width: 22px; height: 22px;
+  justify-self: end;
+  color: var(--ink-faint);
+  transition: color 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+}
+.link-row__main:hover .link-row__go { color: var(--tint); transform: translate(3px, -3px); }
+.link-row__main:hover .link-row__go--copy { transform: translateY(-2px); }
+
+/* Row briefly confirms a copy in place, on top of the toast. */
+.link-row__main.is-copied .link-row__handle { color: var(--tint); }
+
+@media (max-width: 780px) {
+  .link-row__main { grid-template-columns: 1.75rem minmax(0, 1fr) 1.5rem; row-gap: 0.35rem; }
+  .link-row__idx { display: none; }
+  .link-row__handle { grid-column: 2; font-size: 0.78rem; }
+  .link-row__go { width: 18px; height: 18px; }
+}
+
+/* --------------------------------------------------------------------------
+   Seam (play → build) — the anime.js corner
+   -------------------------------------------------------------------------- */
+.seam {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+  padding: clamp(3rem, 9vh, 7rem) var(--gutter);
+  color: var(--line-strong);
+}
+.seam__line { width: 100%; height: 40px; }
+
+.seam__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem 0.75rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--bg-raise) 80%, transparent);
+  cursor: pointer;
+  transition: border-color 0.4s var(--ease-out), background-color 0.4s var(--ease-out);
+}
+.seam__toggle:hover { border-color: var(--tint); }
+
+.seam__glyph { width: 30px; height: 30px; fill: var(--tint); transition: fill 0.6s var(--ease-out); }
+.seam__toggle[aria-pressed='true'] .seam__glyph { fill: var(--plasma); }
+
+.seam__caption { display: grid; justify-items: start; gap: 0.2rem; }
+.seam__state {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.seam__hint { color: var(--ink-faint); letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.6rem; }
+
+/* --------------------------------------------------------------------------
+   Dev section
+   -------------------------------------------------------------------------- */
+.dev {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+}
+.dev__rail-inner { display: grid; gap: 1.5rem; justify-items: start; }
+.dev__rail-inner .label { margin: 0; }
+.dev__body { display: grid; gap: clamp(2rem, 4vw, 3.5rem); }
+
+@media (max-width: 980px) {
+  .dev { grid-template-columns: 1fr; }
+}
+
+/* GitHub panel ------------------------------------------------------------- */
+.gh {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--bg-raise) 78%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+  /* The dev half of the page leans plasma, so the panel opts out of --tint. */
+  --tint: var(--plasma);
+}
+.gh > * + * { border-top: 1px solid var(--line); }
+.gh__head, .gh__activity, .gh__repos { padding: clamp(1.1rem, 2vw, 1.5rem); }
+
+.gh__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.gh__id { display: flex; align-items: center; gap: 0.9rem; }
+.gh__avatar {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  flex: none;
+  background:
+    linear-gradient(135deg, color-mix(in oklab, var(--plasma) 40%, transparent), color-mix(in oklab, var(--acid) 25%, transparent));
+  border: 1px solid var(--line-strong);
+  background-size: cover;
+  background-position: center;
+}
+.gh__title { font-size: var(--step-h3); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.gh__sub { color: var(--ink-faint); }
+
+.gh__live { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--ink-dim); }
+.gh[data-gh-state='error'] .gh__live { color: var(--ink-faint); }
+.gh[data-gh-state='error'] .dot { background: var(--ink-faint); animation: none; }
+.gh[data-gh-state='live'] .gh__live { color: var(--tint); }
+
+.gh__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.gh__stats > div { padding: clamp(1rem, 2vw, 1.4rem); }
+.gh__stats > div + div { border-left: 1px solid var(--line); }
+.gh__stats dt {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 0.5rem;
+}
+.gh__stats dd {
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 92;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.gh__activity-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Activity bars, one per day. Height is set inline from the API data. */
+.spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 56px;
+}
+.spark__bar {
+  flex: 1;
+  min-height: 2px;
+  height: 8%;                       /* grown to the real value by github.js */
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--tint) 70%, transparent);
+  transform-origin: 50% 100%;
+  transition: height 0.7s var(--ease-out);
+}
+.spark__bar[data-empty='true'] { background: var(--line); }
+
+.gh__repos { display: grid; gap: 0.15rem; }
+.gh__empty { color: var(--ink-dim); font-size: 0.95rem; }
+
+.repo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  padding: 0.85rem 0.6rem;
+  margin-inline: -0.6rem;
+  border-radius: 8px;
+  transition: background-color 0.3s var(--ease-out);
+}
+.repo:hover { background: color-mix(in oklab, var(--tint) 10%, transparent); }
+.repo__name { font-weight: 600; letter-spacing: -0.01em; }
+.repo__name::after { content: ' ↗'; color: var(--ink-faint); font-size: 0.85em; }
+.repo__meta { display: flex; align-items: center; gap: 0.9rem; color: var(--ink-faint); }
+.repo__desc { grid-column: 1 / -1; color: var(--ink-dim); font-size: 0.92rem; margin-top: -0.2rem; }
+.repo__lang { display: inline-flex; align-items: center; gap: 0.4rem; }
+.repo__lang::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--lang-color, var(--tint));
+}
+
+.gh__note {
+  padding: 0 clamp(1.1rem, 2vw, 1.5rem) clamp(1.1rem, 2vw, 1.5rem);
+  color: var(--ink-faint);
+}
+.gh__note:empty { display: none; }
+
+/* Selected work ------------------------------------------------------------ */
+.work { display: grid; gap: 1.25rem; }
+.work__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: 0.75rem;
+}
+.work-card {
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+  min-height: 150px;
+  padding: 1.1rem;
+  border-radius: var(--radius);
+  border: 1px dashed var(--line);
+}
+.work-card--ghost { color: var(--ink-faint); }
+.work-card__slot { color: var(--ink-faint); letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.6rem; }
+.work-card__text { font-size: 0.95rem; }
+/* Real entries from js/data/projects.js get a solid border and a hover state. */
+.work-card--real {
+  border-style: solid;
+  color: inherit;
+  transition: border-color 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+}
+.work-card--real:hover { border-color: var(--plasma); transform: translateY(-3px); }
+.work-card__title { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+.work-card__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: auto; }
+.work-card__tag {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-dim);
+}
+.work__note { color: var(--ink-faint); }
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.footer {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding: var(--section-y) var(--gutter) clamp(2rem, 5vh, 3rem);
+}
+.footer__top { display: grid; gap: 1.5rem; justify-items: start; }
+.footer__big {
+  font-size: clamp(1.6rem, 4.5vw, 3.6rem);
+  font-weight: 600;
+  font-variation-settings: 'wdth' 96;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  max-width: 20ch;
+  text-wrap: balance;
+}
+.footer__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem; }
+
+/* Stickers ----------------------------------------------------------------- */
+.stickers {
+  position: relative;
+  height: clamp(160px, 22vh, 230px);
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.stickers__hint {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.85rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.6rem;
+}
+.sticker {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  min-width: 74px;
+  height: 74px;
+  padding-inline: 0.9rem;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #0a0a0c;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;                /* the draggable owns the gesture */
+  will-change: transform;
+  box-shadow: 0 12px 30px -12px rgb(0 0 0 / 0.7);
+}
+.sticker:active { cursor: grabbing; }
+.sticker--1 { left: 6%;  top: 22%; background: var(--acid); }
+.sticker--2 { left: 32%; top: 46%; background: var(--plasma); color: var(--ink); }
+.sticker--3 { left: 58%; top: 18%; background: var(--ink); }
+
+/* Colophon ----------------------------------------------------------------- */
+.colophon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-faint);
+}
+.colophon a { border-bottom: 1px solid var(--line-strong); }
+.colophon a:hover { color: var(--ink); border-color: var(--tint); }
+
+/* --------------------------------------------------------------------------
+   Toast
+   -------------------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(1rem, 4vh, 2.5rem);
+  z-index: 50;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 12px);
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease-out), transform 0.4s var(--ease-out);
+}
+.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.toast:empty { display: none; }
