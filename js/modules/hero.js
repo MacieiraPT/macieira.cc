@@ -6,6 +6,13 @@
  * independent delays. Everything animated here starts hidden in CSS *only*
  * when JS is running and motion is welcome — see the reveal contract in
  * base.css — so this is enhancement, never a gate on the content.
+ *
+ * The tree grows here rather than in js/modules/details.js, and the logo
+ * fills in here rather than being coloured by the anime.js pass that draws
+ * its outline. Both for the same reason: this module is on the critical
+ * path and details.js is fetched at idle. Anything that ends with content
+ * on screen has to be owned by the one that always runs — details.js is only
+ * ever allowed to make something that already works look better.
  */
 
 import gsap from 'gsap';
@@ -22,10 +29,18 @@ export function playIntro() {
   if (env.reducedMotion) return null;
 
   const lede = document.querySelector('[data-hero="lede"]');
-  const facts = document.querySelector('[data-hero="facts"]');
+  const basket = document.querySelector('[data-hero="basket"]');
+
+  // The orchard. Branches are hidden by a dash offset the stylesheet can set
+  // on its own (every path declares pathLength="1", so one rule covers all
+  // thirteen); the fruit and the foliage by opacity.
+  const branches = document.querySelectorAll('.orchard__wood [data-branch]');
+  const canopy = document.querySelector('[data-canopy]');
+  const apples = document.querySelectorAll('.orchard .apple');
+  const logoFills = document.querySelectorAll('.monogram__body, .monogram__leaf');
 
   gsap.set(chars, { yPercent: 118 });
-  gsap.set([lede, facts], { y: 22 });
+  gsap.set([lede, basket], { y: 22 });
 
   // The display face has a width axis. Opening narrow and letting the
   // wordmark widen as it rises makes the reveal feel like it is being
@@ -45,10 +60,34 @@ export function playIntro() {
   });
 
   tl.to('[data-hero="kicker"]', { opacity: 1, duration: 0.9 }, 0.15)
+
+    // The tree draws itself trunk-first, because that is the order the
+    // branches are written in — the stagger doesn't need to know the shape.
+    .to(branches, { strokeDashoffset: 0, duration: 1.5, stagger: 0.07, ease: 'power2.inOut' }, 0.1)
+    .to(canopy, { opacity: 1, duration: 1.5, ease: 'power2.out' }, 0.45)
+
     .set(name, { opacity: 1 }, 0.2)
     .to(chars, { yPercent: 0, duration: 1.4, stagger: 0.075 }, 0.2)
     .to(axis, { wdth: 118, duration: 1.6, ease: 'power3.out', onUpdate: applyAxis }, 0.2)
-    .to([lede, facts], { opacity: 1, y: 0, duration: 1.1, stagger: 0.12 }, 0.8)
+
+    // Fruit ripens onto the finished branches, in a random order so it reads
+    // as six separate apples rather than one wipe across the canopy.
+    .to(
+      apples,
+      {
+        opacity: 1,
+        scale: 1,
+        duration: 0.9,
+        ease: 'back.out(2.1)',
+        stagger: { each: 0.075, from: 'random' },
+      },
+      0.95
+    )
+
+    .to([lede, basket], { opacity: 1, y: 0, duration: 1.1, stagger: 0.12 }, 0.8)
+    // The mark in the masthead fills in last — anime.js has been drawing its
+    // outline since ~250 ms, and this is the colour arriving behind it.
+    .to(logoFills, { fillOpacity: 1, duration: 0.8, ease: 'power2.out' }, 1.05)
     .to('[data-hero="cue"]', { opacity: 1, duration: 0.9 }, 1.15);
 
   // Leaving the hero: the block drifts up and dims slightly faster than the

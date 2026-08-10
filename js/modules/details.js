@@ -39,12 +39,16 @@ function drawPath(path, { duration = 1400, delay = 0 } = {}) {
 }
 
 function initDrawings() {
-  const monogram = document.querySelector('.monogram [data-draw]');
   const seam = document.querySelector('.seam__line [data-draw]');
 
   if (env.reducedMotion) return; // paths are already fully stroked in the markup
 
-  if (monogram) drawPath(monogram, { duration: 1100, delay: 250 });
+  // The apple in the masthead: the body outline, then the stem out of the top
+  // of it. GSAP pours the red in behind them a moment later (js/modules/hero.js),
+  // so the mark is never left as an outline if this module fails to arrive.
+  document
+    .querySelectorAll('.monogram [data-draw]')
+    .forEach((path, index) => drawPath(path, { duration: 900, delay: 250 + index * 260 }));
 
   // The seam draws itself as it arrives. ScrollTrigger is already running the
   // page's scroll layer, so it decides *when*; anime.js decides *how*.

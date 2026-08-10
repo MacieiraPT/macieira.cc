@@ -4,7 +4,7 @@
  * Everything expensive happens exactly once, here, at mount:
  *   - orb    : a Fibonacci sphere (even distribution, no polar clumping)
  *   - wave   : a wide, shallow field with a rolling surface
- *   - glyph  : the letterform, sampled from a 2D canvas
+ *   - shape  : the apple, sampled from vector paths via a 2D canvas
  *
  * After this the CPU's only job per frame is to write a handful of uniforms.
  */
@@ -19,22 +19,32 @@ import {
   Vector2,
 } from 'three';
 
+import { APPLE_VIEWBOX } from '../data/apple.js';
 import { fragmentShader, vertexShader } from './shaders.js';
 
-/** World-space width the glyph is scaled to fill. */
-const GLYPH_SPAN = 9.5;
+/** World-space size the sampled shape is scaled to fill. */
+const SHAPE_SPAN = 9.5;
 
 /**
- * Samples a character into 2D points by rasterising it to an offscreen canvas
- * and keeping the opaque pixels.
+ * Samples SVG path data into 2D points by rasterising it to an offscreen
+ * canvas and keeping the opaque pixels.
  *
- * This is why the scene waits for `document.fonts.ready`: rasterising before
- * Archivo has loaded would sample the fallback face and the field would spell
- * the letter in the wrong shape.
+ * Paths rather than a character, which is what the field used to resolve
+ * into: the mark is an apple now, and an apple is not in any font. It is also
+ * strictly better here — a Path2D fill is deterministic, so this no longer
+ * depends on a webfont having loaded before the scene mounts.
  *
- * @returns {Array<[number, number]>} normalised coordinates in -0.5..0.5
+ * The result is normalised against the *ink's* bounding box rather than the
+ * viewBox, so the apple ends up centred and filling the span no matter how
+ * much empty margin the artwork happens to carry.
+ *
+ * @param {string[]} paths  SVG path data, all drawn in the same box
+ * @param {number} viewBox  side of that box, in the paths' own units
+ * @returns {Array<[number, number]>} coordinates in -0.5..0.5
  */
-function sampleGlyph(character, { fontFamily = 'Archivo', weight = 800 } = {}) {
+function samplePaths(paths, viewBox) {
+  if (typeof Path2D !== 'function') return [];
+
   const size = 400;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -43,26 +53,41 @@ function sampleGlyph(character, { fontFamily = 'Archivo', weight = 800 } = {}) {
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) return [];
 
+  const scale = size / viewBox;
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
   ctx.fillStyle = '#fff';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = `${weight} ${Math.round(size * 0.8)}px "${fontFamily}", sans-serif`;
-  ctx.fillText(character, size / 2, size / 2 + size * 0.02);
+  for (const data of paths) ctx.fill(new Path2D(data));
 
   const { data } = ctx.getImageData(0, 0, size, size);
   const hits = [];
+  let minX = size;
+  let maxX = 0;
+  let minY = size;
+  let maxY = 0;
 
   // Step 2px: sampling every pixel costs 4× the work for points that are
   // going to be randomly re-sampled anyway.
   for (let y = 0; y < size; y += 2) {
     for (let x = 0; x < size; x += 2) {
       if (data[(y * size + x) * 4 + 3] > 128) {
-        hits.push([x / size - 0.5, 0.5 - y / size]); // flip Y into world orientation
+        hits.push([x, y]);
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
       }
     }
   }
 
-  return hits;
+  if (!hits.length) return [];
+
+  // One scale for both axes, so the apple keeps its proportions.
+  const extent = Math.max(maxX - minX, maxY - minY) || 1;
+  const centreX = (minX + maxX) / 2;
+  const centreY = (minY + maxY) / 2;
+
+  // Y is flipped on the way out: canvas counts downwards, the world doesn't.
+  return hits.map(([x, y]) => [(x - centreX) / extent, (centreY - y) / extent]);
 }
 
 /** Deterministic-ish even distribution over a sphere. */
@@ -77,17 +102,17 @@ function orbPosition(index, count, radius) {
 /**
  * @param {object} options
  * @param {number} options.count      how many points to build
- * @param {string} options.glyph      character the field resolves into
+ * @param {string[]} options.shape    SVG paths the field resolves into
  * @param {string} options.colorA     CSS colour for the "play" end of the gradient
  * @param {string} options.colorB     CSS colour for the "build" end
  * @param {number} options.pixelRatio capped device pixel ratio
  */
-export function createParticleField({ count, glyph, colorA, colorB, pixelRatio }) {
-  const glyphPoints = sampleGlyph(glyph);
+export function createParticleField({ count, shape, colorA, colorB, pixelRatio }) {
+  const shapePoints = samplePaths(shape, APPLE_VIEWBOX);
 
   const orb = new Float32Array(count * 3);
   const wave = new Float32Array(count * 3);
-  const letter = new Float32Array(count * 3);
+  const mark = new Float32Array(count * 3);
   const random = new Float32Array(count);
 
   for (let i = 0; i < count; i += 1) {
@@ -106,18 +131,18 @@ export function createParticleField({ count, glyph, colorA, colorB, pixelRatio }
     wave[i3 + 1] = Math.sin(wx * 0.45) * 0.9 + Math.cos(wz * 0.6) * 0.6 + (Math.random() - 0.5) * 0.7;
     wave[i3 + 2] = wz;
 
-    // --- glyph: a sampled pixel, jittered so edges don't look aliased ----
-    if (glyphPoints.length) {
-      const [gx, gy] = glyphPoints[(Math.random() * glyphPoints.length) | 0];
-      letter[i3] = gx * GLYPH_SPAN + (Math.random() - 0.5) * 0.07;
-      letter[i3 + 1] = gy * GLYPH_SPAN + (Math.random() - 0.5) * 0.07;
-      letter[i3 + 2] = (Math.random() - 0.5) * 0.6;
+    // --- shape: a sampled pixel, jittered so edges don't look aliased ----
+    if (shapePoints.length) {
+      const [gx, gy] = shapePoints[(Math.random() * shapePoints.length) | 0];
+      mark[i3] = gx * SHAPE_SPAN + (Math.random() - 0.5) * 0.07;
+      mark[i3 + 1] = gy * SHAPE_SPAN + (Math.random() - 0.5) * 0.07;
+      mark[i3 + 2] = (Math.random() - 0.5) * 0.6;
     } else {
-      // Font never arrived: fall back to the orb so the morph is a no-op
-      // instead of collapsing every point into the origin.
-      letter[i3] = ox;
-      letter[i3 + 1] = oy;
-      letter[i3 + 2] = oz;
+      // No Path2D, or no 2D context: fall back to the orb so the morph is a
+      // no-op instead of collapsing every point into the origin.
+      mark[i3] = ox;
+      mark[i3 + 1] = oy;
+      mark[i3 + 2] = oz;
     }
 
     random[i] = Math.random();
@@ -126,7 +151,7 @@ export function createParticleField({ count, glyph, colorA, colorB, pixelRatio }
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new Float32BufferAttribute(orb, 3));
   geometry.setAttribute('aWave', new Float32BufferAttribute(wave, 3));
-  geometry.setAttribute('aGlyph', new Float32BufferAttribute(letter, 3));
+  geometry.setAttribute('aShape', new Float32BufferAttribute(mark, 3));
   geometry.setAttribute('aRand', new Float32BufferAttribute(random, 1));
   // The field never leaves this volume, so a hand-set sphere saves three.js
   // from computing one over every attribute.
@@ -155,5 +180,5 @@ export function createParticleField({ count, glyph, colorA, colorB, pixelRatio }
   const points = new Points(geometry, material);
   points.frustumCulled = false; // it fills the view and the shader moves it anyway
 
-  return { points, geometry, material, glyphSampled: glyphPoints.length > 0 };
+  return { points, geometry, material, shapeSampled: shapePoints.length > 0 };
 }

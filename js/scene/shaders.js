@@ -2,12 +2,12 @@
  * shaders.js — GLSL for the particle field.
  *
  * The field holds three sets of positions for every point (an orb, a drifting
- * wave field, and the sampled "M" of Macieira) and blends between them on the
- * GPU. Scroll position is a single uniform, `uPhase`:
+ * wave field, and the sampled apple of Macieira) and blends between them on
+ * the GPU. Scroll position is a single uniform, `uPhase`:
  *
  *   0 → orb          (hero)
  *   1 → wave field   (the playing half)
- *   2 → glyph        (the seam, where the page turns into the building half)
+ *   2 → apple        (the seam, where the page turns into the building half)
  *
  * Doing the morph in the vertex shader means the CPU never touches 26k
  * positions per frame — it only writes one float.
@@ -17,7 +17,7 @@ export const vertexShader = /* glsl */ `
   // Position sets: the built-in "position" attribute is the orb, and the
   // other two shapes ride along beside it.
   attribute vec3 aWave;
-  attribute vec3 aGlyph;
+  attribute vec3 aShape;      // the apple silhouette
   attribute float aRand;      // stable per-point randomness, 0..1
 
   uniform float uTime;
@@ -40,7 +40,7 @@ export const vertexShader = /* glsl */ `
     float t2 = smoothstep(0.0 + lead, 1.0, clamp(uPhase - 1.0, 0.0, 1.0));
 
     vec3 p = mix(position, aWave, t1);
-    p = mix(p, aGlyph, t2);
+    p = mix(p, aShape, t2);
 
     // ---- idle drift --------------------------------------------------------
     // Cheap layered sines: enough organic motion that the field never looks
