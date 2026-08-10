@@ -28,7 +28,6 @@ export function supportsWebGL() {
 }
 
 export const env = {
-  reducedMotion: mq('(prefers-reduced-motion: reduce)'),
   coarsePointer: mq('(hover: none)'),
   finePointer: mq('(hover: hover) and (pointer: fine)'),
   smallScreen: mq('(max-width: 860px)'),
@@ -40,8 +39,20 @@ export const env = {
   lowCores: (navigator.hardwareConcurrency ?? 8) <= 4,
 };
 
-/** Smooth scrolling and choreography: anything but an explicit request for less motion. */
-export const allowMotion = !env.reducedMotion;
+/**
+ * Motion is unconditional on this site — a deliberate decision by the owner,
+ * recorded here rather than rediscovered as a bug.
+ *
+ * `prefers-reduced-motion` used to switch off Lenis, the hero intro, the
+ * scroll reveals and the sticker physics. It no longer switches off anything:
+ * the smooth scroll *is* the feel of the page, and half the page animating
+ * while the other half sat still read as broken rather than as considerate.
+ *
+ * What that trades away: visitors who set the preference for vestibular
+ * reasons get the full thing anyway. The honest mitigation is that nothing
+ * here is large-amplitude or unexpected — no parallax on text, no autoplaying
+ * transitions, no motion that starts without a scroll or a click.
+ */
 
 /**
  * Why the WebGL field is not running, or null when it is.
@@ -52,11 +63,7 @@ export const allowMotion = !env.reducedMotion;
  * identity of the page and it runs everywhere it technically can.
  *
  * What that trades away, recorded so it isn't rediscovered as a bug:
- *   - prefers-reduced-motion visitors get the animated field anyway. The
- *     preference still governs everything else on the page — no smooth
- *     scrolling, no intro, no reveals, no sticker physics — so this is the
- *     one exception rather than the setting being ignored wholesale.
- *   - Data Saver visitors get the ~136 kB Three.js chunk. It is still loaded
+ *   - Data Saver visitors get the ~135 kB Three.js chunk. It is still loaded
  *     at idle, after everything else, so it never delays the page itself.
  *
  * Hardware only decides how *many* particles run; see js/scene/index.js,

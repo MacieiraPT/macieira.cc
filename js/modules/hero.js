@@ -18,15 +18,10 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { splitChars } from './split.js';
-import { env } from './env.js';
 
 export function playIntro() {
   const name = document.querySelector('[data-hero="name"]');
   const chars = name ? splitChars(name) : [];
-
-  // Reduced motion: the split still runs (it only adds the aria-label and
-  // some spans), but nothing moves and nothing was hidden to begin with.
-  if (env.reducedMotion) return null;
 
   const lede = document.querySelector('[data-hero="lede"]');
   const basket = document.querySelector('[data-hero="basket"]');

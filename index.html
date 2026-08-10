@@ -44,11 +44,11 @@
 <script type="importmap">
 {
   "imports": {
-    "gsap": "/vendor/gsap.min.mjs",
-    "gsap/ScrollTrigger": "/vendor/gsap.min.mjs",
-    "lenis": "/vendor/lenis.min.mjs",
-    "animejs": "/vendor/anime.min.mjs",
-    "three": "/vendor/three.min.mjs"
+    "gsap": "/vendor/gsap.min.mjs?v=0a182a30",
+    "gsap/ScrollTrigger": "/vendor/gsap.min.mjs?v=0a182a30",
+    "lenis": "/vendor/lenis.min.mjs?v=741a8a57",
+    "animejs": "/vendor/anime.min.mjs?v=b50f2812",
+    "three": "/vendor/three.min.mjs?v=aed8355c"
   }
 }
 </script>
@@ -56,15 +56,14 @@
 <!--
   Runs before first paint. Everything below is a *capability* flag, never a
   behaviour: CSS uses these classes to decide what may animate, so a browser
-  without JS (or a visitor who asked for reduced motion) gets the finished,
-  fully readable page instead of a stack of invisible elements.
+  without JS gets the finished, fully readable page instead of a stack of
+  invisible elements.
 -->
 <script>
   (function () {
     var root = document.documentElement;
     var flags = ['js'];
     try {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) flags.push('reduced-motion');
       if (window.matchMedia('(hover: none)').matches) flags.push('coarse-pointer');
     } catch (e) { /* ancient browser: fall through to the static page */ }
     root.classList.remove('no-js');
@@ -92,10 +91,18 @@
   "alternateName": "rudi",
   "url": "https://macieira.cc/",
   "nationality": "PT",
+  "jobTitle": "Software developer",
   "sameAs": [
     "https://github.com/MacieiraPT",
     "https://steamcommunity.com/id/r_di/"
-  ]
+  ],
+  "hasCredential": {
+    "@type": "EducationalOccupationalCredential",
+    "name": "Programador/a de Informática",
+    "credentialCategory": "Professional certification",
+    "educationalLevel": "Level 4, Quadro Nacional de Qualificações (EQF 4)",
+    "url": "https://catalogo.snq.gov.pt/qualificacoesDetalhe/7382"
+  }
 }
 </script>
 </head>
@@ -172,6 +179,7 @@
     <a href="#now" data-anchor><span class="idx">01</span> now</a>
     <a href="#play" data-anchor><span class="idx">02</span> elsewhere</a>
     <a href="#dev" data-anchor><span class="idx">03</span> github</a>
+    <a href="#say-hi" data-anchor><span class="idx">04</span> contact</a>
   </nav>
 
   <!-- GitHub is the one link that gets a persistent, weighted slot in the chrome. -->
@@ -253,6 +261,7 @@
               -->
               <path data-branch pathLength="1" stroke-width="5"  d="M296 293c-5 14-10 26-15 37"/>
               <path data-branch pathLength="1" stroke-width="4"  d="M165 289c-14 6-25 16-32 28"/>
+              <path data-branch pathLength="1" stroke-width="4"  d="M165 289c5 14 9 26 12 38"/>
               <path data-branch pathLength="1" stroke-width="4"  d="M231 247c9 11 15 23 18 36"/>
               <path data-branch pathLength="1" stroke-width="3"  d="M122 337c-3 12-4 23-3 34"/>
               <path data-branch pathLength="1" stroke-width="3"  d="M340 341c3 12 4 23 3 34"/>
@@ -267,12 +276,13 @@
             pop-in scale from overwriting each other.
           -->
           <ul class="orchard__apples" data-tree-apples>
-            <li class="orchard__apple" style="--x:50.4%; --y:44.0%; --sway:0"    ><button class="apple" type="button" data-apple="name"    aria-controls="fact-name"   ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">the name</span></button></li>
-            <li class="orchard__apple" style="--x:67.8%; --y:50.2%; --sway:0.7"  ><button class="apple" type="button" data-apple="work"    aria-controls="fact-work"   ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">now</span></button></li>
-            <li class="orchard__apple" style="--x:32.8%; --y:49.8%; --sway:1.4"  ><button class="apple" type="button" data-apple="stack"   aria-controls="fact-stack"  ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">stack</span></button></li>
-            <li class="orchard__apple" style="--x:21.3%; --y:61.0%; --sway:2.1"  ><button class="apple" type="button" data-apple="steam"   aria-controls="fact-steam"  ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Steam</span></button></li>
-            <li class="orchard__apple" style="--x:61.1%; --y:66.2%; --sway:2.8"  ><button class="apple" type="button" data-apple="discord" aria-controls="fact-discord"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Discord</span></button></li>
-            <li class="orchard__apple" style="--x:79.1%; --y:61.3%; --sway:3.5"  ><button class="apple" type="button" data-apple="github"  aria-controls="fact-github" ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">GitHub</span></button></li>
+            <li class="orchard__apple" style="--x:50.4%; --y:44.0%; --sway:0"><button class="apple" type="button" data-apple="name" aria-controls="fact-name"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">the name</span></button></li>
+            <li class="orchard__apple" style="--x:38.5%; --y:65.6%; --sway:0.6"><button class="apple" type="button" data-apple="who" aria-controls="fact-who"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">who</span></button></li>
+            <li class="orchard__apple" style="--x:32.8%; --y:49.8%; --sway:1.2"><button class="apple" type="button" data-apple="training" aria-controls="fact-training"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">training</span></button></li>
+            <li class="orchard__apple" style="--x:67.8%; --y:50.2%; --sway:1.8"><button class="apple" type="button" data-apple="stack" aria-controls="fact-stack"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">stack</span></button></li>
+            <li class="orchard__apple" style="--x:21.3%; --y:61.0%; --sway:2.4"><button class="apple" type="button" data-apple="steam" aria-controls="fact-steam"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Steam</span></button></li>
+            <li class="orchard__apple" style="--x:61.1%; --y:66.2%; --sway:3.0"><button class="apple" type="button" data-apple="discord" aria-controls="fact-discord"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Discord</span></button></li>
+            <li class="orchard__apple" style="--x:79.1%; --y:61.3%; --sway:3.6"><button class="apple" type="button" data-apple="github" aria-controls="fact-github"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">GitHub</span></button></li>
           </ul>
         </div>
 
@@ -295,17 +305,31 @@
                 </p>
               </article>
 
-              <article class="fact" id="fact-work" data-fact="work">
-                <p class="fact__label mono">02 — now</p>
-                <h2 class="fact__title">Building in the open.</h2>
+              <article class="fact" id="fact-who" data-fact="who">
+                <p class="fact__label mono">02 — who</p>
+                <h2 class="fact__title">rudi, <span data-age>18</span>, from Portugal.</h2>
                 <p class="fact__body">
                   This site is the first thing I've shipped. Everything after it lands on
-                  GitHub and appears further down this page on its own.
+                  GitHub and shows up further down this page on its own.
                 </p>
               </article>
 
+              <article class="fact" id="fact-training" data-fact="training">
+                <p class="fact__label mono">03 — training</p>
+                <h2 class="fact__title">Programador de Informática.</h2>
+                <p class="fact__body">
+                  Three years of software development as a Portuguese <i>curso profissional</i>,
+                  finished — a level 4 qualification on the national framework, and a secondary
+                  diploma with it.
+                </p>
+                <a class="btn btn--ghost fact__action" href="https://catalogo.snq.gov.pt/qualificacoesDetalhe/7382" target="_blank" rel="noopener">
+                  <span>481040 · Catálogo Nacional de Qualificações</span>
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow"/></svg>
+                </a>
+              </article>
+
               <article class="fact" id="fact-stack" data-fact="stack">
-                <p class="fact__label mono">03 — stack</p>
+                <p class="fact__label mono">04 — stack</p>
                 <h2 class="fact__title">Three.js, GSAP, Lenis.</h2>
                 <p class="fact__body">
                   Plain ES modules and two WebGL scenes. No framework and no build step —
@@ -314,7 +338,7 @@
               </article>
 
               <article class="fact" id="fact-steam" data-fact="steam">
-                <p class="fact__label mono">04 — steam</p>
+                <p class="fact__label mono">05 — steam</p>
                 <h2 class="fact__title">Steam</h2>
                 <p class="fact__body">Off the clock.</p>
                 <a class="btn btn--ghost fact__action" href="https://steamcommunity.com/id/r_di/" target="_blank" rel="noopener">
@@ -325,7 +349,7 @@
               </article>
 
               <article class="fact" id="fact-discord" data-fact="discord">
-                <p class="fact__label mono">05 — discord</p>
+                <p class="fact__label mono">06 — discord</p>
                 <h2 class="fact__title">Discord</h2>
                 <p class="fact__body">The fastest way to reach me.</p>
                 <button class="btn btn--ghost fact__action" type="button" data-copy="rvdi">
@@ -336,7 +360,7 @@
               </article>
 
               <article class="fact" id="fact-github" data-fact="github">
-                <p class="fact__label mono">06 — github</p>
+                <p class="fact__label mono">07 — github</p>
                 <h2 class="fact__title">GitHub</h2>
                 <p class="fact__body">Source for this site, and everything after it.</p>
                 <a class="btn btn--ghost fact__action" href="https://github.com/MacieiraPT" target="_blank" rel="me noopener">
@@ -354,7 +378,7 @@
             -->
             <p class="basket__prompt mono" data-tree-prompt hidden>
               <span class="basket__prompt-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span>
-              Six apples. Pick another.
+              Seven apples. Pick another.
             </p>
           </div>
         </div>

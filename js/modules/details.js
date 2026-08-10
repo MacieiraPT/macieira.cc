@@ -17,7 +17,6 @@
 
 import { animate, createDraggable, spring, stagger, svg } from 'animejs';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { env } from './env.js';
 
 /* -------------------------------------------------------------------------- */
 /* 1a. Line drawing                                                            */
@@ -40,8 +39,6 @@ function drawPath(path, { duration = 1400, delay = 0 } = {}) {
 
 function initDrawings() {
   const seam = document.querySelector('.seam__line [data-draw]');
-
-  if (env.reducedMotion) return; // paths are already fully stroked in the markup
 
   // The apple in the masthead: the body outline, then the stem out of the top
   // of it. GSAP pours the red in behind them a moment later (js/modules/hero.js),
@@ -95,7 +92,7 @@ function initMorph() {
       // morphTo resamples both paths to a matching point count, which is what
       // lets two shapes with nothing structurally in common interpolate.
       d: svg.morphTo(state.target),
-      duration: animated && !env.reducedMotion ? 900 : 0,
+      duration: animated ? 900 : 0,
       ease: 'out(3)',
     });
   };
@@ -142,8 +139,6 @@ function initStickers() {
       },
     });
   });
-
-  if (env.reducedMotion) return;
 
   // Drop them in when the footer arrives, so the first impression is that
   // they're objects with weight.

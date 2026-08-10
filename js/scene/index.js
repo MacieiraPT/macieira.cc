@@ -229,7 +229,7 @@ export function mountScene(canvas, { onReady } = {}) {
     // becomes the apple. Keeping it off the right column is what lets the
     // wordmark and the fact cards there stay legible without a scrim behind
     // them. On phones the hero is one column, so it goes straight overhead.
-    group.position.x = MathUtils.lerp(env.smallScreen ? 0 : -2.9, 0, journey);
+    group.position.x = MathUtils.lerp(env.smallScreen ? 0 : -3.4, 0, journey);
     group.position.y = MathUtils.lerp(env.smallScreen ? 4.0 : 2.2, 0, journey);
 
     spin += delta * 0.1 * (1 - settle);
@@ -247,8 +247,11 @@ export function mountScene(canvas, { onReady } = {}) {
     uniforms.uTime.value = timer.getElapsed();
     uniforms.uPhase.value = phase;
     uniforms.uBurst.value = burstEnergy;
-    uniforms.uOpacity.value +=
-      (targetOpacity - uniforms.uOpacity.value) * Math.min(1, delta * 2.5);
+    // Phase 0 is atmosphere behind the hero — the tree is the thing being
+    // looked at there, and the field's own moment comes later, as the wave and
+    // then the apple. So it starts at half strength and earns the rest.
+    const wanted = targetOpacity * MathUtils.lerp(0.45, 1, MathUtils.clamp(phase, 0, 1));
+    uniforms.uOpacity.value += (wanted - uniforms.uOpacity.value) * Math.min(1, delta * 2.5);
 
     const started = performance.now();
     renderer.render(scene, camera);

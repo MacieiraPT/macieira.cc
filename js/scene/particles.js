@@ -2,7 +2,7 @@
  * particles.js — builds the point cloud and its three position sets.
  *
  * Everything expensive happens exactly once, here, at mount:
- *   - orb    : a Fibonacci sphere (even distribution, no polar clumping)
+ *   - drift  : a soft Gaussian haze with no silhouette of its own
  *   - wave   : a wide, shallow field with a rolling surface
  *   - shape  : the apple, sampled from vector paths via a 2D canvas
  *
@@ -90,13 +90,18 @@ function samplePaths(paths, viewBox) {
   return hits.map(([x, y]) => [(x - centreX) / extent, (centreY - y) / extent]);
 }
 
-/** Deterministic-ish even distribution over a sphere. */
-function orbPosition(index, count, radius) {
-  const golden = Math.PI * (3 - Math.sqrt(5));
-  const y = 1 - (index / (count - 1)) * 2;
-  const ring = Math.sqrt(Math.max(0, 1 - y * y));
-  const theta = golden * index;
-  return [Math.cos(theta) * ring * radius, y * radius, Math.sin(theta) * ring * radius];
+/**
+ * One sample from an approximately normal distribution.
+ *
+ * Three uniforms summed is the cheap standard trick, and *why* it is used here
+ * matters: phase 0 used to be a Fibonacci sphere, which is a beautiful even
+ * distribution and therefore has a hard edge — behind a tree it read as a
+ * green circle drawn on the page. A Gaussian has no edge at all. Density just
+ * thins until it stops, so the field sits behind the hero as haze rather than
+ * as a shape competing with the one that is meant to be there.
+ */
+function gaussian() {
+  return (Math.random() + Math.random() + Math.random() - 1.5) * 2;
 }
 
 /**
@@ -118,8 +123,10 @@ export function createParticleField({ count, shape, colorA, colorB, pixelRatio }
   for (let i = 0; i < count; i += 1) {
     const i3 = i * 3;
 
-    // --- orb: a sphere with a slightly soft shell -----------------------
-    const [ox, oy, oz] = orbPosition(i, count, 3.15 + Math.random() * 0.35);
+    // --- drift: a wide, edgeless haze ----------------------------------
+    const ox = gaussian() * 2.5;
+    const oy = gaussian() * 2;
+    const oz = gaussian() * 1.8;
     orb[i3] = ox;
     orb[i3 + 1] = oy;
     orb[i3 + 2] = oz;
