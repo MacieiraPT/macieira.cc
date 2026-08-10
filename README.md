@@ -1,11 +1,11 @@
 # macieira.cc
 
-Personal site for **rudi** ([@MacieiraPT](https://github.com/MacieiraPT)) — a gamer's links
-page on one half, a dev presence that grows over time on the other.
+Personal site for **rudi** ([@MacieiraPT](https://github.com/MacieiraPT)) — developer,
+Portugal. An introduction on one half, a dev presence that grows over time on the other.
 
 *Macieira* is Portuguese for **apple tree**, and it's the surname. So the mark is a red
-apple, and the front page is a tree: six apples, each one a fact, picked with a click.
-Three links only — Steam, Discord, GitHub.
+apple, and the front page is one: a WebGL tree whose six apples are real buttons — click
+one, read a card. Three links only — Steam, Discord, GitHub.
 
 Static HTML, CSS and ES modules. **No build step is required to deploy**: what's in the
 repository is what ships.
@@ -32,8 +32,8 @@ import map need a real origin.
 | --- | --- | --- |
 | [Lenis](https://github.com/darkroomengineering/lenis) | 1.3.26 | The inertia in the scroll. It is the base *feel* of the page, so nothing else animates on its own clock. |
 | [GSAP](https://gsap.com) + ScrollTrigger | 3.15.0 | The hero intro, every scroll-triggered reveal, the pinned rail in the dev section, the progress bar. |
-| [Three.js](https://threejs.org) | 0.185.1 | The WebGL field behind everything: 26k points that morph between an orb, a wave field and the **apple**, and shove away from the cursor. |
-| [anime.js](https://animejs.com) | 4.5.0 | The fine detail: SVG line-drawing, the controller → GitHub morph at the seam, and the spring-physics draggable stickers. |
+| [Three.js](https://threejs.org) | 0.185.1 | Two scenes. The tree in the hero — tapered tube branches, lit fruit. And the field behind everything: 26k points morphing between an orb, a wave and the **apple**. |
+| [anime.js](https://animejs.com) | 4.5.0 | The fine detail: SVG line-drawing, the apple → GitHub morph at the seam, and the spring-physics draggable stickers. |
 
 They are deliberately **not** interchangeable here. The clearest place to see them working
 as one system is the marquee between sections 01 and 02: GSAP runs the loop, its speed and
@@ -61,29 +61,79 @@ one big idea on the first screen instead of five small ones.
 ### How they load
 
 ```
-js/main.js  ──▶ GSAP + ScrollTrigger + Lenis + app      critical path, ~68 kB gzip
-            ──▶ (idle) js/modules/github.js             live data, no library, ~4 kB
-            ──▶ (idle) js/modules/details.js ──▶ anime.js          ~25 kB
-            ──▶ (idle, if the device agrees) js/scene/* ──▶ Three.js  ~136 kB
+js/main.js  ──▶ GSAP + ScrollTrigger + Lenis + app        critical path, ~70 kB gzip
+            ──▶ (idle, WebGL) js/scene/orchard.js  ─┐
+            ──▶ (idle) js/modules/github.js         │     live data, no library, ~4 kB
+            ──▶ (idle) js/modules/details.js ──▶ anime.js         ~23 kB
+            ──▶ (idle, WebGL) js/scene/index.js    ─┴──▶ Three.js  ~135 kB
 ```
 
-The apple tree is on the critical path, not in the idle group, and that split is the rule
-the whole page is built on: **anything that ends with content on screen belongs to the
-layer that always runs.** The tree's branches, its fruit and the logo's red fill are all
-released by the GSAP timeline in `js/modules/hero.js`; the idle anime.js pass only redraws
-an outline that was already there. Get it the wrong way round and a slow connection means a
-bald tree.
+The two WebGL scenes share the Three.js chunk, so whichever gets there first pays for it
+and the other is nearly free.
 
-`js/modules/env.js` holds the one remaining gate: the scene runs unless the browser cannot
-give it a WebGL context. Nothing else stops it — not reduced motion, not Data Saver, not
-device class. That is a deliberate choice; the field is the identity of the page. Hardware
-decides only how much of it runs: a software renderer gets 6k particles at 1× instead of
-26k, and the frame-time watchdog in `js/scene/index.js` cuts further if that was still
-optimistic. When there is no context, the reason is logged to the console, because "I don't
-see the particles" is otherwise unanswerable.
+**The tree itself is on the critical path** — the SVG one, in `index.html`, with working
+buttons. Only the *3D* tree is deferred. That split is the rule the whole page is built
+on: anything that ends with content on screen belongs to the layer that always runs. The
+SVG tree's branches, its fruit and the logo's red fill are released by the GSAP timeline
+in `js/modules/hero.js`; the idle passes only ever replace something that already works
+with something better looking.
+
+`js/modules/env.js` holds the one remaining gate: the scenes run unless the browser cannot
+give a WebGL context at all. Nothing else stops them — not reduced motion, not Data Saver,
+not device class. Hardware decides only how much runs: a software renderer gets 6k
+particles at 1× instead of 26k, and the frame-time watchdog in `js/scene/index.js` cuts
+further if that was still optimistic. When there is no context, the reason is logged to the
+console, because "the particles don't show up on my machine" is otherwise unanswerable.
+
+**Two contexts, in priority order.** The tree mounts first, deliberately. Browsers cap how
+many live WebGL contexts a page may hold (Safari and some mobile GPUs are strict, and
+software rasterisers often allow exactly one) and when the cap is one, whoever asks first
+wins. The tree is above the fold and it is content; the field is atmosphere and already has
+a full CSS fallback painted behind it. So the tree asks at 1.2 s and the field at 2.5 s,
+and if the field loses it degrades to gradients without a word.
 
 `prefers-reduced-motion` still governs everything *else* — no smooth scrolling, no intro,
-no reveals, no sticker physics. The background field is the single deliberate exception.
+no reveals, no sticker physics. The two WebGL scenes are the deliberate exception, and even
+they scale back: the tree drops its sway, its bob and its pointer parallax, and stops
+drawing frames entirely between interactions.
+
+---
+
+## The tree
+
+The front page is one component in two implementations, and the interesting part is what
+they share.
+
+**The buttons are always HTML.** All six apples are real `<button>`s in `index.html`, and
+all six facts are real `<article>`s. `js/modules/tree.js` — critical path, no WebGL
+anywhere in it — owns the picking, the card deck and the ARIA, positioning the buttons over
+the inline SVG tree with two custom properties each. That alone is a finished, working
+feature.
+
+**The 3D tree is a renderer, not a rewrite.** `js/scene/orchard.js` mounts at idle, builds
+the tree out of tapered tube geometry, and then does one thing to the page: every frame it
+projects each apple's world position to screen coordinates and calls `tree.place()`. The
+buttons move to sit on the mesh. That is the whole coupling — the renderer never touches
+the DOM and never learns what a fact is, and `tree.js` never learns what a camera is.
+
+The payoff is that tab order, Enter, Space, focus rings and screen-reader output are
+identical in both modes, because they are the same elements either way. There is no
+raycaster, and no canvas reimplementing what a button already does.
+
+A few things worth knowing before editing it:
+
+- **Branch geometry is hand-authored**, in both trees, because six limbs have to end where
+  a button has to be. A prettier recursive generator moves the fruit every time you touch
+  it.
+- **`pathLength="1"`** on the SVG branches renormalises every path to a length of 1, so one
+  stylesheet rule hides all eighteen and GSAP tweens a single number back to zero — no
+  `getTotalLength()`, and no measurement that has to happen in JS before they can be
+  hidden, which is why they never flash in drawn and then redraw themselves.
+- **The tube taper** is not a Three.js feature. `TubeGeometry` has one radius for its whole
+  length; `branchGeometry()` recovers each ring's centre from the curve and pulls the ring
+  in toward it, which is the difference between a branch and a length of pipe.
+- **The hit area floors at 44 px.** An apple projected onto a phone screen is about 25 px
+  across — a good apple and a hopeless button — so the padding grows as the fruit shrinks.
 
 ---
 
@@ -95,6 +145,8 @@ styles/base.css       tokens, reset, typography, the reveal contract
 styles/site.css       chrome, sections, components
 js/main.js            boot order and nothing else
 js/modules/           env · smooth-scroll · hero · reveals · split · tree · github · details · work · ui
+js/modules/tree.js    the apples: buttons, cards, ARIA — and the hook a renderer plugs into
+js/scene/orchard.js   the 3D tree
 js/scene/             index (lifecycle + loop) · particles (geometry) · shaders (GLSL)
 js/data/apple.js      the mark as path data — what the particle field samples
 js/data/projects.js   ← the file to edit when there's work worth showing
@@ -129,7 +181,7 @@ Nothing else needs touching.
 
 ### Change a link or a handle
 
-They're plain HTML in `index.html`, in the `02 — where to find me` section. Handles that
+They're plain HTML in `index.html`, in the `02 — elsewhere` section. Handles that
 aren't linkable profiles (Discord) are `<button data-copy="…">` — the value in `data-copy`
 is what lands on the clipboard.
 
@@ -140,15 +192,20 @@ Also plain HTML: each one is an `<article class="fact" id="fact-…" data-fact="
 matching name. `js/modules/tree.js` pairs them up by that value and does nothing else —
 there is no list of facts in JavaScript to keep in step.
 
-**To move an apple**, edit the `--x` / `--y` on its `<li>`: they are percentages of the
-tree's box, which is locked to the SVG's 460 × 520 viewBox, so `--x: 50%` really is
-`x = 230` in the drawing. Every branch tip is written out as an explicit coordinate in the
-path data above, which is where those numbers come from.
+**To move an apple you have to move it twice**, because there are two trees:
 
-**To add a seventh**, add an `<li>` and an `<article>`; nothing else needs touching. Be
-aware that the branches are hand-drawn and the tips are taken, so a new apple wants a new
-twig — start it on a coordinate that already appears in a limb's path data, or it will
-hang in mid-air.
+- **2D** — the `--x` / `--y` on its `<li>` in `index.html`. Percentages of the tree's box,
+  which is locked to the SVG's 460 × 520 viewBox, so `--x: 50%` really is `x = 230`.
+- **3D** — the last point of the matching entry in `LIMBS` in `js/scene/orchard.js`. The
+  apple hangs from wherever that limb ends, and the button is projected onto it, so there
+  is nothing else to keep in step.
+
+In both, a limb or twig must *start* on a coordinate that appears verbatim in its parent's
+path — a Catmull-Rom curve and an SVG path both pass through their control points, so
+sharing one is what makes the join seamless. Anywhere else and it floats.
+
+**To add a seventh**, add an `<li>`, an `<article>`, and an entry in `LIMBS` with a
+matching `key`. Nothing else needs touching.
 
 ### Change the copy
 
@@ -252,13 +309,15 @@ node tools/og.mjs
 
 | Situation | What the visitor gets |
 | --- | --- |
-| JavaScript disabled | The whole page, fully readable — including the tree, fully drawn, and all six apple facts as a plain list. Nothing is hidden without JS. |
+| JavaScript disabled | The whole page, fully readable — including the SVG tree, fully drawn, and all six apple facts as a plain list. Nothing is hidden without JS. |
+| No WebGL, or the 3D chunk never arrives | The SVG tree stays, with working buttons. The difference is dimensional, not functional. |
+| Only one WebGL context available | The tree gets it; the field falls back to CSS gradients. See the priority note above. |
 | anime.js never arrives | The tree, the logo and the seam stay exactly as drawn; only the pen-stroke animations are lost. |
 | JS fails to boot | A failsafe in `<head>` releases the hidden state after 1.5 s. |
-| `prefers-reduced-motion` | No Lenis, no intro, no reveals, no sticker physics. Native scrolling, everything visible. Apples still pick — they just don't swing or bob. The background field still runs, a deliberate exception. |
+| `prefers-reduced-motion` | No Lenis, no intro, no reveals, no sticker physics. Native scrolling, everything visible. Apples still pick — they just don't swing or bob, and the tree stops drawing frames between interactions. |
 | No WebGL at all | Three.js is never downloaded; the CSS backdrop carries the look and the console says so. |
 | No GPU — acceleration off, VM, remote desktop, blocklisted driver | Still runs, on the software renderer, at 6k particles and 1× pixel ratio. |
-| GPU drops the context mid-session | The scene stops and hands back to the CSS backdrop. |
+| GPU drops the context mid-session | The field hands back to the CSS backdrop; the tree hands back to the SVG, buttons and all. |
 | GitHub API down or rate-limited | The panel says `offline` and explains; the profile link still works. |
 | Frame times over ~26 ms | The scene drops to 1× pixel ratio, then to 55% of the points. |
 
@@ -269,11 +328,12 @@ node tools/og.mjs
 | | gzip | blocks first paint? |
 | --- | --- | --- |
 | HTML + CSS | 22 kB | yes |
-| Critical JS — GSAP + ScrollTrigger + Lenis + app | 68 kB | no (`type="module"` is deferred) |
+| Critical JS — GSAP + ScrollTrigger + Lenis + app | 69 kB | no (`type="module"` is deferred) |
 | Display font (preloaded; the mono face swaps in) | 127 kB for both | no |
 | GitHub panel (idle) | 4 kB | no |
-| anime.js + details (idle) | 25 kB | no |
-| Three.js + scene (idle, capability-gated) | 136 kB | no |
+| anime.js + details (idle) | 23 kB | no |
+| Three.js (idle, capability-gated, shared by both scenes) | 133 kB | no |
+| Both scenes' own code (idle) | 16 kB | no |
 
 Re-measure any time with:
 

@@ -75,11 +75,19 @@ const bundles = [
     packages: ['three'],
     // The exact three.js surface used by js/scene/*. Tree-shaking three is
     // what keeps the lazy-loaded WebGL chunk near ~128 kB gzip instead of ~183.
+    //
+    // Two scenes share this bundle: the particle field (shader material, no
+    // lighting) and the orchard (lit meshes). MeshPhongMaterial is the *only*
+    // lit material exported, and both the bark and the fruit use it — adding
+    // Lambert or Standard alongside it would pull a second lighting shader
+    // library in for no visible gain at this scale.
     entry: `
       export {
         Scene, PerspectiveCamera, WebGLRenderer, Group, Timer,
         BufferGeometry, Float32BufferAttribute, Points, ShaderMaterial,
         AdditiveBlending, Vector2, Vector3, Color, MathUtils,
+        Mesh, MeshPhongMaterial, SphereGeometry, TubeGeometry,
+        CatmullRomCurve3, AmbientLight, DirectionalLight,
       } from 'three';
     `,
   },
