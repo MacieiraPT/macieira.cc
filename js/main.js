@@ -7,8 +7,8 @@
  *   2. The scroll layer — Lenis driven by GSAP's ticker.
  *   3. Anything that measures text, once webfonts have settled.
  *   4. Idle work: the live GitHub panel, then the anime.js details.
- *   5. Idle + capability-gated: the WebGL field, ~130 kB that is never
- *      fetched unless the device has agreed to it.
+ *   5. Idle: the WebGL field, ~130 kB, fetched last and only where the
+ *      browser can actually give us a context.
  *
  * Critical-path JS is steps 1–3 (GSAP + Lenis + this app code, ~55 kB gzip).
  * Everything below that is additive, and every step is independently
@@ -143,7 +143,7 @@ if (allowWebGL) {
   whenIdle(mountBackdrop, 2500);
 } else {
   // Say so out loud. "The particles don't show up on my machine" is otherwise
-  // an unanswerable question, and the answer is always one of two settings.
+  // an unanswerable question.
   console.info(
     `[macieira.cc] WebGL field off — ${webglBlockReason()}. The CSS backdrop is standing in.`
   );

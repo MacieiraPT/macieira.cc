@@ -44,13 +44,16 @@ js/main.js  ──▶ GSAP + ScrollTrigger + Lenis + app      critical path, ~63
             ──▶ (idle, if the device agrees) js/scene/* ──▶ Three.js  ~136 kB
 ```
 
-`js/modules/env.js` is the gate, and it only ever defers to the *visitor*: the WebGL scene
-is skipped on `prefers-reduced-motion`, under Data Saver, and where there is no WebGL
-context at all. Hardware never decides whether it runs, only how much of it runs — a
-software renderer gets 6k particles at 1× instead of 26k, and the frame-time watchdog in
-`js/scene/index.js` cuts further if that was still optimistic. When the scene is skipped,
-the reason is logged to the console, because "I don't see the particles" is otherwise
-unanswerable.
+`js/modules/env.js` holds the one remaining gate: the scene runs unless the browser cannot
+give it a WebGL context. Nothing else stops it — not reduced motion, not Data Saver, not
+device class. That is a deliberate choice; the field is the identity of the page. Hardware
+decides only how much of it runs: a software renderer gets 6k particles at 1× instead of
+26k, and the frame-time watchdog in `js/scene/index.js` cuts further if that was still
+optimistic. When there is no context, the reason is logged to the console, because "I don't
+see the particles" is otherwise unanswerable.
+
+`prefers-reduced-motion` still governs everything *else* — no smooth scrolling, no intro,
+no reveals, no sticker physics. The background field is the single deliberate exception.
 
 ---
 
@@ -200,8 +203,8 @@ node tools/og.mjs
 | --- | --- |
 | JavaScript disabled | The whole page, fully readable. Nothing is hidden without JS. |
 | JS fails to boot | A failsafe in `<head>` releases the hidden state after 1.5 s. |
-| `prefers-reduced-motion` | No Lenis, no intro, no reveals, no WebGL. Native scrolling, everything visible. |
-| No WebGL at all / Data Saver | Three.js is never downloaded; the CSS backdrop carries the look, and the console says which of the two it was. |
+| `prefers-reduced-motion` | No Lenis, no intro, no reveals, no sticker physics. Native scrolling, everything visible. The background field still runs — a deliberate exception. |
+| No WebGL at all | Three.js is never downloaded; the CSS backdrop carries the look and the console says so. |
 | No GPU — acceleration off, VM, remote desktop, blocklisted driver | Still runs, on the software renderer, at 6k particles and 1× pixel ratio. |
 | GPU drops the context mid-session | The scene stops and hands back to the CSS backdrop. |
 | GitHub API down or rate-limited | The panel says `offline` and explains; the profile link still works. |

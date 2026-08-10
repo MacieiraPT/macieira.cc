@@ -33,11 +33,10 @@ export const env = {
   finePointer: mq('(hover: hover) and (pointer: fine)'),
   smallScreen: mq('(max-width: 860px)'),
 
-  /** Data Saver / metered connection — a strong "don't download 130 kB of Three.js" signal. */
-  saveData: Boolean(navigator.connection?.saveData),
-
-  /** Rough device class. `deviceMemory` is Chromium-only; absence is treated as "fine". */
-  lowMemory: (navigator.deviceMemory ?? 8) <= 2,
+  /**
+   * Core count, used only to pick a particle budget in js/scene/index.js.
+   * Absence is treated as "fine" — an unknown machine is not a slow one.
+   */
   lowCores: (navigator.hardwareConcurrency ?? 8) <= 4,
 };
 
@@ -47,21 +46,23 @@ export const allowMotion = !env.reducedMotion;
 /**
  * Why the WebGL field is not running, or null when it is.
  *
- * Only two things switch it off now, and both are the *visitor* asking rather
- * than a guess about their hardware:
+ * Exactly one thing switches it off: the browser cannot give us a WebGL
+ * context. Nothing else — not reduced motion, not Data Saver, not device
+ * class. That is a deliberate decision by the site owner: the field is the
+ * identity of the page and it runs everywhere it technically can.
  *
- *   - prefers-reduced-motion, which is an accessibility request, not a hint.
- *   - Data Saver, which is someone saying they are paying for this download.
+ * What that trades away, recorded so it isn't rediscovered as a bug:
+ *   - prefers-reduced-motion visitors get the animated field anyway. The
+ *     preference still governs everything else on the page — no smooth
+ *     scrolling, no intro, no reveals, no sticker physics — so this is the
+ *     one exception rather than the setting being ignored wholesale.
+ *   - Data Saver visitors get the ~136 kB Three.js chunk. It is still loaded
+ *     at idle, after everything else, so it never delays the page itself.
  *
- * Device-class guesses used to live here too (memory, core count) and they
- * were wrong more often than right — `navigator.deviceMemory` is Chromium-only
- * and caps at 8, so plenty of capable machines under-report. Hardware now
- * affects how *many* particles run, never whether they run at all; see
- * js/scene/index.js, which also drops quality on its own if frames get slow.
+ * Hardware only decides how *many* particles run; see js/scene/index.js,
+ * which also drops quality on its own if frames get slow.
  */
 export function webglBlockReason() {
-  if (env.reducedMotion) return 'prefers-reduced-motion is set in the OS or browser';
-  if (env.saveData) return 'the connection is in Data Saver mode';
   if (!supportsWebGL()) return 'this browser reports no WebGL context at all';
   return null;
 }
