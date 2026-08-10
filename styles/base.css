@@ -8,9 +8,14 @@
    Archivo carries a width axis (62–125) which is what makes the hero
    wordmark possible without shipping a second display font.
    -------------------------------------------------------------------------- */
+/* format('woff2'), not format('woff2-variations'): the -variations keyword is
+   deprecated and browsers disagree about it. A format() string a browser does
+   not recognise makes it skip that src entirely — which means no webfont at
+   all, in that browser only. Plain 'woff2' is understood everywhere, and the
+   variable axes below work regardless of what the format string says. */
 @font-face {
   font-family: 'Archivo';
-  src: url('/assets/fonts/archivo-latin-var.woff2') format('woff2-variations');
+  src: url('/assets/fonts/archivo-latin-var.woff2') format('woff2');
   font-weight: 400 900;
   font-stretch: 62% 125%;
   font-style: normal;
@@ -18,7 +23,7 @@
 }
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url('/assets/fonts/jetbrains-mono-latin-var.woff2') format('woff2-variations');
+  src: url('/assets/fonts/jetbrains-mono-latin-var.woff2') format('woff2');
   font-weight: 100 800;
   font-style: normal;
   font-display: swap;
