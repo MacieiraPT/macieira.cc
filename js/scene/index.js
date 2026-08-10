@@ -25,11 +25,51 @@ const SLOW_FRAME_MS = 26;
  * @param {{ onReady?: () => void }} [options]
  * @returns {{ setPhase(value: number): void, burst(): void, destroy(): void } | null}
  */
+/**
+ * Builds the renderer, preferring a real GPU but never refusing to run without
+ * one.
+ *
+ * `failIfMajorPerformanceCaveat: true` makes the browser hand back nothing
+ * when it would have to fall back to software rendering. That sounds prudent
+ * and is a bad trade in practice: it fires on any desktop with hardware
+ * acceleration switched off, a blocklisted driver, a VM, or a remote desktop
+ * session — machines that render this field perfectly well. So we ask for the
+ * good context first, then accept the compromised one and turn the quality
+ * down to match.
+ *
+ * @returns {{ renderer: WebGLRenderer, software: boolean } | null}
+ */
+function createRenderer(canvas) {
+  const options = {
+    canvas,
+    alpha: true,
+    antialias: false, // additive points don't benefit; MSAA just costs fill rate
+    powerPreference: 'high-performance',
+  };
+
+  try {
+    return { renderer: new WebGLRenderer({ ...options, failIfMajorPerformanceCaveat: true }), software: false };
+  } catch {
+    /* no hardware path — take what we can get */
+  }
+
+  try {
+    return { renderer: new WebGLRenderer(options), software: true };
+  } catch {
+    return null; // genuinely no WebGL; the CSS backdrop stands in
+  }
+}
+
 export function mountScene(canvas, { onReady } = {}) {
-  // Fewer points where they cost the most: small screens are usually the
-  // slowest GPUs and the field is physically smaller there anyway.
-  const count = env.smallScreen ? 9000 : env.lowCores ? 15000 : 26000;
-  let pixelRatio = Math.min(window.devicePixelRatio || 1, 1.75);
+  const context = createRenderer(canvas);
+  if (!context) return null;
+  const { renderer, software } = context;
+
+  // Hardware decides how *much* runs, never whether it runs. A software
+  // rasteriser pays per fragment, so it gets fewer, and the frame-time
+  // watchdog below can still cut further if this guess was optimistic.
+  const count = software ? 6000 : env.smallScreen ? 9000 : env.lowCores ? 15000 : 26000;
+  let pixelRatio = software ? 1 : Math.min(window.devicePixelRatio || 1, 1.75);
   // A phone screen puts the field much closer to the text it sits behind.
   const baseOpacity = env.smallScreen ? 0.7 : 1;
 
@@ -41,21 +81,6 @@ export function mountScene(canvas, { onReady } = {}) {
     colorB: styles.getPropertyValue('--plasma').trim() || '#7d5cff',
     pixelRatio,
   });
-
-  let renderer;
-  try {
-    renderer = new WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: false, // additive points don't benefit; MSAA just costs fill rate
-      powerPreference: 'high-performance',
-      failIfMajorPerformanceCaveat: true, // refuse a software renderer outright
-    });
-  } catch {
-    field.geometry.dispose();
-    field.material.dispose();
-    return null;
-  }
 
   renderer.setPixelRatio(pixelRatio);
   renderer.setClearAlpha(0);

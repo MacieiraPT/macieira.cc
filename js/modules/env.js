@@ -45,13 +45,28 @@ export const env = {
 export const allowMotion = !env.reducedMotion;
 
 /**
- * The WebGL field is the single heaviest thing here, so it needs everything:
- * motion is welcome, the GPU exists, and the connection/device isn't asking
- * for mercy. Failing this check is not a degraded page — the CSS backdrop is
- * a designed fallback, not an empty box.
+ * Why the WebGL field is not running, or null when it is.
+ *
+ * Only two things switch it off now, and both are the *visitor* asking rather
+ * than a guess about their hardware:
+ *
+ *   - prefers-reduced-motion, which is an accessibility request, not a hint.
+ *   - Data Saver, which is someone saying they are paying for this download.
+ *
+ * Device-class guesses used to live here too (memory, core count) and they
+ * were wrong more often than right — `navigator.deviceMemory` is Chromium-only
+ * and caps at 8, so plenty of capable machines under-report. Hardware now
+ * affects how *many* particles run, never whether they run at all; see
+ * js/scene/index.js, which also drops quality on its own if frames get slow.
  */
-export const allowWebGL =
-  allowMotion && !env.saveData && !env.lowMemory && supportsWebGL();
+export function webglBlockReason() {
+  if (env.reducedMotion) return 'prefers-reduced-motion is set in the OS or browser';
+  if (env.saveData) return 'the connection is in Data Saver mode';
+  if (!supportsWebGL()) return 'this browser reports no WebGL context at all';
+  return null;
+}
+
+export const allowWebGL = webglBlockReason() === null;
 
 /** requestIdleCallback with a setTimeout fallback (Safari shipped it late). */
 export function whenIdle(fn, timeout = 2000) {

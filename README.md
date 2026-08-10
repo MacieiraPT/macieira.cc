@@ -44,9 +44,13 @@ js/main.js  ──▶ GSAP + ScrollTrigger + Lenis + app      critical path, ~63
             ──▶ (idle, if the device agrees) js/scene/* ──▶ Three.js  ~136 kB
 ```
 
-`js/modules/env.js` is the gate. The WebGL scene is skipped entirely on
-`prefers-reduced-motion`, with Data Saver on, on ≤2 GB devices, and when there is no WebGL
-context — and the CSS backdrop it sits on is a designed fallback, not an empty box.
+`js/modules/env.js` is the gate, and it only ever defers to the *visitor*: the WebGL scene
+is skipped on `prefers-reduced-motion`, under Data Saver, and where there is no WebGL
+context at all. Hardware never decides whether it runs, only how much of it runs — a
+software renderer gets 6k particles at 1× instead of 26k, and the frame-time watchdog in
+`js/scene/index.js` cuts further if that was still optimistic. When the scene is skipped,
+the reason is logged to the console, because "I don't see the particles" is otherwise
+unanswerable.
 
 ---
 
@@ -197,7 +201,8 @@ node tools/og.mjs
 | JavaScript disabled | The whole page, fully readable. Nothing is hidden without JS. |
 | JS fails to boot | A failsafe in `<head>` releases the hidden state after 1.5 s. |
 | `prefers-reduced-motion` | No Lenis, no intro, no reveals, no WebGL. Native scrolling, everything visible. |
-| No WebGL / Data Saver / low memory | Three.js is never downloaded; the CSS backdrop carries the look. |
+| No WebGL at all / Data Saver | Three.js is never downloaded; the CSS backdrop carries the look, and the console says which of the two it was. |
+| No GPU — acceleration off, VM, remote desktop, blocklisted driver | Still runs, on the software renderer, at 6k particles and 1× pixel ratio. |
 | GPU drops the context mid-session | The scene stops and hands back to the CSS backdrop. |
 | GitHub API down or rate-limited | The panel says `offline` and explains; the profile link still works. |
 | Frame times over ~26 ms | The scene drops to 1× pixel ratio, then to 55% of the points. |

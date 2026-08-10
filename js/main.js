@@ -18,7 +18,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-import { allowMotion, allowWebGL, fontsReady, whenIdle } from './modules/env.js';
+import { allowMotion, allowWebGL, fontsReady, webglBlockReason, whenIdle } from './modules/env.js';
 import { createSmoothScroll, initAnchors } from './modules/smooth-scroll.js';
 import { playIntro } from './modules/hero.js';
 import {
@@ -116,12 +116,11 @@ safely('scroll refresh', () => ScrollTrigger.refresh());
 /* 4. Deferred enhancements                                                    */
 /* -------------------------------------------------------------------------- */
 
-// Live GitHub data. Refreshing ScrollTrigger afterwards matters: real
-// repositories make the panel taller, which moves every trigger below it.
-// Live GitHub data. Imported here rather than at the top so the fetch layer
-// isn't part of first paint either. The panel renders its own failure state,
-// so the catch only has to stay quiet enough not to break the page — but
-// loud enough to be findable in devtools.
+// Live GitHub data, imported here rather than at the top so the fetch layer
+// isn't part of first paint. Refreshing ScrollTrigger afterwards matters:
+// real repositories make the panel taller, which moves every trigger below
+// it. The panel renders its own failure state, so the catch only has to stay
+// quiet enough not to break the page — but loud enough to find in devtools.
 whenIdle(() => {
   import('./modules/github.js')
     .then(({ initGitHub }) => initGitHub(() => ScrollTrigger.refresh()))
@@ -142,6 +141,12 @@ whenIdle(() => {
 
 if (allowWebGL) {
   whenIdle(mountBackdrop, 2500);
+} else {
+  // Say so out loud. "The particles don't show up on my machine" is otherwise
+  // an unanswerable question, and the answer is always one of two settings.
+  console.info(
+    `[macieira.cc] WebGL field off — ${webglBlockReason()}. The CSS backdrop is standing in.`
+  );
 }
 
 async function mountBackdrop() {
@@ -192,7 +197,11 @@ async function mountBackdrop() {
   try {
     const { mountScene } = await import('./scene/index.js');
     scene = mountScene(canvas, { onReady: () => ScrollTrigger.refresh() });
-    scene?.setPhase(phase);
+    if (scene) {
+      scene.setPhase(phase);
+    } else {
+      console.info('[macieira.cc] WebGL field off — no context available. CSS backdrop standing in.');
+    }
   } catch (error) {
     // Chunk failed, or the GPU refused the context. The CSS backdrop already
     // looks like the finished design, so there is nothing to swap in — but
