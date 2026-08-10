@@ -242,7 +242,7 @@ html.js:not(.reduced-motion):not(.boot-failed) .monogram__body,
 html.js:not(.reduced-motion):not(.boot-failed) .monogram__leaf {
   fill-opacity: 0;
 }
-html.js:not(.reduced-motion):not(.boot-failed) .orchard__canopy { opacity: 0; }
+html.js:not(.reduced-motion):not(.boot-failed) .orchard__glow { opacity: 0; }
 /* Uniform because every branch declares pathLength="1" — see index.html. */
 html.js:not(.reduced-motion):not(.boot-failed) [data-branch] {
   stroke-dasharray: 1;

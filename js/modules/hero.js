@@ -35,7 +35,7 @@ export function playIntro() {
   // on its own (every path declares pathLength="1", so one rule covers all
   // thirteen); the fruit and the foliage by opacity.
   const branches = document.querySelectorAll('.orchard__wood [data-branch]');
-  const canopy = document.querySelector('[data-canopy]');
+  const canopy = document.querySelector('[data-canopy]'); // the CSS glow, shared by both trees
   const apples = document.querySelectorAll('.orchard .apple');
   const logoFills = document.querySelectorAll('.monogram__body, .monogram__leaf');
 

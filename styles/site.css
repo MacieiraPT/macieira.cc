@@ -293,11 +293,37 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
   margin-inline: auto;
   aspect-ratio: 460 / 520;
 }
-.orchard__art { width: 100%; height: 100%; }
+.orchard__art,
+.orchard__canvas,
+.orchard__glow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.orchard__art { transition: opacity 0.7s var(--ease-out); }
 
 .orchard__wood {
   stroke: color-mix(in oklab, var(--bark) 72%, transparent);
 }
+
+/* The light around the tree. It belongs to neither tree: the SVG and the
+   canvas trade places underneath it, and it carries the composition through
+   the handover — and on its own, when there is no WebGL at all. */
+.orchard__glow {
+  pointer-events: none;
+  background:
+    radial-gradient(44% 32% at 50% 44%, color-mix(in oklab, var(--leaf) 17%, transparent), transparent 70%),
+    radial-gradient(26% 21% at 28% 52%, color-mix(in oklab, var(--leaf) 13%, transparent), transparent 72%),
+    radial-gradient(27% 22% at 72% 50%, color-mix(in oklab, var(--leaf) 13%, transparent), transparent 72%),
+    radial-gradient(30% 4.5% at 50% 88%, color-mix(in oklab, var(--leaf) 14%, transparent), transparent 76%);
+}
+
+.orchard__canvas {
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-out);
+}
+.orchard__canvas.is-live { opacity: 1; }
 
 .orchard__apples { position: absolute; inset: 0; margin: 0; }
 
@@ -334,11 +360,15 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
 }
 .apple__fruit svg { width: 100%; height: 100%; overflow: visible; }
 
-/* Hit target padded out to a comfortable size without inflating the artwork. */
+/* Hit target, padded out without inflating the artwork.
+   The padding is normally 9px, but grows when the fruit itself is small so
+   the target never drops below 44px across. That matters most in 3D: the
+   apple's size there is whatever the projection makes it, which on a phone is
+   about 25px — a perfectly good apple and a hopeless button. */
 .apple__fruit::after {
   content: '';
   position: absolute;
-  inset: -9px;
+  inset: calc(-1 * max(9px, (44px - var(--apple-size)) / 2));
   border-radius: 50%;
 }
 
@@ -393,6 +423,51 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
 }
 
 /* --------------------------------------------------------------------------
+   3D mode
+   --------------------------------------------------------------------------
+   Set by js/modules/tree.js the frame js/scene/orchard.js first draws. The
+   buttons stop being placed by the percentages in the markup and start being
+   moved by the renderer; the flat artwork goes with them, leaving each button
+   as a transparent hit area with a label under it.
+
+   Nothing here is a fallback for anything: without this class the page is the
+   SVG tree, complete and interactive, which is what a browser with no WebGL
+   keeps forever.
+   -------------------------------------------------------------------------- */
+.orchard.is-3d .orchard__art { opacity: 0; }
+
+.orchard.is-3d .orchard__apple {
+  /* Projected pixels, applied as a transform so moving six buttons every
+     frame costs compositing rather than layout. */
+  left: 0;
+  top: 0;
+  transform: translate3d(var(--px, 0px), var(--py, 0px), 0) translate(-50%, -50%);
+}
+
+/* --apple-size is written to .orchard on resize, from the fruit's projected
+   diameter, so the hit area matches what is on screen. */
+.orchard.is-3d .apple { --apple-size: var(--apple-3d, 44px); position: relative; }
+
+/* The mesh draws the apple; the DOM keeps the hit area and the focus ring. */
+.orchard.is-3d .apple__fruit { filter: none; }
+.orchard.is-3d .apple__fruit > svg { visibility: hidden; }
+
+/* Taking the tag out of flow leaves the fruit as the button's only in-flow
+   child, so the centring transform above lands the *fruit* on the projected
+   point rather than the fruit-plus-label box. */
+.orchard.is-3d .apple__tag {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 50%;
+  transform: translate(-50%, -4px);
+}
+.orchard.is-3d .apple:hover .apple__tag,
+.orchard.is-3d .apple:focus-visible .apple__tag,
+.orchard.is-3d .apple[aria-expanded='true'] .apple__tag {
+  transform: translate(-50%, 0);
+}
+
+/* --------------------------------------------------------------------------
    The basket — what a picked apple says
    -------------------------------------------------------------------------- */
 .basket {
@@ -405,12 +480,16 @@ html.scene-live .backdrop__glow { opacity: 0.32; }
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* A standing hint under the card, not an empty state above it. */
 .basket__prompt {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  color: var(--ink-dim);
-  letter-spacing: 0.1em;
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-faint);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .basket__prompt[hidden] { display: none; }

@@ -3,12 +3,16 @@
  *
  * Boot order is deliberate, and it is the performance story of this page:
  *
- *   1. Interactions that must work no matter what (copy buttons, clock).
+ *   1. Interactions that must work no matter what (copy buttons, clock,
+ *      the apple tree).
  *   2. The scroll layer — Lenis driven by GSAP's ticker.
  *   3. Anything that measures text, once webfonts have settled.
- *   4. Idle work: the live GitHub panel, then the anime.js details.
- *   5. Idle: the WebGL field, ~130 kB, fetched last and only where the
+ *   4. Idle work: the 3D tree, the live GitHub panel, the anime.js details.
+ *   5. Idle: the WebGL field, ~135 kB, fetched last and only where the
  *      browser can actually give us a context.
+ *
+ * Steps 4 and 5 share the Three.js chunk, so whichever gets there first pays
+ * for it and the other is nearly free.
  *
  * Critical-path JS is steps 1–3 (GSAP + Lenis + this app code, ~55 kB gzip).
  * Everything below that is additive, and every step is independently
@@ -88,7 +92,7 @@ safely('work grid', initWork);
 // Before the font wait below, not after: the six facts all ship in the HTML,
 // and this is what collapses them into a deck. A second of them stacked up
 // while a webfont downloads would be a worse first impression than the wait.
-safely('apple tree', initTree);
+const tree = safely('apple tree', initTree) ?? null;
 
 /* -------------------------------------------------------------------------- */
 /* 2. Scroll layer                                                             */
@@ -120,6 +124,21 @@ safely('scroll refresh', () => ScrollTrigger.refresh());
 /* -------------------------------------------------------------------------- */
 /* 4. Deferred enhancements                                                    */
 /* -------------------------------------------------------------------------- */
+
+// The 3D tree. First of the deferred work and on the shortest leash, because
+// it is the one thing above the fold — but still deferred, because the SVG
+// tree it replaces is already on screen and already interactive. If this never
+// arrives, or the browser won't give it a second WebGL context, the difference
+// is dimensional, not functional.
+if (tree && allowWebGL) {
+  whenIdle(() => {
+    const canvas = document.querySelector('[data-orchard-canvas]');
+    if (!canvas) return;
+    import('./scene/orchard.js')
+      .then(({ mountOrchard }) => mountOrchard(canvas, tree))
+      .catch((error) => console.warn('[macieira.cc] 3D tree:', error));
+  }, 1200);
+}
 
 // Live GitHub data, imported here rather than at the top so the fetch layer
 // isn't part of first paint. Refreshing ScrollTrigger afterwards matters:

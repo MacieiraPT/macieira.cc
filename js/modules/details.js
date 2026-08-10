@@ -67,9 +67,9 @@ function initDrawings() {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The seam's glyph morphs between a controller and the GitHub mark — the
- * page's whole argument in one 30 px shape. It flips itself once when the
- * seam scrolls into view, and stays a real toggle button after that.
+ * The seam's mark morphs between the apple and the GitHub logo — the page's
+ * whole argument in one 30 px shape. It flips itself once when the seam
+ * scrolls into view, and stays a real toggle button after that.
  */
 function initMorph() {
   const toggle = document.querySelector('[data-morph-toggle]');
@@ -78,10 +78,10 @@ function initMorph() {
   if (!toggle || !shape) return;
 
   const STATES = {
-    pad: { target: '#shape-pad', label: 'controller' },
+    apple: { target: '#shape-apple', label: 'macieira' },
     gh: { target: '#shape-gh', label: 'github' },
   };
-  let current = 'pad';
+  let current = 'apple';
 
   const setState = (next, { animated = true } = {}) => {
     if (next === current) return;
@@ -100,7 +100,7 @@ function initMorph() {
     });
   };
 
-  toggle.addEventListener('click', () => setState(current === 'pad' ? 'gh' : 'pad'));
+  toggle.addEventListener('click', () => setState(current === 'apple' ? 'gh' : 'apple'));
 
   ScrollTrigger.create({
     trigger: toggle,

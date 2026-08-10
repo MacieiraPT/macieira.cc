@@ -4,7 +4,6 @@
   <rect width="48" height="48" rx="11" fill="#08080a"/>
   <g transform="translate(24 25.5) scale(1.16) translate(-24 -24)">
     <path fill="#e4392f" d="M24 15.6c-2.8-4.2-8.6-5.4-12.3-2-4.5 4.1-4.1 12.8-.4 19.6 2.4 4.4 5.6 7.2 8.3 6.2 1.7-.6 2.7-1.2 4.4-1.2s2.7.6 4.4 1.2c2.7 1 5.9-1.8 8.3-6.2 3.7-6.8 4.1-15.5-.4-19.6-3.7-3.4-9.5-2.2-12.3 2Z"/>
-    <ellipse cx="16.8" cy="22.4" rx="3.1" ry="4.9" fill="#fff" opacity=".26" transform="rotate(-26 16.8 22.4)"/>
     <path fill="none" stroke="#8b7b69" stroke-width="2.3" stroke-linecap="round" d="M24 15.6C24.3 11 25.8 7.3 28.6 4.4"/>
     <path fill="#cdfb45" d="M26.2 10.6C29.5 5.9 34.9 4.7 38.4 6.9 37.7 11.8 33.1 14.7 27.9 12.7Z"/>
   </g>

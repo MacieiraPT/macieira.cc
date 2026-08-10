@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<title>rudi — macieira.cc</title>
-<meta name="description" content="Personal site of rudi (MacieiraPT). Macieira is Portuguese for apple tree — so the front page is one, and every apple on it is something about me. Steam, Discord and GitHub in one place.">
+<title>macieira.cc</title>
+<meta name="description" content="rudi (MacieiraPT) — developer, Portugal. Macieira is Portuguese for apple tree, so the front page is one: a WebGL tree whose apples are the short version. Steam, Discord and GitHub.">
 <link rel="canonical" href="https://macieira.cc/">
 <meta name="theme-color" content="#08080a">
 <meta name="color-scheme" content="dark">
@@ -14,8 +14,8 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://macieira.cc/">
 <meta property="og:site_name" content="macieira.cc">
-<meta property="og:title" content="rudi — macieira.cc">
-<meta property="og:description" content="Macieira means apple tree. Pick an apple. Mostly a gamer, starting a university bachelor's, building the dev side in public.">
+<meta property="og:title" content="macieira.cc">
+<meta property="og:description" content="Developer, Portugal. Macieira is Portuguese for apple tree — so the front page is one, and each apple is the short version.">
 <meta property="og:image" content="https://macieira.cc/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -117,10 +117,14 @@
 -->
 <svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
   <defs>
+    <!--
+      Flat and unlit on purpose. An earlier pass had a white specular blob on
+      the body, which reads as an emoji at 27 px; the mark is stronger as three
+      solid shapes, and the fruit that actually needs a highlight is the one in
+      the hero, where a real light puts it there.
+    -->
     <symbol id="i-apple" viewBox="0 0 48 48">
       <path fill="var(--apple)" d="M24 15.6c-2.8-4.2-8.6-5.4-12.3-2-4.5 4.1-4.1 12.8-.4 19.6 2.4 4.4 5.6 7.2 8.3 6.2 1.7-.6 2.7-1.2 4.4-1.2s2.7.6 4.4 1.2c2.7 1 5.9-1.8 8.3-6.2 3.7-6.8 4.1-15.5-.4-19.6-3.7-3.4-9.5-2.2-12.3 2Z"/>
-      <!-- Specular highlight: what makes it read as fruit rather than a circle. -->
-      <ellipse cx="16.8" cy="22.4" rx="3.1" ry="4.9" fill="#fff" opacity=".26" transform="rotate(-26 16.8 22.4)"/>
       <path fill="none" stroke="var(--bark)" stroke-width="2.3" stroke-linecap="round" d="M24 15.6C24.3 11 25.8 7.3 28.6 4.4"/>
       <path fill="var(--leaf)" d="M26.2 10.6C29.5 5.9 34.9 4.7 38.4 6.9 37.7 11.8 33.1 14.7 27.9 12.7Z"/>
     </symbol>
@@ -166,8 +170,8 @@
 
   <nav class="masthead__nav" aria-label="Sections">
     <a href="#now" data-anchor><span class="idx">01</span> now</a>
-    <a href="#play" data-anchor><span class="idx">02</span> play</a>
-    <a href="#dev" data-anchor><span class="idx">03</span> dev</a>
+    <a href="#play" data-anchor><span class="idx">02</span> elsewhere</a>
+    <a href="#dev" data-anchor><span class="idx">03</span> github</a>
   </nav>
 
   <!-- GitHub is the one link that gets a persistent, weighted slot in the chrome. -->
@@ -201,30 +205,22 @@
       <div class="hero__stage">
 
         <div class="orchard" data-tree>
+          <!--
+            The light around the tree is a CSS layer rather than part of either
+            tree, because both of them need it and neither should own it: the
+            SVG below and the WebGL canvas above swap places, and the glow
+            stays put through the handover.
+          -->
+          <div class="orchard__glow" data-canopy aria-hidden="true"></div>
+
+          <!--
+            The 3D tree, when there is a context for it. js/scene/orchard.js
+            fades this in and takes over placing the buttons; until then, and
+            forever without WebGL, the SVG underneath is the tree.
+          -->
+          <canvas class="orchard__canvas" data-orchard-canvas aria-hidden="true"></canvas>
+
           <svg class="orchard__art" viewBox="0 0 460 520" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
-            <defs>
-              <radialGradient id="canopy">
-                <stop offset="0%"   stop-color="var(--leaf)" stop-opacity="0.20"/>
-                <stop offset="55%"  stop-color="var(--leaf)" stop-opacity="0.07"/>
-                <stop offset="100%" stop-color="var(--leaf)" stop-opacity="0"/>
-              </radialGradient>
-              <radialGradient id="rootshadow">
-                <stop offset="0%"   stop-color="var(--leaf)" stop-opacity="0.16"/>
-                <stop offset="100%" stop-color="var(--leaf)" stop-opacity="0"/>
-              </radialGradient>
-            </defs>
-
-            <!-- Foliage: four overlapping radial washes. No blur filter, which
-                 would cost a full-canvas offscreen pass on every repaint. -->
-            <g class="orchard__canopy" data-canopy>
-              <ellipse cx="232" cy="272" rx="216" ry="152" fill="url(#canopy)"/>
-              <ellipse cx="150" cy="284" rx="98"  ry="80"  fill="url(#canopy)"/>
-              <ellipse cx="318" cy="278" rx="102" ry="84"  fill="url(#canopy)"/>
-              <ellipse cx="234" cy="226" rx="90"  ry="72"  fill="url(#canopy)"/>
-            </g>
-
-            <ellipse cx="230" cy="504" rx="156" ry="18" fill="url(#rootshadow)"/>
-
             <!--
               Trunk and branches, thickest first so the eye reads the taper —
               and so the growth animation runs trunk → limbs → twigs for free.
@@ -272,8 +268,8 @@
           -->
           <ul class="orchard__apples" data-tree-apples>
             <li class="orchard__apple" style="--x:50.4%; --y:44.0%; --sway:0"    ><button class="apple" type="button" data-apple="name"    aria-controls="fact-name"   ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">the name</span></button></li>
-            <li class="orchard__apple" style="--x:67.8%; --y:50.2%; --sway:0.7"  ><button class="apple" type="button" data-apple="who"     aria-controls="fact-who"    ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">who</span></button></li>
-            <li class="orchard__apple" style="--x:32.8%; --y:49.8%; --sway:1.4"  ><button class="apple" type="button" data-apple="study"   aria-controls="fact-study"  ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">studying</span></button></li>
+            <li class="orchard__apple" style="--x:67.8%; --y:50.2%; --sway:0.7"  ><button class="apple" type="button" data-apple="work"    aria-controls="fact-work"   ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">now</span></button></li>
+            <li class="orchard__apple" style="--x:32.8%; --y:49.8%; --sway:1.4"  ><button class="apple" type="button" data-apple="stack"   aria-controls="fact-stack"  ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">stack</span></button></li>
             <li class="orchard__apple" style="--x:21.3%; --y:61.0%; --sway:2.1"  ><button class="apple" type="button" data-apple="steam"   aria-controls="fact-steam"  ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Steam</span></button></li>
             <li class="orchard__apple" style="--x:61.1%; --y:66.2%; --sway:2.8"  ><button class="apple" type="button" data-apple="discord" aria-controls="fact-discord"><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">Discord</span></button></li>
             <li class="orchard__apple" style="--x:79.1%; --y:61.3%; --sway:3.5"  ><button class="apple" type="button" data-apple="github"  aria-controls="fact-github" ><span class="apple__fruit" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span><span class="apple__tag mono">GitHub</span></button></li>
@@ -284,54 +280,43 @@
           <h1 class="hero__name" id="hero-name" data-hero="name" data-split>rudi</h1>
 
           <p class="hero__lede" data-hero="lede">
-            <span class="hero__lede-lead">Mostly a gamer.</span> I'm starting a university
-            bachelor's, so this page is where the other half — the building half — is
-            going to grow, in public, from zero.
+            <span class="hero__lede-lead">Developer, based in Portugal.</span> This is where
+            the work goes as it gets made, starting with the thing you're looking at.
           </p>
 
           <div class="basket" data-hero="basket">
             <div class="basket__deck" data-tree-facts>
-              <!--
-                Hidden in the file and un-hidden by js/modules/tree.js. Without
-                JS there is nothing to pick, so the invitation would be a lie —
-                and all six facts are already on screen underneath it.
-              -->
-              <p class="basket__prompt mono" data-tree-prompt hidden>
-                <span class="basket__prompt-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span>
-                Six apples on the tree. Pick one.
-              </p>
 
               <article class="fact" id="fact-name" data-fact="name">
                 <p class="fact__label mono">01 — the name</p>
                 <h2 class="fact__title">Macieira means apple tree.</h2>
                 <p class="fact__body">
-                  It's my surname, in Portuguese. This page is the literal reading of it:
-                  one tree, and everything I'd tell you about myself hanging off it.
+                  It's my surname, in Portuguese. The front page takes that literally.
                 </p>
               </article>
 
-              <article class="fact" id="fact-who" data-fact="who">
-                <p class="fact__label mono">02 — who</p>
-                <h2 class="fact__title">rudi, from Portugal.</h2>
+              <article class="fact" id="fact-work" data-fact="work">
+                <p class="fact__label mono">02 — now</p>
+                <h2 class="fact__title">Building in the open.</h2>
                 <p class="fact__body">
-                  It's <span data-clock>--:--</span> where I am. Mostly a gamer, and I'm not
-                  going to pretend otherwise — that's honestly where the hours have gone so far.
+                  This site is the first thing I've shipped. Everything after it lands on
+                  GitHub and appears further down this page on its own.
                 </p>
               </article>
 
-              <article class="fact" id="fact-study" data-fact="study">
-                <p class="fact__label mono">03 — studying</p>
-                <h2 class="fact__title">First year, just started.</h2>
+              <article class="fact" id="fact-stack" data-fact="stack">
+                <p class="fact__label mono">03 — stack</p>
+                <h2 class="fact__title">Three.js, GSAP, Lenis.</h2>
                 <p class="fact__body">
-                  A university bachelor's, right at the beginning of it. Ask me again in
-                  a semester and there should be something here worth reading.
+                  Plain ES modules and two WebGL scenes. No framework and no build step —
+                  what's in the repository is what ships.
                 </p>
               </article>
 
               <article class="fact" id="fact-steam" data-fact="steam">
                 <p class="fact__label mono">04 — steam</p>
                 <h2 class="fact__title">Steam</h2>
-                <p class="fact__body">Where most of those hours are actually logged.</p>
+                <p class="fact__body">Off the clock.</p>
                 <a class="btn btn--ghost fact__action" href="https://steamcommunity.com/id/r_di/" target="_blank" rel="noopener">
                   <svg class="icon" aria-hidden="true"><use href="#i-steam"/></svg>
                   <span>/id/r_di</span>
@@ -342,7 +327,7 @@
               <article class="fact" id="fact-discord" data-fact="discord">
                 <p class="fact__label mono">05 — discord</p>
                 <h2 class="fact__title">Discord</h2>
-                <p class="fact__body">The tab that never gets closed, and the fastest way to reach me.</p>
+                <p class="fact__body">The fastest way to reach me.</p>
                 <button class="btn btn--ghost fact__action" type="button" data-copy="rvdi">
                   <svg class="icon" aria-hidden="true"><use href="#i-discord"/></svg>
                   <span>rvdi</span>
@@ -353,10 +338,7 @@
               <article class="fact" id="fact-github" data-fact="github">
                 <p class="fact__label mono">06 — github</p>
                 <h2 class="fact__title">GitHub</h2>
-                <p class="fact__body">
-                  The building half. Whatever I ship lands here, and shows up further down
-                  this page on its own.
-                </p>
+                <p class="fact__body">Source for this site, and everything after it.</p>
                 <a class="btn btn--ghost fact__action" href="https://github.com/MacieiraPT" target="_blank" rel="me noopener">
                   <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
                   <span>@MacieiraPT</span>
@@ -364,6 +346,16 @@
                 </a>
               </article>
             </div>
+
+            <!--
+              Hidden in the file and un-hidden by js/modules/tree.js. Without
+              JS there is nothing to pick, so the invitation would be a lie —
+              and all six facts are already on the page anyway.
+            -->
+            <p class="basket__prompt mono" data-tree-prompt hidden>
+              <span class="basket__prompt-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span>
+              Six apples. Pick another.
+            </p>
           </div>
         </div>
 
@@ -387,7 +379,7 @@
           <span class="sep" aria-hidden="true">/</span>
           <span data-clock aria-label="Local time in Portugal">--:--</span>
           <span class="sep" aria-hidden="true">/</span>
-          player, first-year student
+          developer
         </p>
       </div>
     </div>
@@ -396,25 +388,24 @@
   <!-- ───────────────────────────────  01 NOW  ────────────────────────────── -->
   <section class="section section--now" id="now" aria-labelledby="now-title">
     <div class="section__head">
-      <p class="label" data-reveal>01 — where I'm at</p>
+      <p class="label" data-reveal>01 — now</p>
       <h2 class="h2" id="now-title" data-reveal-lines>
-        No portfolio yet. That's the honest version, and the whole point of putting
-        this up now.
+        Early, and building where it can be seen.
       </h2>
     </div>
 
     <div class="cards">
-      <article class="card" data-reveal>
-        <p class="card__label">Playing</p>
-        <p class="card__body">Steam, and a Discord tab that is never closed. That's where the hours have gone so far, and I'm not going to pretend otherwise.</p>
-      </article>
-      <article class="card" data-reveal>
-        <p class="card__label">Studying</p>
-        <p class="card__body">Starting a university bachelor's — first year, right at the beginning of it. Ask me again in a semester.</p>
-      </article>
       <article class="card card--accent" data-reveal>
-        <p class="card__label">Building</p>
-        <p class="card__body">This site is the first thing I've actually shipped. Whatever comes next lands on GitHub, and shows up further down this page automatically.</p>
+        <p class="card__label">Shipped</p>
+        <p class="card__body">This site. Static ES modules, two WebGL scenes, no framework and no build step — the repository is the deploy.</p>
+      </article>
+      <article class="card" data-reveal>
+        <p class="card__label">Working on</p>
+        <p class="card__body">Real-time graphics on the web, and the performance work that keeps them running on a phone as well as a desktop.</p>
+      </article>
+      <article class="card" data-reveal>
+        <p class="card__label">Next</p>
+        <p class="card__body">Whatever I build lands on GitHub, and shows up further down this page on its own.</p>
       </article>
     </div>
   </section>
@@ -422,18 +413,18 @@
   <!-- Velocity marquee: speed and skew are driven by the Lenis scroll velocity. -->
   <div class="marquee" aria-hidden="true" data-marquee>
     <div class="marquee__track" data-marquee-track>
-      <span>games</span><span class="marquee__dot">◆</span>
-      <span>learning in public</span><span class="marquee__dot">◆</span>
-      <span>macieira = apple tree</span><span class="marquee__dot">◆</span>
+      <span>macieira</span><span class="marquee__dot">◆</span>
+      <span>apple tree</span><span class="marquee__dot">◆</span>
       <span>portugal</span><span class="marquee__dot">◆</span>
-      <span>first commit energy</span><span class="marquee__dot">◆</span>
+      <span>webgl</span><span class="marquee__dot">◆</span>
+      <span>in the open</span><span class="marquee__dot">◆</span>
     </div>
   </div>
 
   <!-- ───────────────────────────────  02 PLAY  ───────────────────────────── -->
   <section class="section section--play" id="play" aria-labelledby="play-title">
     <div class="section__head">
-      <p class="label" data-reveal>02 — where to find me</p>
+      <p class="label" data-reveal>02 — elsewhere</p>
       <h2 class="h2" id="play-title" data-reveal-lines>Three places. That's the whole list.</h2>
     </div>
 
@@ -474,8 +465,8 @@
   <!-- ──────────────────────────  PLAY → BUILD SEAM  ──────────────────────── -->
   <!--
     The transition between the two halves of the page, and the home of the
-    anime.js work: the seam draws itself on, and the glyph morphs from a
-    controller into the GitHub mark.
+    anime.js work: the seam draws itself on, and the mark morphs from the
+    apple into the GitHub logo — the site's whole argument in one 30 px shape.
   -->
   <div class="seam" data-seam>
     <svg class="seam__line" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true">
@@ -485,17 +476,17 @@
     <button class="seam__toggle" type="button" data-morph-toggle aria-pressed="false">
       <svg class="seam__glyph" viewBox="0 0 24 24" aria-hidden="true">
         <!-- The visible shape. anime.js morphs its `d` between the two hidden templates below. -->
-        <path data-morph-shape d="M7.9 6.2h8.2c2.7 0 5 1.9 5.5 4.5l1 5.1c.4 2.1-1.2 4-3.3 4-1.1 0-2.1-.5-2.7-1.4l-1.4-1.9H8.8l-1.4 1.9c-.6.9-1.6 1.4-2.7 1.4-2.1 0-3.7-1.9-3.3-4l1-5.1c.5-2.6 2.8-4.5 5.5-4.5Z"/>
+        <path data-morph-shape d="M12 7.8c-1.4-2.1-4.3-2.7-6.15-1-2.25 2.05-2.05 6.4-.2 9.8 1.2 2.2 2.8 3.6 4.15 3.1.85-.3 1.35-.6 2.2-.6s1.35.3 2.2.6c1.35.5 2.95-.9 4.15-3.1 1.85-3.4 2.05-7.75-.2-9.8-1.85-1.7-4.75-1.1-6.15 1Z"/>
       </svg>
       <span class="seam__caption">
-        <span class="seam__state" data-morph-label>controller</span>
-        <span class="seam__hint mono">tap to switch sides</span>
+        <span class="seam__state" data-morph-label>macieira</span>
+        <span class="seam__hint mono">tap to switch</span>
       </span>
     </button>
 
     <!-- Morph templates, never rendered. Single continuous paths so the resampled morph stays clean. -->
     <svg class="sprite" aria-hidden="true" width="0" height="0"><defs>
-      <path id="shape-pad" d="M7.9 6.2h8.2c2.7 0 5 1.9 5.5 4.5l1 5.1c.4 2.1-1.2 4-3.3 4-1.1 0-2.1-.5-2.7-1.4l-1.4-1.9H8.8l-1.4 1.9c-.6.9-1.6 1.4-2.7 1.4-2.1 0-3.7-1.9-3.3-4l1-5.1c.5-2.6 2.8-4.5 5.5-4.5Z"/>
+      <path id="shape-apple" d="M12 7.8c-1.4-2.1-4.3-2.7-6.15-1-2.25 2.05-2.05 6.4-.2 9.8 1.2 2.2 2.8 3.6 4.15 3.1.85-.3 1.35-.6 2.2-.6s1.35.3 2.2.6c1.35.5 2.95-.9 4.15-3.1 1.85-3.4 2.05-7.75-.2-9.8-1.85-1.7-4.75-1.1-6.15 1Z"/>
       <path id="shape-gh" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
     </defs></svg>
   </div>
@@ -507,15 +498,14 @@
       <!-- Left rail gets pinned by ScrollTrigger on wide screens. -->
       <div class="dev__rail" data-pin-rail>
         <div class="dev__rail-inner">
-          <p class="label" data-reveal>03 — the dev side</p>
+          <p class="label" data-reveal>03 — github</p>
           <h2 class="h2" id="dev-title" data-reveal-lines>
-            Day one of this, publicly logged.
+            Read live from the API.
           </h2>
           <p class="prose" data-reveal>
-            Everything under this heading is live from the GitHub API, not typed in
-            by hand — so it can only ever say what's actually true. Right now that
-            might not be much. That's fine: the number goes up from here, and I'd
-            rather show the real starting line than a fake one.
+            Counters, activity and repositories come straight from the public GitHub
+            API rather than being typed in here, so this section can only say what is
+            actually true on any given day.
           </p>
           <a class="btn btn--solid" href="https://github.com/MacieiraPT" target="_blank" rel="me noopener" data-magnetic data-reveal>
             <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
@@ -575,7 +565,7 @@
 
           <div class="gh__repos" data-gh-repos>
             <p class="gh__empty">
-              Latest repositories will appear here as soon as there are public ones.
+              Repositories appear here as they are published.
             </p>
           </div>
 
@@ -583,7 +573,7 @@
         </section>
 
         <!--
-          The slot the dev side grows into. Cards are rendered from
+          The slot the work grows into. Cards are rendered from
           js/data/projects.js — adding one object there adds one card here,
           and the empty state disappears on its own.
         -->
@@ -592,19 +582,19 @@
           <div class="work__grid" data-work-grid>
             <article class="work-card work-card--ghost">
               <p class="work-card__slot mono">slot 01</p>
-              <p class="work-card__text">Reserved for the first thing worth showing.</p>
+              <p class="work-card__text">Reserved.</p>
             </article>
             <article class="work-card work-card--ghost">
               <p class="work-card__slot mono">slot 02</p>
-              <p class="work-card__text">Coursework that turns out better than expected.</p>
+              <p class="work-card__text">Reserved.</p>
             </article>
             <article class="work-card work-card--ghost">
               <p class="work-card__slot mono">slot 03</p>
-              <p class="work-card__text">Something broken, then fixed, then written up.</p>
+              <p class="work-card__text">Reserved.</p>
             </article>
           </div>
           <p class="work__note mono" data-reveal>
-            Empty on purpose — this grid is wired to <span class="dim">js/data/projects.js</span>.
+            Wired to <span class="dim">js/data/projects.js</span> — cards appear when there are entries.
           </p>
         </section>
 
@@ -616,9 +606,9 @@
 <!-- ────────────────────────────────  FOOTER  ───────────────────────────────- -->
 <footer class="footer" id="say-hi">
   <div class="footer__top">
-    <p class="label" data-reveal>04 — say hi</p>
+    <p class="label" data-reveal>04 — contact</p>
     <p class="footer__big" data-reveal-lines>
-      Add me, queue up, or check the commits in a year and see how it went.
+      Get in touch, or watch the commits.
     </p>
 
     <div class="footer__actions">
@@ -642,7 +632,7 @@
   <div class="stickers" data-stickers>
     <span class="sticker sticker--1" data-sticker aria-hidden="true"><svg class="sticker__apple" viewBox="0 0 48 48"><use href="#i-apple"/></svg></span>
     <span class="sticker sticker--2 mono" data-sticker>PT</span>
-    <span class="sticker sticker--3 mono" data-sticker>gg</span>
+    <span class="sticker sticker--3 mono" data-sticker>.cc</span>
     <p class="stickers__hint mono" aria-hidden="true">drag them</p>
   </div>
 
