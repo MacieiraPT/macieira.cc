@@ -1,0 +1,13 @@
+# Files in this directory that are NOT part of the published site.
+# Same syntax as .gitignore. _headers is deliberately absent: Cloudflare
+# parses it rather than serving it, so it must stay in the upload.
+
+node_modules/
+tools/
+package.json
+package-lock.json
+README.md
+wrangler.jsonc
+.assetsignore
+.gitignore
+.git/
