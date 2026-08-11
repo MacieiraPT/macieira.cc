@@ -9,6 +9,12 @@
   "name": "macieira-cc",
   "compatibility_date": "2026-08-10",
   "assets": {
-    "directory": "."
+    "directory": ".",
+    // Without this, an unmatched path gets a bare, bodyless 404 from the
+    // platform — the default is "none". This is what makes /404.html the
+    // page a typo actually lands on. It does not affect real assets, and it
+    // is not "single-page-application": that would serve index.html for
+    // every miss, which would make a broken URL look like the front page.
+    "not_found_handling": "404-page"
   }
 }

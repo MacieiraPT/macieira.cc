@@ -129,6 +129,12 @@ dl, dd { margin: 0; }
   border-radius: 4px;
 }
 
+/* <main> only takes focus because the skip link sends it there (tabindex="-1"
+   in the markup). Ringing it would draw a 2 px box around the entire page,
+   which reads as a rendering bug rather than as feedback — and the jump to the
+   top of the content is the feedback. Everything *inside* it still rings. */
+main:focus-visible { outline: none; }
+
 ::selection { background: var(--tint); color: #0a0a0c; }
 
 /* --------------------------------------------------------------------------

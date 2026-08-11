@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 /**
- * og.mjs — renders tools/og-template.html to the two raster assets that a
- * static site can't generate at runtime:
+ * og.mjs — renders tools/og-template.html to the raster assets that a static
+ * site can't generate at runtime:
  *
  *   assets/og.png               1200×630 social share card
- *   assets/apple-touch-icon.png 180×180 home-screen icon
+ *   assets/apple-touch-icon.png 180×180 home-screen icon (iOS)
+ *   assets/icon-192.png         192×192 web app manifest
+ *   assets/icon-512.png         512×512 web app manifest, install prompts
+ *
+ * The favicon stays SVG and is not generated here — it is the one mark that
+ * wants to stay vector.
  *
  * Both are committed, so this only needs running when the artwork changes:
  *
@@ -58,11 +63,17 @@ const page = await browser.newPage({ viewport: { width: 1200, height: 700 }, dev
 await page.goto('http://localhost:4322/tools/og-template.html', { waitUntil: 'networkidle' });
 await page.evaluate(() => document.fonts.ready);
 
-await page.locator('#og').screenshot({ path: join(root, 'assets/og.png') });
-await page.locator('#touch-icon').screenshot({ path: join(root, 'assets/apple-touch-icon.png') });
+const shots = [
+  ['#og', 'assets/og.png', '1200×630'],
+  ['#touch-icon', 'assets/apple-touch-icon.png', '180×180'],
+  ['#icon-192', 'assets/icon-192.png', '192×192'],
+  ['#icon-512', 'assets/icon-512.png', '512×512'],
+];
 
-console.log('  assets/og.png                1200×630');
-console.log('  assets/apple-touch-icon.png   180×180');
+for (const [selector, file, size] of shots) {
+  await page.locator(selector).screenshot({ path: join(root, file) });
+  console.log(`  ${file.padEnd(28)}${size}`);
+}
 
 await browser.close();
 server.close();

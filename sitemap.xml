@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<!--
+  One page, in two languages at the same URL.
+
+  `changefreq` and `priority` used to be here and have been dropped: Google
+  has said publicly that it ignores both. `lastmod` is the one element it
+  does read, so it is the only one worth keeping accurate — update it when
+  the page's content actually changes, not on every deploy.
+
+  The xhtml:link pairs mirror the hreflang tags in index.html. Both have to
+  agree, and both have to list *every* language including the one they sit on,
+  or search engines discard the whole set.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://macieira.cc/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-08-11</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://macieira.cc/"/>
+    <xhtml:link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/?lang=pt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://macieira.cc/"/>
   </url>
 </urlset>

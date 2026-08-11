@@ -45,12 +45,23 @@
   .handles { position: relative; display: flex; gap: 40px; font-family: var(--font-mono); font-size: 21px; color: var(--ink-dim); }
   .handles b { color: var(--ink); font-weight: 500; }
 
-  /* ---- 180×180 touch icon ---- */
-  .icon {
-    width: 180px; height: 180px; display: grid; place-items: center;
-    background: var(--bg);
-  }
-  .icon svg { width: 132px; height: 132px; }
+  /* ---- app icons ----
+     Three sizes of one drawing: the mark sits at 11/15 of the box in each, so
+     they scale as the same icon rather than as three that drift. The 512 is
+     what Android's install prompt rasterises from.
+
+     Sizes are written out in whole pixels rather than as a percentage, which
+     matters more than it looks: a fractional box (73.333% of 180 = 131.9994px)
+     renders a hair differently from a whole one, and that was enough to rewrite
+     every byte of the touch icon on a regeneration that changed nothing about
+     the artwork. */
+  .icon { display: grid; place-items: center; background: var(--bg); }
+  .icon--180 { width: 180px; height: 180px; }
+  .icon--192 { width: 192px; height: 192px; }
+  .icon--512 { width: 512px; height: 512px; }
+  .icon--180 svg { width: 132px; height: 132px; }
+  .icon--192 svg { width: 141px; height: 141px; }
+  .icon--512 svg { width: 376px; height: 376px; }
 </style>
 </head>
 <body>
@@ -88,7 +99,15 @@
   </div>
 </div>
 
-<div class="icon" id="touch-icon">
+<div class="icon icon--180" id="touch-icon">
+  <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#mark"/></svg>
+</div>
+
+<!-- The two the web app manifest points at. -->
+<div class="icon icon--192" id="icon-192">
+  <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#mark"/></svg>
+</div>
+<div class="icon icon--512" id="icon-512">
   <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#mark"/></svg>
 </div>
 

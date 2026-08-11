@@ -150,10 +150,37 @@ export function initClock() {
     tick();
   });
 
-  tick();
-  // Align the first update to the top of the next minute, then run per minute.
-  setTimeout(() => {
+  /**
+   * Re-aimed at the top of the next minute every time, rather than aligning
+   * once and handing off to setInterval(60_000).
+   *
+   * An interval accumulates its own error, and a background tab makes that
+   * error enormous — browsers throttle timers there to once a minute at best
+   * and once a *second* of wall clock per several minutes at worst. Left open
+   * in another tab for an afternoon, the old clock came back minutes behind
+   * and stayed there, because nothing ever recomputed the offset. Reading the
+   * real clock on every tick means any single late fire is corrected by the
+   * next one instead of being carried forever.
+   */
+  let timer;
+  const schedule = () => {
+    const now = new Date();
+    const untilNextMinute = 60_000 - (now.getSeconds() * 1000 + now.getMilliseconds());
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      tick();
+      schedule();
+    }, untilNextMinute);
+  };
+
+  // Coming back to a throttled tab shouldn't mean waiting up to a minute for
+  // the display to catch up: repaint immediately and re-aim from now.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
     tick();
-    setInterval(tick, 60_000);
-  }, (60 - new Date().getSeconds()) * 1000);
+    schedule();
+  });
+
+  tick();
+  schedule();
 }

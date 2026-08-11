@@ -5,6 +5,12 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
+  # A year, subdomains included. The site is HTTPS-only and has no subdomain
+  # serving anything, so there is nothing here to break. Deliberately without
+  # the `preload` token: that one is a submission to a browser-baked list that
+  # takes months to get out of, and it should be a decision rather than a
+  # side effect of adding the header.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
   # Everything is same-origin except two things the page genuinely needs:
   # the GitHub API (the live dev panel) and GitHub's avatar CDN.
