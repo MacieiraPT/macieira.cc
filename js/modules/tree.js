@@ -18,7 +18,7 @@
  * touches the DOM, and nothing about tab order, Enter, focus rings or
  * screen-reader output differs between the two modes.
  *
- * With JavaScript off none of this runs and all six facts are simply on the
+ * With JavaScript off none of this runs and all seven facts are simply on the
  * page, which is the same content in a longer form.
  *
  * Nothing in here checks `prefers-reduced-motion`. The tree is the identity of
@@ -42,8 +42,8 @@ export function initTree() {
   if (!buttons.length || !facts.size) return null;
 
   const prompt = document.querySelector('[data-tree-prompt]');
-  // Resolved once. `place()` below runs six times a frame, and a querySelector
-  // per apple per frame is 360 tree walks a second to find elements that never
+  // Resolved once. `place()` below runs seven times a frame, and a querySelector
+  // per apple per frame is 420 tree walks a second to find elements that never
   // move in the DOM.
   const cells = new Map(buttons.map((button) => [button.dataset.apple, button.parentElement]));
   const hoverListeners = [];
@@ -219,7 +219,18 @@ export function initTree() {
   // Otherwise the first apple opens itself — an introduction that has to be
   // clicked before it says anything isn't an introduction, and a panel that
   // starts empty is a panel that starts looking broken.
-  const target = decodeURIComponent(location.hash.replace(/^#/, ''));
+  //
+  // decodeURIComponent throws on a malformed escape, and `/#%` is a URL anyone
+  // can type. This is on the critical path, so that throw would cost the whole
+  // tree — and `safely()` in main.js would release the reveal contract with it,
+  // turning one bad character in the hash into an unanimated page.
+  const raw = location.hash.replace(/^#/, '');
+  let target;
+  try {
+    target = decodeURIComponent(raw);
+  } catch {
+    target = raw;
+  }
   const linked = [...facts.values()].find((card) => card.id === target);
   pick(linked ? linked.dataset.fact : buttons[0].dataset.apple, { measure: false });
 
@@ -327,7 +338,7 @@ export function initTree() {
     /**
      * Hit-area diameter, in CSS pixels. Set on resize, not per frame: depth
      * varies an apple's on-screen size by a few percent, and chasing that
-     * would mean writing a width to six elements sixty times a second.
+     * would mean writing a width to seven elements sixty times a second.
      */
     setAppleSize(px) {
       root.style.setProperty('--apple-3d', `${Math.round(px)}px`);

@@ -144,12 +144,40 @@ const LANGUAGE_COLORS = {
 /* Rendering                                                                   */
 /* -------------------------------------------------------------------------- */
 
+/** The one host this panel is allowed to load an image from — matches the CSP. */
+const AVATAR_HOST = 'avatars.githubusercontent.com';
+
+/**
+ * A size-capped avatar URL, or null if the API handed back something that
+ * isn't one.
+ *
+ * Parsed rather than concatenated, and that is not pedantry on either count.
+ * `avatar_url + '&s=128'` only produces a valid URL because GitHub happens to
+ * ship a `?v=` on every avatar today; and the result goes into a CSS
+ * `url("…")`, where a bare `"` in the value closes the string and everything
+ * after it is a declaration the browser will run. Going through URL fixes both
+ * — `searchParams` doesn't care whether a query already exists, and `href`
+ * percent-encodes the quote — and the host check keeps this pinned to the one
+ * origin the CSP allows, so the two can't drift apart silently.
+ */
+function avatarURL(raw) {
+  try {
+    const url = new URL(raw, API);
+    if (url.protocol !== 'https:' || url.hostname !== AVATAR_HOST) return null;
+    url.searchParams.set('s', '128'); // 46 px circle, retina
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
 function renderProfile(root, user) {
   const avatar = root.querySelector('[data-gh-avatar]');
   if (avatar && user.avatar_url) {
     // Loaded through CSS rather than an <img> so the gradient placeholder
     // stays visible underneath until the real image decodes.
-    avatar.style.backgroundImage = `url("${user.avatar_url}&s=128")`;
+    const source = avatarURL(user.avatar_url);
+    if (source) avatar.style.backgroundImage = `url("${source}")`;
   }
 
   const sub = root.querySelector('[data-gh-sub]');

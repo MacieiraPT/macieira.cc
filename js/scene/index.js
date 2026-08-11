@@ -114,6 +114,10 @@ export function mountScene(canvas, { onReady } = {}) {
   let running = true;
   let frameHandle = 0;
   let firstFrame = true;
+  // Never cleared — see onContextLost. Without it the visibility handler
+  // restarts the loop the next time the tab comes forward, and it spins
+  // against a dead context for the rest of the session.
+  let contextLost = false;
 
   // Frame-time watchdog: two strikes, two mitigations, then it stops nagging.
   let sampled = 0;
@@ -167,6 +171,7 @@ export function mountScene(canvas, { onReady } = {}) {
    */
   function onContextLost(event) {
     event.preventDefault();
+    contextLost = true;
     stop();
     canvas.classList.remove('is-live');
     document.documentElement.classList.remove('scene-live');
@@ -266,7 +271,7 @@ export function mountScene(canvas, { onReady } = {}) {
   }
 
   function start() {
-    if (running && frameHandle) return;
+    if ((running && frameHandle) || contextLost) return;
     running = true;
     timer.reset();
     frameHandle = requestAnimationFrame(frame);
