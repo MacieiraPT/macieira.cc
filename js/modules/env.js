@@ -52,6 +52,12 @@ export const env = {
  * reasons get the full thing anyway. The honest mitigation is that nothing
  * here is large-amplitude or unexpected — no parallax on text, no autoplaying
  * transitions, no motion that starts without a scroll or a click.
+ *
+ * One caveat, because it cost a bug: nothing here can enforce this on a
+ * library that checks the media query itself. Lenis does, and its
+ * `respectReducedMotion` default silently turned every anchor scroll into a
+ * teleport while the wheel stayed smooth. It is switched off explicitly in
+ * smooth-scroll.js, and any library added later needs the same audit.
  */
 
 /**
