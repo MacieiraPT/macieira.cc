@@ -50,7 +50,9 @@ inside the assets directory, and Wrangler's own `workerd` binary is far over the
 per-asset limit.
 
 **`prefers-reduced-motion` is deliberately not honoured.** This is the owner's decision,
-recorded in `js/modules/env.js`. Do not "fix" it.
+recorded in `js/modules/env.js`. Do not "fix" it. Libraries that check the query
+themselves have to be switched off by hand — Lenis' `respectReducedMotion` is off in
+`smooth-scroll.js`, and leaving it on makes every anchor scroll teleport.
 
 **New external hosts need a CSP edit.** `_headers` allows only `api.github.com` and
 `avatars.githubusercontent.com`.
