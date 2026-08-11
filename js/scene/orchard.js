@@ -81,6 +81,16 @@ const HOVER = 1.18;
 /** How far a picked one swings off its branch — see onPick. */
 const PLUCK = 0.34;
 /**
+ * Blade length, shortest to longest.
+ *
+ * An apple leaf is about as long as an apple is wide, and these are sized to
+ * say so. A canopy of specks around fruit this size reads as confetti and makes
+ * the apples look like beach balls, which is what it did. Fewer leaves to pay
+ * for it — see growLeaves(), which ends up drawing about half as many.
+ */
+const LEAF_MIN = 0.072;
+const LEAF_MAX = 0.162;
+/**
  * Amplitude of the wind, in radians of tilt about the tree's base — see
  * frame(). Named because resize() has to frame for the lean as well as for the
  * tree: at the top of the crown it is worth rather more than it looks.
@@ -120,14 +130,21 @@ const CROWN = {
 
 const ROOTS = {
   count: 6,
-  maxDepth: 2,
-  decay: 0.66,
-  taper: 0.62,
+  /**
+   * One fork, not two. A root that splits and splits again is a root system,
+   * which is a true thing to draw and the wrong one: what shows above the soil
+   * is a handful of thick limbs, and drawing the rest of it — in the air,
+   * because there is no ground here to hide it — is what made these spidery.
+   */
+  maxDepth: 1,
+  decay: 0.6,
+  /** Hard, so a root thins away into the ground instead of stopping in mid-air. */
+  taper: 0.42,
   pipe: 2.1,
-  spread: [0.5, 0.44],
-  bend: [0.22, 0.3],
-  /** Negative phototropism — roots dive, then flatten out along the ground. */
-  phototropism: -0.34,
+  spread: [0.44, 0.4],
+  bend: [0.3, 0.3],
+  /** Negative phototropism — roots run out flat, then dive away out of sight. */
+  phototropism: -0.26,
 };
 
 /** Order matters only in that each key must exist as a [data-apple] button. */
@@ -261,32 +278,69 @@ function growSkeleton(rng) {
 
   // Short. Apple trees are mostly crown, and every centimetre of bare trunk
   // is a centimetre the canopy doesn't get.
-  const trunkRadius = 0.115;
-  const trunk = segment(new Vector3(0, 0, 0), new Vector3(0.02, 1, 0.01), 0.52, 0.05, 0);
+  //
+  // Two radii rather than one ratio, because the two ends of the trunk have
+  // different jobs: the foot is wide so the roots have something to flow out
+  // of, and the top is whatever the limbs can leave without a step.
+  const trunkFoot = 0.155;
+  const trunkTop = 0.088;
+  const trunk = segment(new Vector3(0, 0, 0), new Vector3(0.02, 1, 0.01), 0.52, 0.08, 0);
   branches.push({
     points: trunk.points,
-    r0: trunkRadius,
-    r1: trunkRadius * 0.62,
+    r0: trunkFoot,
+    r1: trunkTop,
     depth: 0,
     tag: 'trunk',
     // The flare. One radius curve over the trunk's own length rather than a
     // separate, wider stump underneath it — which is what used to sit there,
     // and what used to show a seam and a step in diameter at the join.
-    profile: (t) => 0.62 + 0.38 * Math.pow(1 - t, 2.4),
+    //
+    // It has to run to 0 at the top, like the linear default it replaces:
+    // branchGeometry() ends a branch at r1 + (r0 - r1) * profile(1). An earlier
+    // version bottomed out at 0.62, which quietly made the trunk's real top
+    // radius 0.098 while every other line here went on believing r1 — including
+    // the sphere meant to cap it, which came out a quarter too small to cover
+    // the mouth of the tube. The tube is open-ended. You could see down it.
+    profile: (t) => Math.pow(1 - t, 2.2),
   });
-  joints.push({ at: trunk.end, r: trunkRadius * 0.66 });
+  joints.push({ at: trunk.end, r: trunkTop * 1.06 });
 
-  // Four main limbs, thrown wide. This first split does more for the
-  // silhouette than every parameter below it.
+  // Four main limbs. This first split does more for the silhouette than every
+  // parameter below it, and it is the one join nobody can look away from — it
+  // sits at eye level in the middle of the page.
+  //
+  // They leave close to vertical and are thrown wide by their own forks further
+  // up. Limbs that set off at 45° turn the top of the trunk into a road
+  // junction: four tubes meeting a fifth at one point, at one height, at one
+  // angle. A vase doesn't have that problem.
   const mains = 4;
-  const crownRadius = trunkRadius * 0.62 * Math.pow(mains, -1 / CROWN.pipe);
+  // A gentler exponent than the crown's for this one split, so the scaffold
+  // keeps two thirds of the trunk rather than half. Four limbs visibly thinner
+  // than the thing they grow out of is the other half of why the join read as
+  // a step.
+  const crownRadius = trunkTop * Math.pow(mains, -1 / 3.4);
   for (let i = 0; i < mains; i += 1) {
     // Evenly around the compass, then jittered — left to chance alone, four
     // branches clump and the tree grows lopsided.
     const around = (i / mains) * Math.PI * 2 + 0.5 + rng() * 0.3;
-    const dir = new Vector3(Math.sin(around) * 0.78, 0.72 + rng() * 0.3, Math.cos(around) * 0.78)
+    const dir = new Vector3(Math.sin(around) * 0.52, 1.06 + rng() * 0.3, Math.cos(around) * 0.52)
       .normalize();
-    const from = trunk.end.clone().addScaledVector(dir, -trunkRadius * 0.5);
+    // Backed *down the trunk*, and by a different amount each time, so the
+    // limbs part company at four different depths inside it and surface as one
+    // swelling rather than four tubes meeting a fifth at a point.
+    //
+    // Down the trunk's own axis, not back along the limb: backing along the
+    // limb walks sideways as well as down, the trunk wanders as it climbs, and
+    // a start that ends up a millimetre proud of the bark leaves the open mouth
+    // of the tube stuck to the outside of it — a ring of dark scallops around
+    // the trunk, which is the seam this was meant to remove. On the axis the
+    // start is on the centre line, where the trunk is at its widest and there
+    // is nothing to come out of.
+    const from = trunk.end.clone().addScaledVector(trunk.dir, -trunkTop * (0.9 + (i % 2) * 1.6));
+    // Belt and braces, and the same braces grow() puts on every fork it makes:
+    // a sphere over the mouth, so tuning any of the numbers above can't put a
+    // hole back in the trunk.
+    joints.push({ at: from, r: crownRadius * 1.06 });
     grow(CROWN, from, dir, crownRadius, 0.72, 1, 'crown');
   }
 
@@ -294,11 +348,16 @@ function growSkeleton(rng) {
 
   // Grown from a point *inside* the trunk's base, so the first stretch of every
   // root is buried in it and only emerges once it is clear of the flare.
+  //
+  // Thick, and nearly flat. These are the roots you trip over in an orchard:
+  // they leave the trunk almost horizontally, run along the top of the soil and
+  // dive out of sight. Thin ones setting off downhill at 25° and forking twice
+  // on the way are a spider, which is what these were.
   for (let i = 0; i < ROOTS.count; i += 1) {
     const angle = (i / ROOTS.count) * Math.PI * 2 + rng() * 0.5;
-    const dir = new Vector3(Math.sin(angle), -0.42 - rng() * 0.3, Math.cos(angle)).normalize();
-    const from = new Vector3(Math.sin(angle) * 0.02, 0.075, Math.cos(angle) * 0.02);
-    grow(ROOTS, from, dir, trunkRadius * 0.34, 0.3, 0, 'root');
+    const dir = new Vector3(Math.sin(angle), -0.15 - rng() * 0.14, Math.cos(angle)).normalize();
+    const from = new Vector3(Math.sin(angle) * 0.03, 0.055, Math.cos(angle) * 0.03);
+    grow(ROOTS, from, dir, trunkFoot * 0.46, 0.29, 0, 'root');
   }
 
   return { branches, joints, tips, bounds };
@@ -675,7 +734,11 @@ export function mountOrchard(canvas, tree) {
     const outer = skeleton.branches.filter((b) => b.depth >= 2 && b.tag === 'crown');
     if (!outer.length) return null;
 
-    const perBranch = Math.round(46 * quality.leaves);
+    // Roughly half what it was, because each blade is now roughly twice as
+    // long. Keeping the old count at the new size closes the canopy into a
+    // solid mass; dropping it further than this opens holes in it and leaves
+    // big flat blades sitting alone on the rim.
+    const perBranch = Math.round(24 * quality.leaves);
     const geometry = leafGeometry();
     disposables.push(geometry);
 
@@ -690,7 +753,7 @@ export function mountOrchard(canvas, tree) {
     // pass clean through a sphere with both ends outside it — so the radius
     // does the work instead, and the bubble it clears doubles as the thing
     // that makes an apple recognisable once you have turned it into view.
-    const clearance = (APPLE_R * 1.2 + 0.13) ** 2;
+    const clearance = (APPLE_R * 1.2 + LEAF_MAX * 1.1) ** 2;
     const blocked = (p) => fruitAt.some((f) => p.distanceToSquared(f) < clearance);
     let index = 0;
 
@@ -713,7 +776,7 @@ export function mountOrchard(canvas, tree) {
         aim.normalize();
         point.addScaledVector(aim, spread * Math.cbrt(rng()));
 
-        const size = 0.042 + Math.pow(rng(), 0.9) * 0.062;
+        const size = LEAF_MIN + Math.pow(rng(), 0.9) * (LEAF_MAX - LEAF_MIN);
         // lookAt below puts +Z along `aim`, and the blade grows along +Z, so
         // this is where its tip lands.
         tip.copy(point).addScaledVector(aim, size);
