@@ -68,12 +68,24 @@ import { env } from '../modules/env.js';
 const SEED = 20080628;
 
 const FOV = 34;
+/** Half the vertical field of view, in radians. The framing is all done in it. */
+const HALF_FOV = MathUtils.degToRad(FOV) / 2;
 /** Above this average frame time the watchdog starts giving things up. */
 const SLOW_FRAME_MS = 26;
 
 const APPLE_R = 0.115;
 /** How far an apple hangs below the branch tip it grows from. */
 const HANG = 0.1;
+/** How much bigger a hovered apple gets — see paint(). */
+const HOVER = 1.18;
+/** How far a picked one swings off its branch — see onPick. */
+const PLUCK = 0.34;
+/**
+ * Amplitude of the wind, in radians of tilt about the tree's base — see
+ * frame(). Named because resize() has to frame for the lean as well as for the
+ * tree: at the top of the crown it is worth rather more than it looks.
+ */
+const SWAY = 0.022;
 
 /* -------------------------------------------------------------------------- */
 /* Growth parameters                                                           */
@@ -147,13 +159,14 @@ function growSkeleton(rng) {
   const branches = [];
   const joints = [];
   const tips = [];
-  const bounds = { maxY: 0, minY: 0, radial: 0 };
+  // Only the height, and only so the camera can be pointed at the middle of the
+  // tree. How far back it then has to stand is sweepRadius()'s problem, and it
+  // needs the points themselves rather than a summary of them.
+  const bounds = { maxY: 0, minY: 0 };
 
   const track = (p) => {
     if (p.y > bounds.maxY) bounds.maxY = p.y;
     if (p.y < bounds.minY) bounds.minY = p.y;
-    const r = Math.hypot(p.x, p.z);
-    if (r > bounds.radial) bounds.radial = r;
   };
 
   /** A slightly wandering run of points, for one branch. */
@@ -348,6 +361,53 @@ function chooseFruit(tips, keys, rng) {
   // rather than jumping back and forth across it.
   chosen.sort((a, b) => Math.atan2(a.x, a.z) - Math.atan2(b.x, b.z));
   return keys.map((key, index) => ({ key, at: chosen[index % chosen.length] }));
+}
+
+/**
+ * The radius of the sphere the tree sweeps as it turns, about the point the
+ * camera orbits. resize() frames on it.
+ *
+ * A sphere rather than the crown's width because the tree turns: what has to
+ * stay on the canvas is not the picture at one angle but the solid every angle
+ * is a slice of. It is measured over the points the geometry pass will actually
+ * draw, each padded by how much it draws there — the tube's own radius along a
+ * branch, and a whole apple at each fruiting tip.
+ *
+ * Leaves are deliberately left out. They scatter a long way past the tips they
+ * hang from, and framing for the furthest one would stand the camera back far
+ * enough to lose a fifth of the tree. A leaf trimmed at the rim of a canopy
+ * that is already a soft edge is not something anyone can see; half an apple
+ * is, which is the whole reason this function exists.
+ *
+ * @param {number} fruitReach radius of one apple, at its most swollen
+ */
+function sweepRadius(skeleton, fruit, fruitReach, centreY) {
+  let radius = 0;
+  // The wind tilts the whole grove about its base, so every point is measured
+  // at both ends of the lean rather than where it stands.
+  const tilt = Math.cos(SWAY);
+  const lean = Math.sin(SWAY);
+
+  const reach = (p, pad) => {
+    for (const way of [-1, 1]) {
+      const x = p.x * tilt - p.y * lean * way;
+      const y = p.x * lean * way + p.y * tilt;
+      const out = Math.hypot(Math.hypot(x, p.z), y - centreY) + pad;
+      if (out > radius) radius = out;
+    }
+  };
+
+  for (const branch of skeleton.branches) {
+    // Whichever end is thicker. branchGeometry() interpolates between the two
+    // and never overshoots either, flare profile included.
+    const pad = Math.max(branch.r0, branch.r1);
+    for (const point of branch.points) reach(point, pad);
+  }
+  // The joints are spheres at branch ends, and never wider than the branch they
+  // cap, so the pass above has already covered them.
+  for (const at of fruit) reach(at, fruitReach);
+
+  return radius;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -761,6 +821,8 @@ export function mountOrchard(canvas, tree) {
       pivot,
       fruit,
       material,
+      /** Its own radius, which is what resize() has to keep on the canvas. */
+      scale,
       /** Which way this apple faces, for the "is it on the far side" test. */
       bearing: Math.atan2(at.x, at.z),
       hovered: false,
@@ -917,19 +979,40 @@ export function mountOrchard(canvas, tree) {
   let width = 0;
   let height = 0;
   const centreY = (skeleton.bounds.maxY + skeleton.bounds.minY) / 2;
+  // Measured off the grown tree rather than off constants, so tuning the growth
+  // parameters — or moving the fruit onto different tips — can never crop it.
+  const sweep = sweepRadius(
+    skeleton,
+    fruitAt,
+    // The largest of the seven, swollen by a hover and swung out by a pluck.
+    // One figure for all of them: they differ by a few per cent, and telling
+    // them apart would buy back a fraction of one.
+    Math.max(...apples.map((apple) => apple.scale)) * HOVER + HANG * Math.sin(PLUCK),
+    centreY
+  );
 
   function resize() {
     width = canvas.clientWidth || 1;
     height = canvas.clientHeight || 1;
     camera.aspect = width / height;
 
-    // Framed off the grown tree rather than off constants, so tuning the
-    // growth parameters can never crop it. The margin covers the foliage,
-    // which reaches past the branch tips it hangs from.
-    const halfHeight = (skeleton.bounds.maxY - skeleton.bounds.minY) / 2 + 0.2;
-    const halfWidth = skeleton.bounds.radial + 0.16;
-    const half = Math.max(halfHeight, halfWidth / camera.aspect);
-    distance = half / Math.tan(MathUtils.degToRad(FOV) / 2);
+    /*
+     * Stand back far enough that the sphere the tree sweeps fits inside the
+     * narrower of the two half-angles — which on this box, being taller than it
+     * is wide, is always the horizontal one.
+     *
+     * asin, not atan. Dividing by the tangent stands the camera where the tree
+     * would exactly fill the frame if it were flat and standing at the trunk;
+     * but it is a solid, and it turns, so its outline touches the edge of the
+     * view *nearer* the camera than the trunk, where the frame is narrower. The
+     * shortfall is only a factor of cos(halfFov) — and it was enough to hang
+     * the outermost apple over the side of the canvas, which cuts it in half.
+     * Fruit grows on the tips that reach furthest out (see chooseFruit), so it
+     * is always the first thing over the edge and the only thing whose being
+     * clipped is obvious.
+     */
+    const halfFov = Math.min(Math.atan(Math.tan(HALF_FOV) * camera.aspect), HALF_FOV);
+    distance = sweep / Math.sin(halfFov);
 
     camera.updateProjectionMatrix();
     applyCamera();
@@ -938,7 +1021,7 @@ export function mountOrchard(canvas, tree) {
     // The buttons' hit area is sized once here rather than per frame: depth
     // varies an apple's on-screen size by a few percent, and chasing that
     // would mean writing a width to seven elements sixty times a second.
-    const perspective = height / (2 * Math.tan(MathUtils.degToRad(FOV) / 2) * distance);
+    const perspective = height / (2 * Math.tan(HALF_FOV) * distance);
     tree.setAppleSize(APPLE_R * 2.2 * perspective);
   }
 
@@ -952,7 +1035,7 @@ export function mountOrchard(canvas, tree) {
    * `scale` is how you get an apple stuck at 1.18 forever.
    */
   function paint(apple) {
-    const lift = apple.hovered ? 1.18 : apple.chosen ? 1.09 : 1;
+    const lift = apple.hovered ? HOVER : apple.chosen ? 1.09 : 1;
     const glow = apple.hovered ? 0.34 : apple.chosen ? 0.24 : 0;
     gsap.to(apple.fruit.scale, { x: lift, y: lift, z: lift, duration: 0.5, ease: 'power3.out' });
     gsap.to(apple.material, { emissiveIntensity: glow, duration: 0.5 });
@@ -983,7 +1066,7 @@ export function mountOrchard(canvas, tree) {
     // is it settling back onto the branch.
     gsap.fromTo(
       apple.pivot.rotation,
-      { z: 0.34, x: -0.12 },
+      { z: PLUCK, x: -0.12 },
       { z: 0, x: 0, duration: 1.5, ease: 'elastic.out(1, 0.32)', overwrite: true }
     );
   });
@@ -1095,8 +1178,10 @@ export function mountOrchard(canvas, tree) {
     }
 
     // Two slow sines an octave apart: enough to read as wind, never enough to
-    // make an apple hard to hit.
-    grove.rotation.z = Math.sin(elapsed * 0.42) * 0.013 + Math.sin(elapsed * 0.19) * 0.009;
+    // make an apple hard to hit. They share out SWAY rather than carrying their
+    // own amplitudes, because resize() frames for the lean and the two must not
+    // drift apart.
+    grove.rotation.z = (Math.sin(elapsed * 0.42) * 0.6 + Math.sin(elapsed * 0.19) * 0.4) * SWAY;
 
     for (const apple of apples) {
       apple.pivot.rotation.y = Math.sin(elapsed * 0.5 + apple.phase) * 0.22;
