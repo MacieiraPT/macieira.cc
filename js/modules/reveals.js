@@ -208,9 +208,11 @@ export function initMarquee() {
   const track = document.querySelector('[data-marquee-track]');
   if (!track) return;
 
-  // Duplicate the content once so a -50% translation loops seamlessly.
+  // Duplicate the content once so a -50% translation loops seamlessly. The
+  // copies need no aria-hidden of their own — the whole .marquee is already
+  // aria-hidden in the markup, because a strip of decorative words read twice
+  // is no better than read once.
   const clone = track.cloneNode(true);
-  clone.setAttribute('aria-hidden', 'true');
   [...clone.children].forEach((child) => track.append(child));
 
   const loop = gsap.to(track, {

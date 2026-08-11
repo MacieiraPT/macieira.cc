@@ -66,7 +66,7 @@ export function playIntro() {
     .to(axis, { wdth: 118, duration: 1.6, ease: 'power3.out', onUpdate: applyAxis }, 0.2)
 
     // Fruit ripens onto the finished branches, in a random order so it reads
-    // as six separate apples rather than one wipe across the canopy.
+    // as seven separate apples rather than one wipe across the canopy.
     .to(
       apples,
       {

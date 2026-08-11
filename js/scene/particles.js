@@ -160,10 +160,10 @@ export function createParticleField({ count, shape, colorA, colorB, pixelRatio }
   geometry.setAttribute('aWave', new Float32BufferAttribute(wave, 3));
   geometry.setAttribute('aShape', new Float32BufferAttribute(mark, 3));
   geometry.setAttribute('aRand', new Float32BufferAttribute(random, 1));
-  // The field never leaves this volume, so a hand-set sphere saves three.js
-  // from computing one over every attribute.
-  geometry.boundingSphere = null;
-  geometry.computeBoundingSphere();
+  // No bounding sphere on purpose. Culling is off (see below), nothing
+  // raycasts the field, and the shader moves every point away from the
+  // position attribute anyway — so a computed sphere would be both inaccurate
+  // and unread. three.js only builds one lazily, when something actually asks.
 
   const material = new ShaderMaterial({
     vertexShader,

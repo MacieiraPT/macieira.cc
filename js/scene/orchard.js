@@ -998,6 +998,17 @@ export function mountOrchard(canvas, tree) {
   let frameHandle = 0;
   let onScreen = true;
   let firstFrame = true;
+  /**
+   * Set once the GPU has been taken away, and never cleared: there is no
+   * context to draw in again without rebuilding everything. Without it the
+   * IntersectionObserver and the visibility handler below both call `start()`
+   * on the way back, and the loop resumes on a dead context — which is not
+   * merely wasteful. `project()` keeps writing to the buttons, and the inline
+   * `pointer-events: none` it sets for fruit that has turned away survives
+   * `endProjection()`, so the SVG tree we just handed back would come with
+   * several of its apples silently unclickable.
+   */
+  let contextLost = false;
 
   let pixelRatio = renderer.getPixelRatio();
   let sampled = 0;
@@ -1131,7 +1142,7 @@ export function mountOrchard(canvas, tree) {
   }
 
   function start() {
-    if (frameHandle) return;
+    if (frameHandle || contextLost) return;
     timer.reset();
     frameHandle = requestAnimationFrame(frame);
   }
@@ -1161,6 +1172,7 @@ export function mountOrchard(canvas, tree) {
   /** GPU taken away mid-session: hand the picture back to the SVG. */
   const onContextLost = (event) => {
     event.preventDefault();
+    contextLost = true;
     stop();
     canvas.classList.remove('is-live');
     tree.endProjection();

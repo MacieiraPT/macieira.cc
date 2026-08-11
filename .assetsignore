@@ -13,6 +13,7 @@ tools/
 package.json
 package-lock.json
 README.md
+CLAUDE.md
 wrangler.jsonc
 .assetsignore
 .gitignore

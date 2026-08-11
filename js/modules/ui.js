@@ -66,7 +66,13 @@ export function initCopyButtons() {
       showToast(t('copied', value));
       button.classList.add('is-copied');
       // Swap the icon to a checkmark for the length of the toast.
-      const icon = button.querySelector('use');
+      //
+      // The *copy* glyph specifically, not the first <use> in the button: every
+      // copy button leads with the service's own mark, so plain
+      // querySelector('use') turns the Discord logo into a tick and leaves the
+      // copy icon — the one the checkmark is meant to replace — sitting there
+      // unchanged.
+      const icon = button.querySelector('use[href="#i-copy"]');
       const previous = icon?.getAttribute('href');
       icon?.setAttribute('href', '#i-check');
       setTimeout(() => {

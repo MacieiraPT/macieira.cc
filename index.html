@@ -223,7 +223,7 @@
   <!-- ───────────────────────────────  HERO  ─────────────────────────────── -->
   <!--
     The tree. "Macieira" is Portuguese for apple tree, so the front page is
-    one, and the six apples are the introduction: pick one, read a fact.
+    one, and the seven apples are the introduction: pick one, read a fact.
 
     How it degrades, which is what dictated the markup:
       - The branches are ordinary stroked SVG paths, fully drawn in the file.
@@ -232,7 +232,7 @@
       - The apples are real <button>s in normal document flow, positioned by
         two custom properties each. Tab, Enter and Space work with no code.
       - Every fact is in the HTML. With JavaScript running they become a deck
-        the buttons page through; without it they are simply a list of six
+        the buttons page through; without it they are simply a list of seven
         paragraphs, and the page still says everything it means to say.
   -->
   <section class="hero" aria-labelledby="hero-name">
@@ -297,7 +297,7 @@
           </svg>
 
           <!--
-            Six apples. --x/--y place each one at the tip of the branch it
+            Seven apples. --x/--y place each one at the tip of the branch it
             hangs from; --sway staggers the idle bob so they don't breathe in
             unison. The <li> owns the position, the <button> owns the motion —
             keeping them apart is what stops the centring transform and the
@@ -408,7 +408,7 @@
             <!--
               Hidden in the file and un-hidden by js/modules/tree.js. Without
               JS there is nothing to pick, so the invitation would be a lie —
-              and all six facts are already on the page anyway.
+              and all seven facts are already on the page anyway.
             -->
             <p class="basket__prompt mono" data-tree-prompt hidden>
               <span class="basket__prompt-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-apple"/></svg></span>

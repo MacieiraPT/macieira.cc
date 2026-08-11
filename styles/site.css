@@ -647,7 +647,7 @@ html[data-lang='pt'] .lang__thumb { transform: translateX(100%); }
 /* With JS the deck holds one card at a time and the height would jump on
    every pick; a floor keeps the column still, and centring stops the one-line
    invitation from sitting in the top corner of an otherwise empty panel.
-   Without JS the six facts stack and neither rule ever comes into play. */
+   Without JS the seven facts stack and neither rule ever comes into play. */
 html.js .basket__deck {
   display: grid;
   align-content: center;

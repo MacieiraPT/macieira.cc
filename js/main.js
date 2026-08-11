@@ -101,7 +101,7 @@ safely('copy buttons', initCopyButtons);
 safely('clock', initClock);
 safely('age', initAge);
 safely('work grid', initWork);
-// Before the font wait below, not after: the six facts all ship in the HTML,
+// Before the font wait below, not after: the seven facts all ship in the HTML,
 // and this is what collapses them into a deck. A second of them stacked up
 // while a webfont downloads would be a worse first impression than the wait.
 const tree = safely('apple tree', initTree) ?? null;
