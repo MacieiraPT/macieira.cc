@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>Not found — macieira.cc</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#08080a">
+<meta name="color-scheme" content="dark">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/archivo-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+
+<!--
+  Served by Cloudflare for any path that doesn't match an asset — see
+  `not_found_handling` in wrangler.jsonc, which is what actually switches this
+  on; Workers Assets returns a bare 404 without it.
+
+  No JavaScript, and no `js` class on <html>. That is the whole design: the
+  reveal contract in base.css only hides things for a page that has promised to
+  animate them back, so this page is simply visible. It borrows the site's two
+  stylesheets for the tokens and the type, and everything specific to it is in
+  the block below rather than adding weight to site.css for one page nobody is
+  meant to see twice.
+
+  Both languages are on the page at once. index.html can switch because
+  lang.js is running there; here there is nothing to run, so rather than guess
+  wrong the Portuguese sits under the English in the dim colour — which is
+  also the most honest thing this particular page can say about the site.
+-->
+<link rel="stylesheet" href="/styles/base.css">
+<link rel="stylesheet" href="/styles/site.css">
+
+<style>
+  .lost {
+    min-height: 100svh;
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: clamp(1.25rem, 3vh, 2rem);
+    max-width: var(--measure);
+    margin-inline: auto;
+    padding: var(--gutter);
+  }
+
+  /* The mark, at the size it gets to be when it is the only thing on screen. */
+  .lost__mark { width: clamp(64px, 12vw, 104px); height: auto; }
+  .lost__mark svg { width: 100%; height: 100%; overflow: visible; }
+
+  .lost__code {
+    font-family: var(--font-mono);
+    font-size: var(--step-label);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .lost__title {
+    font-size: clamp(2.5rem, 9vw, 6.5rem);
+    font-weight: 800;
+    font-variation-settings: 'wdth' 118;
+    line-height: 0.86;
+    letter-spacing: -0.05em;
+    margin-left: -0.045em;   /* optical alignment, as in the hero */
+    text-wrap: balance;
+  }
+
+  .lost__copy {
+    display: grid;
+    gap: 0.4rem;
+    max-width: 44ch;
+    padding-top: clamp(0.75rem, 1.5vh, 1.25rem);
+    border-top: 1px solid var(--line);
+    text-wrap: pretty;
+  }
+  .lost__copy p { color: var(--ink); }
+  .lost__copy p[lang='pt-PT'] { color: var(--ink-dim); }
+
+  .lost__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem; }
+</style>
+</head>
+
+<body>
+
+<div class="backdrop" aria-hidden="true">
+  <div class="backdrop__glow"></div>
+  <div class="backdrop__grain"></div>
+</div>
+
+<main class="lost">
+  <span class="lost__mark" aria-hidden="true">
+    <svg viewBox="0 0 48 48">
+      <path fill="var(--apple)" d="M24 15.6c-2.8-4.2-8.6-5.4-12.3-2-4.5 4.1-4.1 12.8-.4 19.6 2.4 4.4 5.6 7.2 8.3 6.2 1.7-.6 2.7-1.2 4.4-1.2s2.7.6 4.4 1.2c2.7 1 5.9-1.8 8.3-6.2 3.7-6.8 4.1-15.5-.4-19.6-3.7-3.4-9.5-2.2-12.3 2Z"/>
+      <path fill="none" stroke="var(--bark)" stroke-width="2.3" stroke-linecap="round" d="M24 15.6C24.3 11 25.8 7.3 28.6 4.4"/>
+      <path fill="var(--leaf)" d="M26.2 10.6C29.5 5.9 34.9 4.7 38.4 6.9 37.7 11.8 33.1 14.7 27.9 12.7Z"/>
+    </svg>
+  </span>
+
+  <p class="lost__code">Error 404</p>
+
+  <h1 class="lost__title">Nothing on this branch.</h1>
+
+  <div class="lost__copy">
+    <p>That page isn't here — it may have moved, or it may never have existed. The tree is still where you left it.</p>
+    <p lang="pt-PT">Esta página não existe aqui — ou mudou de sítio, ou nunca chegou a existir. A árvore continua onde a deixaste.</p>
+  </div>
+
+  <div class="lost__actions">
+    <a class="btn btn--solid" href="/">
+      <span>Back to the tree</span>
+      <svg class="icon icon--sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+    </a>
+    <a class="btn btn--ghost" href="https://github.com/MacieiraPT" target="_blank" rel="me noopener">
+      <span>@MacieiraPT</span>
+      <svg class="icon icon--sm" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+    </a>
+  </div>
+</main>
+
+</body>
+</html>

@@ -5,24 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <title>macieira.cc</title>
-<meta name="description" content="Rodrigo Macieira (MacieiraPT) — developer, Portugal. Macieira is Portuguese for apple tree, so the front page is one: a WebGL tree whose apples are the short version. Steam, Discord and GitHub.">
+<meta name="description" data-meta-description content="Rodrigo Macieira (MacieiraPT) — developer, Portugal. Macieira is Portuguese for apple tree, so the front page is one: a WebGL tree whose apples are the short version. Steam, Discord and GitHub.">
 <link rel="canonical" href="https://macieira.cc/">
 <meta name="theme-color" content="#08080a">
 <meta name="color-scheme" content="dark">
 
-<!-- Social cards -->
+<!--
+  Both languages, for anything that reads the page without running it. The
+  Portuguese lives at the same URL — js/modules/lang.js honours `?lang=pt` —
+  so these point at one document twice rather than at two documents, which is
+  exactly what hreflang is for. x-default goes to the unparameterised URL,
+  where the browser's own language list decides.
+-->
+<link rel="alternate" hreflang="en" href="https://macieira.cc/">
+<link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/?lang=pt">
+<link rel="alternate" hreflang="x-default" href="https://macieira.cc/">
+
+<!-- Social cards. og:description and og:locale are rewritten by lang.js on a
+     switch — a Portuguese visitor sharing the page should not produce an
+     English card. -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://macieira.cc/">
 <meta property="og:site_name" content="macieira.cc">
 <meta property="og:title" content="macieira.cc">
-<meta property="og:description" content="Developer, Portugal. Macieira is Portuguese for apple tree — so the front page is one, and each apple is the short version.">
+<meta property="og:description" data-meta-og-description content="Developer, Portugal. Macieira is Portuguese for apple tree — so the front page is one, and each apple is the short version.">
+<meta property="og:locale" data-meta-og-locale content="en_GB">
+<meta property="og:locale:alternate" content="pt_PT">
 <meta property="og:image" content="https://macieira.cc/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="macieira.cc — Rodrigo Macieira, developer, Portugal.">
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 
 <!--
   Fonts are self-hosted (latin subsets of the variable builds) so there is no
@@ -52,6 +69,27 @@
   }
 }
 </script>
+
+<!--
+  The two bundles the page actually blocks on, fetched in parallel with the
+  HTML instead of after it.
+
+  Without these the browser cannot know GSAP and Lenis exist until it has
+  fetched *and parsed* /js/main.js and resolved the bare specifiers through
+  the import map above — a full serial round trip on the critical path, and
+  the scroll layer is what everything scroll-linked measures against.
+
+  Deliberately only these two. `three` and `animejs` are dynamically imported
+  at idle by design (see the boot order in js/main.js); preloading them here
+  would undo exactly the deferral they were given. /js/main.js is not listed
+  either — it is a <script> below, so it is already discovered at parse time.
+
+  The `?v=` stamps are rewritten by tools/vendor.mjs along with the import
+  map's: its restamp pattern matches any quoted /vendor/*.mjs URL, so these
+  stay in step with the bytes and the immutable-cache contract holds.
+-->
+<link rel="modulepreload" href="/vendor/gsap.min.mjs?v=0a182a30">
+<link rel="modulepreload" href="/vendor/lenis.min.mjs?v=741a8a57">
 
 <!--
   Runs before first paint. Everything below is a *capability* flag, never a
@@ -110,7 +148,17 @@
 
 <body>
 
-<a class="skip-link" href="#now" data-pt="Saltar para o conteúdo">Skip to content</a>
+<!--
+  Targets <main>, not the first section. Pointing this at #now sent anyone who
+  used it *past* the content it is named for — past the wordmark, the tree and
+  all seven facts — and landed them at section 01. The masthead nav comes after
+  this link in source order, so #top skips the navigation, which is the job.
+
+  tabindex="-1" on the target is what makes it move focus as well as scroll;
+  a <main> is not focusable on its own, so without it the keyboard stays in the
+  masthead and the next Tab goes back to the nav the visitor just skipped.
+-->
+<a class="skip-link" href="#top" data-pt="Saltar para o conteúdo">Skip to content</a>
 
 <!--
   Icon sprite. Brand marks are the official ones (paths from simple-icons,
@@ -218,7 +266,7 @@
   </div>
 </header>
 
-<main id="top">
+<main id="top" tabindex="-1">
 
   <!-- ───────────────────────────────  HERO  ─────────────────────────────── -->
   <!--

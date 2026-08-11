@@ -1,0 +1,15 @@
+# RFC 9116. Where to send a security report about macieira.cc.
+#
+# Contact is the GitHub profile rather than an email address, deliberately:
+# it is the handle already published everywhere else on the site, and a
+# private vulnerability report can be opened against the repository itself
+# (Security → Report a vulnerability) without putting a personal address in
+# a file that scrapers read. Swap in a mailto: if you would rather have one.
+#
+# Expires is a required field and this file is ignored once it passes.
+# Renew it when you touch the site.
+
+Contact: https://github.com/MacieiraPT
+Expires: 2027-08-11T00:00:00.000Z
+Preferred-Languages: en, pt
+Canonical: https://macieira.cc/.well-known/security.txt

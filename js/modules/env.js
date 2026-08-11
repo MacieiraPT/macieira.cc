@@ -76,10 +76,20 @@ export function webglBlockReason() {
 
 export const allowWebGL = webglBlockReason() === null;
 
-/** requestIdleCallback with a setTimeout fallback (Safari shipped it late). */
+/**
+ * requestIdleCallback with a setTimeout fallback (Safari shipped it late).
+ *
+ * The fallback can't detect idle, so it approximates it with a delay — but it
+ * has to keep the *ordering* the caller asked for, which a flat constant threw
+ * away. `whenIdle(mountBackdrop, 2500)` exists precisely so the ~135 kB WebGL
+ * field arrives after everything else; with a fixed 200 ms it arrived at the
+ * same moment as the two steps it is meant to queue behind. A fraction of the
+ * requested deadline scales with the caller's intent and keeps the old 200 ms
+ * as the floor, so nothing that asked for the default got slower.
+ */
 export function whenIdle(fn, timeout = 2000) {
   if ('requestIdleCallback' in window) return window.requestIdleCallback(fn, { timeout });
-  return window.setTimeout(fn, 200);
+  return window.setTimeout(fn, Math.max(200, timeout * 0.2));
 }
 
 /**

@@ -90,7 +90,31 @@ function prime(node) {
   }
 }
 
+/**
+ * The half of the page that isn't in the page.
+ *
+ * `data-pt` can't reach these: a <meta> has no text content, and the tags that
+ * matter here are read by crawlers and link unfurlers rather than rendered. So
+ * they come from the string table at the bottom of this file, and they are the
+ * one place where "copy lives in index.html" doesn't hold — the English still
+ * ships in the markup, which is what an unfurler that doesn't run JS sees.
+ *
+ * The title is the domain in both languages, so it is left alone.
+ */
+function paintHead(lang) {
+  const set = (selector, value) => {
+    const node = document.head.querySelector(selector);
+    if (node && value) node.setAttribute('content', value);
+  };
+
+  set('[data-meta-description]', t('metaDescription'));
+  set('[data-meta-og-description]', t('metaOgDescription'));
+  set('[data-meta-og-locale]', lang === 'pt' ? 'pt_PT' : 'en_GB');
+}
+
 function paint(lang) {
+  paintHead(lang);
+
   document.querySelectorAll(SELECTOR).forEach((node) => {
     prime(node); // cheap, and it catches anything cloned since the last pass
 
@@ -179,6 +203,20 @@ export function initLanguage() {
  * in this table; it belongs in index.html next to the English.
  */
 const STRINGS = {
+  /* Head tags ------------------------------------------------------------- */
+  /* Read by search engines and link unfurlers, never rendered — see
+     paintHead(). The English here has to stay in step with the `content`
+     attributes that ship in index.html, which is what a crawler that doesn't
+     run JavaScript reads. */
+  metaDescription: {
+    en: 'Rodrigo Macieira (MacieiraPT) — developer, Portugal. Macieira is Portuguese for apple tree, so the front page is one: a WebGL tree whose apples are the short version. Steam, Discord and GitHub.',
+    pt: 'Rodrigo Macieira (MacieiraPT) — programador, Portugal. Macieira é a árvore que dá maçãs, por isso a primeira página é uma: uma árvore em WebGL em que cada maçã é a versão curta. Steam, Discord e GitHub.',
+  },
+  metaOgDescription: {
+    en: 'Developer, Portugal. Macieira is Portuguese for apple tree — so the front page is one, and each apple is the short version.',
+    pt: 'Programador, Portugal. Macieira é a árvore que dá maçãs — por isso a primeira página é uma, e cada maçã é a versão curta.',
+  },
+
   copied: {
     en: (value) => `Copied ${value}`,
     pt: (value) => `${value} copiado`,
