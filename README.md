@@ -100,7 +100,7 @@ your cursor as you reach for it is a target you miss.
 | **01 — now** | Shipped, working on, next. Three sentences, no roadmap theatre. |
 | **02 — elsewhere** | Steam, Discord, GitHub. Handles that aren't links copy to your clipboard. |
 | **03 — github** | A live panel read straight from the public GitHub API: profile counters, recent repositories, and a 14-day activity strip. Nothing is typed in by hand. |
-| **Selected work** | Projects, as they arrive. The placeholder slots remove themselves the moment there's something real to show. |
+| **Selected work** | Projects, as they arrive. The grid ships as real markup and `work.js` re-renders it from `js/data/projects.js`, so it is never blank for a crawler or without JS. |
 | **04 — contact** | Two buttons, and a corner of draggable stickers you can throw around. |
 
 Behind all of it, a second WebGL scene: **26,000 points** drifting as a haze, morphing into
@@ -179,11 +179,20 @@ Every degradation is a designed state, not an accident:
 | **GitHub API down or rate-limited** | The panel says `offline` and explains itself. The link to the profile never depended on the fetch. |
 | **Slow frames** | A watchdog quietly drops the pixel ratio, then the foliage, until it's smooth again. |
 
-One deliberate exception: **`prefers-reduced-motion` is not honoured here.** The smooth
-scroll *is* the feel of the page, and half of it animating while the other half sat still
-read as broken rather than as considerate. The honest mitigation is that nothing here is
-large-amplitude or unexpected — no parallax on body text, no autoplaying transitions, no
-motion that starts without a scroll or a click.
+**`prefers-reduced-motion`: reduce, don't remove.** Both extremes were tried here and
+both were wrong. Honouring it by switching everything off left half the page animating and
+the other half sitting still, which reads as broken rather than as considerate. Ignoring it
+outright was worse in a quieter way — the claim that justified it ("no parallax on body
+text") wasn't even true, since the hero block scrubs on scroll, headline included.
+
+The line that holds is not *how much* motion but *who started it*. Reactive motion stays:
+the smooth scroll and the tree answer a wheel, a drag or a click, and they stop when you
+do. Self-starting motion goes: the marquee, the pulsing status dots, the scroll cue, the
+idle bob in the canopy, the hero parallax and the entrance reveals all run without being
+asked, and looping ones with no pause control are a WCAG 2.2.2 failure besides. CSS start
+states are released in the reduced-motion block at the bottom of `base.css`; tweens are
+skipped by the module that owns them. The two halves have to agree — release an element in
+CSS while its tween still runs and it flashes.
 
 ---
 

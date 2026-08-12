@@ -21,14 +21,17 @@
  * With JavaScript off none of this runs and all seven facts are simply on the
  * page, which is the same content in a longer form.
  *
- * Nothing in here checks `prefers-reduced-motion`. The tree is the identity of
- * the site rather than decoration on top of it, and it animates for everyone —
- * the same exemption the WebGL field already had. The setting still governs
- * the rest of the page.
+ * On `prefers-reduced-motion`, the tree stays and the idle bob goes. Picking an
+ * apple, turning the canopy and the swing that answers a click are all
+ * reactive — they happen because somebody did something, and they stop when
+ * they stop — which is the half of the policy in env.js that survives the
+ * preference. The bob is the other half: seven fruit breathing on a loop that
+ * nobody started and nobody can stop.
  */
 
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { env } from './env.js';
 
 export function initTree() {
   const root = document.querySelector('[data-tree]');
@@ -66,11 +69,9 @@ export function initTree() {
     card.hidden = true;
   });
 
-  // The cards replace each other in place, so the change has to be spoken.
-  // "polite" rather than "assertive": it answers a deliberate press, and must
-  // never interrupt something already being read. Set after the hiding above
-  // so none of that initial churn is announced.
-  deck.setAttribute('aria-live', 'polite');
+  // NB: `aria-live` is *not* set here. See the note further down, next to the
+  // opening pick — a live region that exists before the first card is placed
+  // announces that card as if the visitor had asked for it.
 
   function show(card) {
     card.hidden = false;
@@ -135,6 +136,9 @@ export function initTree() {
 
   function startBob() {
     if (projected) return;
+    // Self-starting and endless, which is the definition the policy in env.js
+    // turns on. Everything else the tree does answers a pointer or a key.
+    if (env.reducedMotion) return;
 
     bobs = buttons.map((button) => {
       const fruit = button.querySelector('.apple__fruit');
@@ -234,6 +238,14 @@ export function initTree() {
   const linked = [...facts.values()].find((card) => card.id === target);
   pick(linked ? linked.dataset.fact : buttons[0].dataset.apple, { measure: false });
 
+  // Only now. The cards replace each other in place, so every *later* change
+  // has to be spoken — but the opening one is the page arriving, not an answer
+  // to anything, and with the region already live a screen reader announced a
+  // fact card over the top of whatever it was reading at load. "polite" rather
+  // than "assertive" for the same reason: from here on it answers a deliberate
+  // press, and must never interrupt.
+  deck.setAttribute('aria-live', 'polite');
+
   /* ---------------------------------------------------------------------- */
   /* Renderer interface                                                      */
   /* ---------------------------------------------------------------------- */
@@ -260,22 +272,6 @@ export function initTree() {
     onPick: (fn) => subscribe(pickListeners, fn),
 
     /**
-     * A renderer is on its way. The SVG tree hides *now*, before it has ever
-     * been painted, because it is a fallback and not a loading state — showing
-     * a flat line drawing for 400 ms and then swapping it for the real thing
-     * is worse than showing the glow and nothing else. Only `abandonRenderer`
-     * puts it back.
-     */
-    expectRenderer() {
-      root.classList.add('is-pending');
-    },
-
-    /** No context, or the chunk never arrived. The SVG is all there is. */
-    abandonRenderer() {
-      root.classList.remove('is-pending');
-    },
-
-    /**
      * Hand placement to a renderer. The buttons stop being positioned by the
      * percentages in the markup and start being moved by `place()`; the SVG
      * tree and the flat apple artwork go away (see the `.is-3d` rules in
@@ -290,7 +286,6 @@ export function initTree() {
       // whatever opacity it had reached, so the end state is written directly.
       gsap.killTweensOf(buttons);
       gsap.set(buttons, { opacity: 1, scale: 1, rotate: 0 });
-      root.classList.remove('is-pending');
       root.classList.add('is-3d');
     },
 
@@ -298,7 +293,7 @@ export function initTree() {
     endProjection() {
       if (!projected) return;
       projected = false;
-      root.classList.remove('is-3d', 'is-pending');
+      root.classList.remove('is-3d');
       cells.forEach((cell) => {
         cell.style.removeProperty('--px');
         cell.style.removeProperty('--py');

@@ -57,12 +57,13 @@ export function createSmoothScroll() {
     smoothWheel: true,
     syncTouch: false,
     autoRaf: false, // GSAP owns the loop — see below.
-    // Lenis honours `prefers-reduced-motion` by default, and this page does
-    // not — see the note in env.js, which is a decision, not an oversight.
-    // Left on, it does exactly one thing: it forces `immediate: true` on
-    // every programmatic scrollTo, so the masthead tabs teleported for anyone
-    // with the preference set while the wheel kept its inertia. Half a scroll
-    // layer is worse than either whole one.
+    // Off even though the rest of the page now honours the preference — see
+    // the policy note in env.js. Lenis' flag does exactly one thing, and it is
+    // not "less motion": it forces `immediate: true` on every programmatic
+    // scrollTo, so the masthead tabs teleport while the wheel keeps its
+    // inertia. A jump cut is not a reduced scroll, it is a worse one, and the
+    // scroll is reactive motion either way — it only ever moves because
+    // somebody asked it to.
     respectReducedMotion: false,
   });
 

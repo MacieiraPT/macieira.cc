@@ -49,10 +49,27 @@ re-running `npm run vendor`, or the browser throws `does not provide an export n
 inside the assets directory, and Wrangler's own `workerd` binary is far over the 25 MiB
 per-asset limit.
 
-**`prefers-reduced-motion` is deliberately not honoured.** This is the owner's decision,
-recorded in `js/modules/env.js`. Do not "fix" it. Libraries that check the query
-themselves have to be switched off by hand — Lenis' `respectReducedMotion` is off in
-`smooth-scroll.js`, and leaving it on makes every anchor scroll teleport.
+**`prefers-reduced-motion` is honoured as *reduce*, not *remove*.** The rule is who
+started the motion, not how much of it there is. Reactive motion stays — the smooth scroll
+and the tree answer input and stop when it stops. Self-starting motion goes: marquee,
+pulsing dots, scroll cue, idle bob, hero parallax, entrance reveals. The policy is written
+out in `js/modules/env.js`; CSS start states are released in the reduced-motion block at
+the bottom of `base.css`, and each module skips its own tweens. **Both halves must agree** —
+release an element in CSS while its tween still runs and it flashes. Libraries that check
+the query themselves still have to be handled by hand: Lenis' `respectReducedMotion` stays
+off in `smooth-scroll.js`, because all it does is turn anchor scrolls into teleports while
+the wheel keeps its inertia, and a jump cut is not a reduced scroll.
+
+**Text that comes off the screen must not come out of the accessibility tree.** Use the
+clipped `.sr-only` pattern, never `display: none`, on anything that is an element's only
+label. This has already caused two bugs of exactly the same shape: the apple tags below
+620 px and the masthead GitHub link below 720 px both left buttons with no accessible name
+at all on phones.
+
+**`--ink-faint` and `--plasma` are pinned to a contrast floor.** Both carry real text —
+the tree's invitation, the GitHub panel's stat labels, the colophon — at 9–11 px, which is
+far too small for WCAG's large-text allowance. Don't darken either without re-checking
+them against `--bg` *and* `--bg-raise`; the note in `base.css` has the numbers.
 
 **New external hosts need a CSP edit.** `_headers` allows only `api.github.com` and
 `avatars.githubusercontent.com`.
@@ -101,8 +118,9 @@ down, and content visibility must never depend on JS succeeding.
 
 - Copy, links, handles and facts are plain HTML in `index.html` — in both languages. New
   copy needs a `data-pt` on the same element, or it stays English when the page switches.
-- Add work by appending an object to the array in `js/data/projects.js`; the placeholders
-  disappear on their own.
+- Add work by appending an object to the array in `js/data/projects.js`. The work grid also
+  ships as real markup in `index.html` so it is never empty without JS — the first entry
+  exists in both places, and the two have to stay in step.
 - Colours live in the `:root` block of `styles/base.css`. The WebGL scenes read `--acid`
   and `--plasma` at mount, so change them in one place.
 - Headlines marked `data-reveal-lines` are split by JS at runtime — no tags inside them.

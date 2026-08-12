@@ -17,13 +17,22 @@
 
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { env } from './env.js';
 import { splitChars } from './split.js';
 
 export function playIntro() {
+  // Nothing here is reactive: the intro and the parallax below both start on
+  // their own, which is exactly the half of the page the preference switches
+  // off (see env.js). base.css has already released every start state, so the
+  // hero is simply *there* — which is also what it should have been all along
+  // for anyone whose fonts or chunks were slow.
+  if (env.reducedMotion) return null;
+
   const name = document.querySelector('[data-hero="name"]');
   const chars = name ? splitChars(name) : [];
 
   const lede = document.querySelector('[data-hero="lede"]');
+  const actions = document.querySelector('[data-hero="actions"]');
   const basket = document.querySelector('[data-hero="basket"]');
 
   // The orchard. Branches are hidden by a dash offset the stylesheet can set
@@ -35,7 +44,7 @@ export function playIntro() {
   const logoFills = document.querySelectorAll('.monogram__body, .monogram__leaf');
 
   gsap.set(chars, { yPercent: 118 });
-  gsap.set([lede, basket], { y: 22 });
+  gsap.set([lede, actions, basket], { y: 22 });
 
   // The display face has a width axis. Opening narrow and letting the
   // wordmark widen as it rises makes the reveal feel like it is being
@@ -61,9 +70,13 @@ export function playIntro() {
     .to(branches, { strokeDashoffset: 0, duration: 1.5, stagger: 0.07, ease: 'power2.inOut' }, 0.1)
     .to(canopy, { opacity: 1, duration: 1.5, ease: 'power2.out' }, 0.45)
 
+    // Quicker than it was: at 0.075 per character a fifteen-letter name spent
+    // 1.1 s assembling *after* its own 1.4 s tween, so the one word an employer
+    // is here to read finished arriving somewhere near the third second. The
+    // shape of the reveal survives the tightening; the wait does not.
     .set(name, { opacity: 1 }, 0.2)
-    .to(chars, { yPercent: 0, duration: 1.4, stagger: 0.075 }, 0.2)
-    .to(axis, { wdth: 118, duration: 1.6, ease: 'power3.out', onUpdate: applyAxis }, 0.2)
+    .to(chars, { yPercent: 0, duration: 1, stagger: 0.04 }, 0.2)
+    .to(axis, { wdth: 118, duration: 1.2, ease: 'power3.out', onUpdate: applyAxis }, 0.2)
 
     // Fruit ripens onto the finished branches, in a random order so it reads
     // as seven separate apples rather than one wipe across the canopy.
@@ -79,7 +92,11 @@ export function playIntro() {
       0.95
     )
 
-    .to([lede, basket], { opacity: 1, y: 0, duration: 1.1, stagger: 0.12 }, 0.8)
+    // The two buttons ride in with the sentence above them. They carry
+    // `data-hero`, so base.css holds them at opacity 0 until this line runs —
+    // which makes this the one tween on the page that a *call to action*
+    // depends on, and the reason the whole timeline no longer waits for fonts.
+    .to([lede, actions, basket], { opacity: 1, y: 0, duration: 0.9, stagger: 0.1 }, 0.55)
     // The mark in the masthead fills in last — anime.js has been drawing its
     // outline since ~250 ms, and this is the colour arriving behind it.
     .to(logoFills, { fillOpacity: 1, duration: 0.8, ease: 'power2.out' }, 1.05)

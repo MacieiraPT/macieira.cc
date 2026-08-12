@@ -107,24 +107,25 @@ safely('work grid', initWork);
 const tree = safely('apple tree', initTree) ?? null;
 
 // The 3D tree, requested straight away rather than at idle. It is the front
-// page, and the SVG tree in the markup is a fallback for browsers that can't
-// run this — not a loading state anyone should be shown on the way to it. So
-// `expectRenderer()` keeps the SVG out of sight from the first paint, and the
-// only thing that puts it back is this failing.
+// page, so it goes first — but it no longer hides the SVG tree while it
+// travels. That was `expectRenderer()`, and the reasoning was that the flat
+// drawing is a fallback rather than a loading state and should never be shown
+// on the way to the real thing. True about what it *is*, wrong about what the
+// visitor sees: Three.js is 137 kB gzipped, and until it arrived the main
+// object on the front page was an empty glow with no explanation — a loading
+// screen with the indicator taken out. Now the SVG draws immediately and the
+// renderer cross-fades over it when it has a frame (`.is-3d` in site.css), so
+// a slow connection costs a better tree, never the tree.
 //
 // Placed above the `await` below so the fetch starts immediately; it is a
 // separate chunk, so nothing on the page waits for it either way.
 if (tree && allowWebGL) {
-  tree.expectRenderer();
   import('./scene/orchard.js')
     .then(({ mountOrchard }) => {
       const canvas = document.querySelector('[data-orchard-canvas]');
-      if (!canvas || !mountOrchard(canvas, tree)) tree.abandonRenderer();
+      if (canvas) mountOrchard(canvas, tree);
     })
-    .catch((error) => {
-      console.warn('[macieira.cc] 3D tree:', error);
-      tree.abandonRenderer();
-    });
+    .catch((error) => console.warn('[macieira.cc] 3D tree:', error));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -140,8 +141,21 @@ safely('anchor links', () => initAnchors(lenis));
 safely('scrollbar', () => initScrollbar(lenis));
 
 /* -------------------------------------------------------------------------- */
-/* 3. Choreography (after fonts, because line splitting measures text)         */
+/* 3. Choreography                                                             */
 /* -------------------------------------------------------------------------- */
+
+// The hero runs *before* the font wait, and that ordering is the whole point.
+// base.css holds the name, the lede, the two buttons and the fact card at
+// opacity 0 on the promise that this timeline brings them back, so every
+// millisecond spent in `fontsReady()` below was a millisecond of blank hero —
+// up to the full 1.5 s cap on a cold cache, before the intro had even started.
+// Content that is invisible until a webfont arrives is a loading screen with
+// no spinner on it, and the one thing it was hiding is the call to action.
+//
+// It is safe here because `splitChars()` only wraps characters; nothing in the
+// intro reads a measurement. Line splitting is the part that does, and that is
+// what stays behind the wait.
+safely('hero intro', playIntro);
 
 await fontsReady().catch(() => {});
 
@@ -152,7 +166,6 @@ safely('nav state', initNav);
 safely('accent tint', initTint);
 safely('marquee', initMarquee);
 safely('magnetic buttons', initMagnetic);
-safely('hero intro', playIntro);
 
 // Fonts swapping in changes every measurement ScrollTrigger took at setup.
 safely('scroll refresh', () => ScrollTrigger.refresh());
