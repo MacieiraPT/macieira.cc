@@ -45,13 +45,27 @@
   /* Palette. Two accents doing actual work: acid = the playing half,
      plasma = the building half. The WebGL scene and the page tint both
      interpolate between them as you scroll, so colour carries the narrative. */
+  /* Four steps of ink, and the bottom two are pinned to a contrast floor
+     rather than to taste. --ink-faint carries real text — the tree's
+     invitation, the GitHub panel's stat labels, the colophon — at 9-11 px,
+     which is nowhere near large enough for WCAG's 3:1 large-text allowance.
+     It was #5d5d68, or 3.08:1 on --bg, and every one of those lines failed AA.
+     #7a7a88 is 4.73:1 on --bg and 4.59:1 on --bg-raise, so it passes against
+     both surfaces it is ever painted on, and the four steps still read as four
+     steps: 17.7 → 7.2 → 4.7. Anything dimmer than this is decoration, and
+     decoration does not get to hold words. */
   --bg:        #08080a;
   --bg-raise:  #0d0d11;
   --ink:       #f3f1ec;
   --ink-dim:   #9a9aa6;
-  --ink-faint: #5d5d68;
+  --ink-faint: #7a7a88;
   --acid:      #cdfb45;
-  --plasma:    #7d5cff;
+  /* Nudged up from #7d5cff for the same reason: the GitHub panel re-points
+     --tint at it, so this is a *text* colour there, and 4.48:1 missed AA by
+     two hundredths. #836bff is 5.09:1 on the panel and reads as the same
+     purple. Changing it here changes it in the WebGL scenes too, which is the
+     point of keeping one token. */
+  --plasma:    #836bff;
 
   /* The orchard. `macieira` is Portuguese for apple tree, so these three are
      brand colours rather than illustration colours: the logo, the fruit in
@@ -208,6 +222,26 @@ html.lenis, html.lenis body { height: auto; }
 
 .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
 
+/* Read, never seen.
+   For the labels that a sighted reader gets from layout and a screen reader
+   gets from nothing — "Local time in Portugal" in front of the clock digits,
+   "Email" in front of an address. This is deliberately not `aria-label`: that
+   attribute is only honoured on elements with a role that supports naming, and
+   a bare <span> is a `generic`, where support is inconsistent across engines.
+   Real text in the document works everywhere and survives translation, because
+   it can carry its own data-pt like every other string on the page. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Small pulsing status dot, reused by the hero kicker and the GitHub panel. */
 .dot {
   display: inline-block;
@@ -280,6 +314,48 @@ html.js:not(.boot-failed) .apple {
 /* Line-mask wrappers created by the splitter in js/modules/reveals.js */
 .line { display: block; overflow: hidden; padding-bottom: 0.06em; }
 .line__inner { display: block; will-change: transform; }
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   --------------------------------------------------------------------------
+   Reduce, not remove — and the distinction is the whole policy, so it is
+   written down in one place here and mirrored in js/modules/env.js.
+
+   What stays: the smooth scroll and the tree. Those are the page, not effects
+   applied to it, and a visitor who gets neither is looking at a different
+   site. Both are also *reactive* — they answer a wheel or a click and stop
+   when you do — which is the category the preference is least concerned with.
+
+   What goes: everything that moves on its own and never stops. Motion nobody
+   asked for and nobody can stop is the thing the preference is actually for,
+   and it is also WCAG 2.2.2 (Level A) once it runs past five seconds beside
+   other content. So the marquee, the pulsing status dots, the scroll cue and
+   the idle bob in the canopy all come to rest, and the entrance reveals stop
+   travelling — they are released outright here, because an element that never
+   gets its animation must never be left holding the animation's start state.
+   js/modules/reveals.js and js/modules/hero.js skip the matching tweens, or
+   the two halves would fight and the fade would flash.
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html.js:not(.boot-failed) [data-reveal],
+  html.js:not(.boot-failed) [data-hero] {
+    opacity: 1;
+    transform: none;
+  }
+  html.js:not(.boot-failed) [data-reveal-lines] > .line > .line__inner {
+    transform: none;
+  }
+  html.js:not(.boot-failed) .monogram__body,
+  html.js:not(.boot-failed) .monogram__leaf {
+    fill-opacity: 1;
+  }
+  html.js:not(.boot-failed) .orchard__glow { opacity: 1; }
+  html.js:not(.boot-failed) [data-branch] { stroke-dashoffset: 0; }
+  html.js:not(.boot-failed) .apple { opacity: 1; transform: none; }
+
+  /* Decorative loops, all of them. */
+  .dot { animation: none; }
+}
 
 /* Per-character wrappers for the hero wordmark. The word box keeps the line
    from breaking between two character masks — see splitChars() in split.js. */

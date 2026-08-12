@@ -1,10 +1,15 @@
 /**
  * work.js — renders js/data/projects.js into the "Selected work" grid.
  *
- * While the list is empty the markup that shipped in index.html stays exactly
- * as it is (three honest placeholder slots). The moment the list has entries,
- * the placeholders are replaced by real cards. That way the empty state is
- * server-rendered HTML rather than something JS has to draw.
+ * The markup that ships in index.html is the grid as it stands: real cards,
+ * written out, so the work section is not blank for a crawler or for a visitor
+ * with JavaScript off. This replaces it with the same list rendered from data,
+ * which is what makes adding a project a one-object edit — and what lets the
+ * cards follow a language switch, since the markup can only carry one `data-pt`
+ * per element and a project's fields are not always translated.
+ *
+ * Nothing is lost when this never runs: the first entry here is also the card
+ * in the HTML. Keep the two in step.
  */
 
 import { projects } from '../data/projects.js';
@@ -12,15 +17,12 @@ import { language, onLanguageChange } from './lang.js';
 
 export function initWork() {
   const grid = document.querySelector('[data-work-grid]');
-  const note = document.querySelector('.work__note');
   if (!grid || !projects.length) return;
 
   render(grid);
   // Entries may carry a `pt` block; the ones that don't simply stay as they
   // were written, which is the right default for a project name.
   onLanguageChange(() => render(grid));
-
-  if (note) note.remove(); // the "empty on purpose" line has outlived its usefulness
 }
 
 function render(grid) {

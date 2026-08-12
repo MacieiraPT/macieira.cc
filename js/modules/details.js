@@ -17,6 +17,7 @@
 
 import { animate, createDraggable, spring, stagger, svg } from 'animejs';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { env } from './env.js';
 
 /* -------------------------------------------------------------------------- */
 /* 1a. Line drawing                                                            */
@@ -64,46 +65,42 @@ function initDrawings() {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The seam's mark morphs between the apple and the GitHub logo — the page's
- * whole argument in one 30 px shape. It flips itself once when the seam
- * scrolls into view, and stays a real toggle button after that.
+ * The seam's mark morphs from the apple into the GitHub logo — the page's
+ * whole argument in one 30 px shape — once, as the seam scrolls into view.
+ *
+ * It used to be a <button aria-pressed> you could flip back and forth, and
+ * that was the problem: the most call-to-action-shaped element on the page,
+ * captioned "tap to switch", whose entire function was redrawing its own icon.
+ * Real interactivity, no destination. The element is now the link to this
+ * page's source, which is what the morph was illustrating all along, so the
+ * animation kept its home and stopped pretending to be the point of it.
+ *
+ * One direction, once. A link's label cannot swap under the pointer — the
+ * caption is static markup with its own `data-pt` now, not a runtime string —
+ * and there is nothing to toggle back to.
  */
 function initMorph() {
   const toggle = document.querySelector('[data-morph-toggle]');
   const shape = document.querySelector('[data-morph-shape]');
-  const label = document.querySelector('[data-morph-label]');
   if (!toggle || !shape) return;
-
-  const STATES = {
-    apple: { target: '#shape-apple', label: 'macieira' },
-    gh: { target: '#shape-gh', label: 'github' },
-  };
-  let current = 'apple';
-
-  const setState = (next, { animated = true } = {}) => {
-    if (next === current) return;
-    current = next;
-    const state = STATES[next];
-
-    toggle.setAttribute('aria-pressed', String(next === 'gh'));
-    if (label) label.textContent = state.label;
-
-    animate(shape, {
-      // morphTo resamples both paths to a matching point count, which is what
-      // lets two shapes with nothing structurally in common interpolate.
-      d: svg.morphTo(state.target),
-      duration: animated ? 900 : 0,
-      ease: 'out(3)',
-    });
-  };
-
-  toggle.addEventListener('click', () => setState(current === 'apple' ? 'gh' : 'apple'));
 
   ScrollTrigger.create({
     trigger: toggle,
     start: 'top 78%',
     once: true,
-    onEnter: () => setTimeout(() => setState('gh'), 700),
+    onEnter: () =>
+      setTimeout(() => {
+        // Drives the fill colour from CSS; see `.seam__toggle.is-gh`.
+        toggle.classList.add('is-gh');
+        animate(shape, {
+          // morphTo resamples both paths to a matching point count, which is
+          // what lets two shapes with nothing structurally in common
+          // interpolate.
+          d: svg.morphTo('#shape-gh'),
+          duration: 900,
+          ease: 'out(3)',
+        });
+      }, 700),
   });
 }
 
@@ -141,7 +138,12 @@ function initStickers() {
   });
 
   // Drop them in when the footer arrives, so the first impression is that
-  // they're objects with weight.
+  // they're objects with weight. The drag itself stays under the preference —
+  // it only ever happens because a hand made it happen — but an entrance that
+  // plays itself is exactly what the policy in env.js switches off, and these
+  // start from `scale: 0.4` and a random rotation.
+  if (env.reducedMotion) return;
+
   ScrollTrigger.create({
     trigger: '[data-stickers]',
     start: 'top 85%',
@@ -161,7 +163,13 @@ function initStickers() {
 /* -------------------------------------------------------------------------- */
 
 export function initDetails() {
-  initDrawings();
-  initMorph();
+  // Both of these are entrances: lines that draw themselves on and a shape
+  // that redraws itself, neither asked for. The paths ship fully drawn in the
+  // markup, so skipping them leaves the finished picture rather than a gap —
+  // which is the same contract the rest of the page keeps (see env.js).
+  if (!env.reducedMotion) {
+    initDrawings();
+    initMorph();
+  }
   initStickers();
 }

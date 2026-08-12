@@ -23,6 +23,14 @@ import { splitLines, revert, forget } from './split.js';
 /* -------------------------------------------------------------------------- */
 
 export function initReveals() {
+  // Under the preference, base.css has already released every hidden start
+  // state, so there is nothing left to reveal — and running the tweens anyway
+  // would re-hide elements the stylesheet just showed, then slide them back.
+  // The headline splitter is skipped with them: its whole purpose is the mask
+  // reveal, and splitting text that will never move only costs a screen reader
+  // the chance to read the headline as one node.
+  if (env.reducedMotion) return;
+
   // Simple blocks. ScrollTrigger.batch groups elements that cross the line in
   // the same frame into one staggered tween — far cheaper than one trigger
   // per card, and it reads better too.
@@ -198,15 +206,27 @@ export function initTint() {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The strip always creeps along on its own, but scrolling drives it: fast
- * scrolling speeds it up, direction follows the scroll, and the type skews
- * with the velocity before settling back. This is the clearest place on the
+ * A strip of words that moves *because you are scrolling* and stops when you
+ * stop. Direction follows the scroll, magnitude sets the speed, and the type
+ * skews with the velocity before settling back — the clearest place on the
  * page where the smooth-scroll layer and the animation layer are visibly the
  * same system rather than two libraries running side by side.
+ *
+ * It used to creep along on its own at timeScale 1 forever, which made it the
+ * one thing here that was pure decoration *and* never stopped: a looping strip
+ * of five words that an employer has to wait out to read, and — with no way to
+ * pause it — a WCAG 2.2.2 problem the moment it ran past five seconds beside
+ * the sections it sits between. Coming to rest costs nothing, because the
+ * effect worth having was never the drift; it was the reaction to the scroll.
  */
 export function initMarquee() {
   const track = document.querySelector('[data-marquee-track]');
   if (!track) return;
+
+  // Nothing self-starting is allowed to run at all under the preference, and a
+  // strip whose entire job is decorative movement has no reduced form worth
+  // building — it simply stays put and stays readable. See env.js.
+  if (env.reducedMotion) return;
 
   // Duplicate the content once so a -50% translation loops seamlessly. The
   // copies need no aria-hidden of their own — the whole .marquee is already
@@ -215,11 +235,14 @@ export function initMarquee() {
   const clone = track.cloneNode(true);
   [...clone.children].forEach((child) => track.append(child));
 
+  // Still an infinite tween, but it spends most of its life paused: the
+  // timeScale below is what decides whether any of it is on the clock.
   const loop = gsap.to(track, {
     xPercent: -50,
     duration: 26,
     ease: 'none',
     repeat: -1,
+    paused: true,
   });
 
   const skewTo = gsap.quickTo(track, 'skewX', { duration: 0.6, ease: 'power3.out' });
@@ -227,23 +250,35 @@ export function initMarquee() {
   ScrollTrigger.create({
     onUpdate: (self) => {
       const velocity = self.getVelocity(); // px/second, signed
+      // A settle tween from the last stop may still be easing timeScale toward
+      // zero; left alone it would fight this line for the same property and
+      // drag the strip back to a standstill under an active scroll.
+      gsap.killTweensOf(loop);
       // Scroll direction flips the marquee; magnitude speeds it up, capped so
       // a fast flick can't turn it into a blur.
       loop.timeScale(gsap.utils.clamp(-6, 6, Math.sign(velocity) * (1 + Math.abs(velocity) / 900)));
+      loop.play();
       skewTo(gsap.utils.clamp(-8, 8, velocity / 260));
     },
-    // Scrolling stopped: unskew and go back to the idle drift.
     onScrubComplete: () => skewTo(0),
   });
 
-  // getVelocity() only reports while scrolling, so idle needs its own reset.
+  // getVelocity() only reports while scrolling, so coming to rest needs its own
+  // trigger. Easing the timeScale to zero rather than pausing on the spot means
+  // the strip glides to a stop instead of freezing mid-stride, and the pause at
+  // the end is what guarantees it is not quietly still on the ticker.
   let idle;
   window.addEventListener(
     'scroll',
     () => {
       clearTimeout(idle);
       idle = setTimeout(() => {
-        gsap.to(loop, { timeScale: 1, duration: 0.8, ease: 'power2.out' });
+        gsap.to(loop, {
+          timeScale: 0,
+          duration: 0.9,
+          ease: 'power2.out',
+          onComplete: () => loop.pause(),
+        });
         skewTo(0);
       }, 160);
     },

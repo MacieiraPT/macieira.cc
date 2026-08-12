@@ -32,6 +32,9 @@ export const env = {
   finePointer: mq('(hover: hover) and (pointer: fine)'),
   smallScreen: mq('(max-width: 860px)'),
 
+  /** See the policy note below. Read by reveals.js, hero.js and tree.js. */
+  reducedMotion: mq('(prefers-reduced-motion: reduce)'),
+
   /**
    * Core count, used only to pick a particle budget in js/scene/index.js.
    * Absence is treated as "fine" — an unknown machine is not a slow one.
@@ -40,24 +43,42 @@ export const env = {
 };
 
 /**
- * Motion is unconditional on this site — a deliberate decision by the owner,
- * recorded here rather than rediscovered as a bug.
+ * `prefers-reduced-motion`: reduce, don't remove.
  *
- * `prefers-reduced-motion` used to switch off Lenis, the hero intro, the
- * scroll reveals and the sticker physics. It no longer switches off anything:
- * the smooth scroll *is* the feel of the page, and half the page animating
- * while the other half sat still read as broken rather than as considerate.
+ * The history matters, because both extremes have already been tried here.
+ * The preference first switched off Lenis, the hero intro, the scroll reveals
+ * and the sticker physics — and half the page animating while the other half
+ * sat still read as broken rather than as considerate. So it was made to
+ * switch off nothing at all, which was worse in a quieter way: the claim that
+ * justified it ("no parallax on text") was not even true — hero.js scrubs the
+ * whole hero block, headline included, on scroll.
  *
- * What that trades away: visitors who set the preference for vestibular
- * reasons get the full thing anyway. The honest mitigation is that nothing
- * here is large-amplitude or unexpected — no parallax on text, no autoplaying
- * transitions, no motion that starts without a scroll or a click.
+ * The line that actually holds is not "how much motion" but "who started it":
  *
- * One caveat, because it cost a bug: nothing here can enforce this on a
+ *   Reactive motion stays. The smooth scroll and the tree answer a wheel, a
+ *   drag or a click, they stop when the visitor stops, and they are the page
+ *   rather than an effect applied to it. Someone who gets neither is looking
+ *   at a different site.
+ *
+ *   Self-starting motion goes. The marquee, the pulsing status dots, the
+ *   scroll cue, the idle bob in the canopy, the hero parallax and the entrance
+ *   reveals all run without being asked. That is the category the preference
+ *   exists for, and the looping half of it is WCAG 2.2.2 (Level A) as soon as
+ *   it outlasts five seconds beside other content — with no pause control on
+ *   this page, all of them did.
+ *
+ * Anything with a CSS-only start state is released in the reduced-motion block
+ * at the bottom of base.css; anything driven by a tween is skipped by the
+ * module that owns it. The two halves have to agree — release an element in
+ * CSS while its tween still runs and it flashes.
+ *
+ * One caveat, because it cost a bug: nothing here can enforce the policy on a
  * library that checks the media query itself. Lenis does, and its
  * `respectReducedMotion` default silently turned every anchor scroll into a
- * teleport while the wheel stayed smooth. It is switched off explicitly in
- * smooth-scroll.js, and any library added later needs the same audit.
+ * teleport while the wheel stayed smooth — which is why it stays off even now
+ * that the preference is honoured everywhere else. Reactive motion stays
+ * reactive; a teleport is not a reduced scroll, it is a broken one. Any
+ * library added later needs the same audit.
  */
 
 /**
