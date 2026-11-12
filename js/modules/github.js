@@ -22,6 +22,7 @@
  */
 
 import { locale, onLanguageChange, t } from './lang.js';
+import { GITHUB_SNAPSHOT, SNAPSHOT_DATE } from '../data/github-snapshot.js';
 
 const USER = 'MacieiraPT';
 const API = 'https://api.github.com';
@@ -83,7 +84,7 @@ async function getJSON(path, signal) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The three formatters, rebuilt only when the locale actually moves.
+ * The formatters, rebuilt only when the locale actually moves.
  * Constructing an Intl formatter is expensive enough not to do per repository,
  * and a module-level constant would be stuck in whatever language the page
  * happened to boot in.
@@ -97,6 +98,7 @@ function intl() {
       numbers: new Intl.NumberFormat(tag),
       relative: new Intl.RelativeTimeFormat(tag, { numeric: 'auto' }),
       day: new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'short' }),
+      monthYear: new Intl.DateTimeFormat(tag, { month: 'short', year: 'numeric', timeZone: 'UTC' }),
     };
   }
   return intlCache;
@@ -198,7 +200,7 @@ function renderProfile(root, user) {
  * last ~90 days and the most recent 300 items, which is plenty for a
  * two-week strip — and the label says exactly what it is.
  */
-function renderActivity(root, events) {
+function renderActivity(root, events, latestPushAt) {
   const spark = root.querySelector('[data-gh-spark]');
   const note = root.querySelector('[data-gh-activity-note]');
   if (!spark) return;
@@ -250,7 +252,9 @@ function renderActivity(root, events) {
   if (note) {
     note.textContent = total
       ? t('ghActivityNote', total, ACTIVITY_DAYS)
-      : t('ghQuiet', ACTIVITY_DAYS);
+      : latestPushAt
+        ? t('ghQuietSince', ACTIVITY_DAYS, timeAgo(latestPushAt))
+        : t('ghQuiet', ACTIVITY_DAYS);
   }
 }
 
@@ -355,25 +359,42 @@ export async function initGitHub(onRender) {
   clearTimeout(timeout);
 
   /**
-   * Draws the panel from what the fetch came back with. Everything in here is
-   * a pure function of that data plus the current language, which is what lets
-   * a switch re-run it without touching the network — the whole panel, rather
-   * than the labels alone, because the relative dates and the counters are
-   * localised too. The activity bars grow again on the way past; they are the
-   * one thing that re-animates, and it reads as the panel refreshing.
+   * Draws the panel from what the fetch came back with, or from the static
+   * snapshot when unauthenticated API limits or network blocks stop the fetch.
+   * Everything in here is a pure function of that data plus the current
+   * language, so a switch re-runs it cleanly without touching the network.
    */
   const paint = () => {
-    if (profile.status === 'rejected') {
-      setStatus(root, 'error', t('ghOffline'));
-      setNote(root, profile.reason?.rateLimited ? t('ghRateLimited') : t('ghUnreachable'));
+    const profileLive = profile.status === 'fulfilled' && profile.value?.data;
+    const reposLive = repositories.status === 'fulfilled' && Array.isArray(repositories.value?.data);
+    const eventsLive = activity.status === 'fulfilled' && Array.isArray(activity.value?.data);
+
+    const profileData = profileLive ? profile.value.data : GITHUB_SNAPSHOT.profile;
+    const repoList = reposLive ? repositories.value.data : GITHUB_SNAPSHOT.repos;
+    const eventList = eventsLive ? activity.value.data : [];
+
+    const ownSorted = repoList
+      .filter((repo) => !repo.fork && !repo.archived && repo.pushed_at)
+      .sort((a, b) => Date.parse(b.pushed_at) - Date.parse(a.pushed_at));
+    const latestPushAt = ownSorted[0]?.pushed_at ?? null;
+
+    renderProfile(root, profileData);
+    renderRepos(root, repoList);
+    renderActivity(root, eventList, latestPushAt);
+
+    const usingSnapshot = !profileLive || !reposLive;
+    if (usingSnapshot) {
+      const snapshotLabel = intl().monthYear.format(Date.parse(SNAPSHOT_DATE));
+      const reason =
+        profile.reason?.rateLimited || repositories.reason?.rateLimited
+          ? t('ghSnapshotRateLimited', snapshotLabel)
+          : t('ghSnapshotUnreachable', snapshotLabel);
+      setStatus(root, 'snapshot', t('ghSnapshot', snapshotLabel));
+      setNote(root, reason);
       return;
     }
 
-    renderProfile(root, profile.value.data);
-    if (Array.isArray(repositories.value?.data)) renderRepos(root, repositories.value.data);
-    if (Array.isArray(activity.value?.data)) renderActivity(root, activity.value.data);
-
-    const fresh = profile.value.fresh;
+    const fresh = profile.value.fresh && repositories.value.fresh;
     setStatus(root, 'live', fresh ? t('ghLive') : t('ghFromCache'));
     setNote(root, fresh ? '' : t('ghCacheNote'));
   };

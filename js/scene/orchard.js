@@ -148,7 +148,7 @@ const ROOTS = {
 };
 
 /** Order matters only in that each key must exist as a [data-apple] button. */
-const FRUIT_KEYS = ['name', 'who', 'training', 'stack', 'steam', 'discord', 'github'];
+const FRUIT_KEYS = ['name', 'who', 'training', 'stack', 'work', 'contact', 'github'];
 
 /* -------------------------------------------------------------------------- */
 /* Growing                                                                     */
@@ -935,14 +935,15 @@ export function mountOrchard(canvas, tree) {
   /** A slow drift so the tree reads as turnable without anyone touching it. */
   const IDLE_SPIN = 0.055;
 
-  const orbit = { yaw: 0.35, pitch: 0.14 };
+  const initialApple = byName.get(tree.picked);
+  const orbit = { yaw: initialApple ? initialApple.bearing : 0.35, pitch: 0.14 };
   let yawVelocity = 0;
   let pitchVelocity = 0;
   let dragging = false;
   let pointerId = null;
   let lastX = 0;
   let lastY = 0;
-  let lastInput = 0;
+  let lastInput = performance.now();
   let dragDistance = 0;
   /**
    * How many apples are currently hovered or focused. The idle spin stops
@@ -1234,21 +1235,25 @@ export function mountOrchard(canvas, tree) {
 
     if (!dragging) {
       // Throw, then settle. Idle spin fades back in once the throw has died
-      // down, so the two never fight over the same frame.
+      // down, so the two never fight over the same frame. Stopped on reduced motion.
       orbit.yaw += yawVelocity * delta;
       yawVelocity *= Math.exp(-delta * 2.4);
-      if (!holding && performance.now() - lastInput > 2200) orbit.yaw += IDLE_SPIN * delta;
+      if (!env.reducedMotion && !holding && performance.now() - lastInput > 2200) {
+        orbit.yaw += IDLE_SPIN * delta;
+      }
     }
 
     // Two slow sines an octave apart: enough to read as wind, never enough to
     // make an apple hard to hit. They share out SWAY rather than carrying their
     // own amplitudes, because resize() frames for the lean and the two must not
-    // drift apart.
-    grove.rotation.z = (Math.sin(elapsed * 0.42) * 0.6 + Math.sin(elapsed * 0.19) * 0.4) * SWAY;
+    // drift apart. Ambient loops stay still under reduced motion.
+    if (!env.reducedMotion) {
+      grove.rotation.z = (Math.sin(elapsed * 0.42) * 0.6 + Math.sin(elapsed * 0.19) * 0.4) * SWAY;
 
-    for (const apple of apples) {
-      apple.pivot.rotation.y = Math.sin(elapsed * 0.5 + apple.phase) * 0.22;
-      apple.fruit.position.y = -HANG + Math.sin(elapsed * 0.75 + apple.phase) * 0.012;
+      for (const apple of apples) {
+        apple.pivot.rotation.y = Math.sin(elapsed * 0.5 + apple.phase) * 0.22;
+        apple.fruit.position.y = -HANG + Math.sin(elapsed * 0.75 + apple.phase) * 0.012;
+      }
     }
 
     applyCamera();
@@ -1269,6 +1274,14 @@ export function mountOrchard(canvas, tree) {
 
   /** The crown fills in, then the fruit ripens onto it. */
   function intro() {
+    if (env.reducedMotion) {
+      apples.forEach((apple) => {
+        const lift = apple.chosen ? 1.09 : 1;
+        apple.fruit.scale.setScalar(lift);
+      });
+      return;
+    }
+
     if (foliage) {
       gsap.fromTo(
         foliage.scale,

@@ -18,9 +18,10 @@
  * many a page may hold: the tree asks first on purpose, because it is content
  * and the field is atmosphere with a CSS fallback already painted behind it.
  *
- * Critical-path JS is steps 1–3 (GSAP + Lenis + this app code, ~55 kB gzip).
- * Everything below that is additive, and every step is independently
- * survivable — a failure in one does not take the page down with it.
+ * Critical-path assets are steps 1–3 (HTML, CSS, GSAP, Lenis and this app code,
+ * ~110 kB gzip plus self-hosted fonts). Everything below that is additive, and
+ * every step is independently survivable — a failure in one does not take the
+ * page down with it.
  */
 
 import gsap from 'gsap';
@@ -59,19 +60,24 @@ const root = document.documentElement;
  * The inline failsafe in index.html covers a module graph that never loads.
  * This covers everything after it — because the failure that actually matters
  * is subtler: the modules load, `booted` disarms the failsafe, and *then* one
- * call throws in one browser. Everything downstream never runs, the hiding
- * rules stay on, and the page is blank in that browser and perfect in every
- * other. Content visibility is not allowed to depend on any of this working.
+ * call throws in one browser. Once step 3 finishes without throwing, the
+ * global listeners detach so an unrelated late promise rejection never flips
+ * `boot-failed` mid-session and brings back the native scrollbar beside ours.
  */
+let bootSettled = false;
+
 function releaseHiddenContent() {
+  if (bootSettled) return;
   root.classList.add('boot-failed');
 }
 
-window.addEventListener('error', (event) => {
+function onBootError(event) {
   // Failed resource loads bubble here too; only script errors mean the
   // choreography is compromised.
   if (event instanceof ErrorEvent) releaseHiddenContent();
-});
+}
+
+window.addEventListener('error', onBootError);
 window.addEventListener('unhandledrejection', releaseHiddenContent);
 
 /** Runs one feature in isolation: a failure costs that feature, not the page. */
@@ -170,6 +176,11 @@ safely('magnetic buttons', initMagnetic);
 // Fonts swapping in changes every measurement ScrollTrigger took at setup.
 safely('scroll refresh', () => ScrollTrigger.refresh());
 
+// All critical choreography is now running or released; detach the boot guard.
+bootSettled = true;
+window.removeEventListener('error', onBootError);
+window.removeEventListener('unhandledrejection', releaseHiddenContent);
+
 /* -------------------------------------------------------------------------- */
 /* 4. Deferred enhancements                                                    */
 /* -------------------------------------------------------------------------- */
@@ -212,13 +223,19 @@ async function mountBackdrop() {
   if (!canvas) return;
 
   let scene = null;
-  // Scroll can move before the module resolves, so the current value is kept
+  // Scroll can move before the module resolves, so the current values are kept
   // here and handed over the moment the scene exists.
   let phase = 0;
+  let opacity = 1;
 
   const setPhase = (value) => {
     phase = value;
     scene?.setPhase(value);
+  };
+
+  const setOpacity = (value) => {
+    opacity = value;
+    scene?.setOpacity(value);
   };
 
   /**
@@ -249,7 +266,7 @@ async function mountBackdrop() {
     trigger: '.section--dev',
     start: 'top 60%',
     end: 'max',
-    onToggle: ({ isActive }) => scene?.setOpacity(isActive ? 0.4 : 1),
+    onToggle: ({ isActive }) => setOpacity(isActive ? 0.4 : 1),
   });
 
   try {
@@ -257,6 +274,7 @@ async function mountBackdrop() {
     scene = mountScene(canvas, { onReady: () => ScrollTrigger.refresh() });
     if (scene) {
       scene.setPhase(phase);
+      scene.setOpacity(opacity);
     } else {
       console.info('[macieira.cc] WebGL field off — no context available. CSS backdrop standing in.');
     }

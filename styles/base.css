@@ -126,7 +126,7 @@ body {
   font-variation-settings: 'wdth' 100;
   line-height: 1.55;
   min-height: 100svh;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

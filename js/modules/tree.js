@@ -228,15 +228,26 @@ export function initTree() {
   // can type. This is on the critical path, so that throw would cost the whole
   // tree — and `safely()` in main.js would release the reveal contract with it,
   // turning one bad character in the hash into an unanimated page.
-  const raw = location.hash.replace(/^#/, '');
-  let target;
-  try {
-    target = decodeURIComponent(raw);
-  } catch {
-    target = raw;
+  function readHashTarget() {
+    const raw = location.hash.replace(/^#/, '');
+    let target;
+    try {
+      target = decodeURIComponent(raw);
+    } catch {
+      target = raw;
+    }
+    return [...facts.values()].find((card) => card.id === target) ?? null;
   }
-  const linked = [...facts.values()].find((card) => card.id === target);
+
+  const linked = readHashTarget();
   pick(linked ? linked.dataset.fact : buttons[0].dataset.apple, { measure: false });
+
+  window.addEventListener('hashchange', () => {
+    const nextLinked = readHashTarget();
+    if (nextLinked && nextLinked.dataset.fact !== picked) {
+      pick(nextLinked.dataset.fact);
+    }
+  });
 
   // Only now. The cards replace each other in place, so every *later* change
   // has to be spoken — but the opening one is the page arriving, not an answer
