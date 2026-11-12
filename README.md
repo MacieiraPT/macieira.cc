@@ -1,231 +1,72 @@
 <div align="center">
 
-<img src="assets/favicon.svg" width="96" alt="">
+<img src="static/assets/favicon.svg" width="96" alt="">
 
 # macieira.cc
 
-**A personal site that is also an apple tree.**
+**Personal portfolio and engineering case studies for Rodrigo Macieira.**
 
-*Macieira* is Portuguese for **apple tree**, and it's my surname.
-So the front page isn't a photo and a paragraph. It's a tree,
-whose seven apples are the only introduction there is.
+*Macieira* is Portuguese for **apple tree**, and my surname. The hero replaces decorative
+scroll theatre with a crisp, draggable **8-bit / 16-bit Bayer-dithered 3D Apple** rendered on
+a low-resolution WebGL target beside direct project work, stack capabilities, and engineering case studies.
 
 [**↗ Visit the site**](https://macieira.cc) · [@MacieiraPT](https://github.com/MacieiraPT)
 
 <br>
 
-![macieira.cc](assets/og.png)
+![macieira.cc](static/assets/og.png)
 
 <br>
 
-![No build step](https://img.shields.io/badge/build_step-none-3ddc84?style=for-the-badge&labelColor=08080a)
-![Static](https://img.shields.io/badge/static-HTML_·_CSS_·_ES_modules-e8e8ea?style=for-the-badge&labelColor=08080a)
-![WebGL](https://img.shields.io/badge/WebGL-two_scenes-ff3b30?style=for-the-badge&labelColor=08080a)
+![SvelteKit](https://img.shields.io/badge/SvelteKit-Svelte_5_·_TS-ff3e00?style=for-the-badge&labelColor=08080a)
+![Cloudflare Workers](https://img.shields.io/badge/edge-Cloudflare_Workers-f38020?style=for-the-badge&labelColor=08080a)
+![WebGL](https://img.shields.io/badge/WebGL-Bayer_16--bit_Apple-cdfb45?style=for-the-badge&labelColor=08080a)
 ![Made in Portugal](https://img.shields.io/badge/made_in-Portugal-006600?style=for-the-badge&labelColor=08080a)
 
 </div>
 
-<br>
-
 ---
 
-## Contents
+## Architecture Overview
 
-- [What this is](#what-this-is)
-- [The tree](#the-tree)
-- [What's on the page](#whats-on-the-page)
-- [Two languages](#two-languages)
-- [Under the hood](#under-the-hood)
-- [When things break](#when-things-break)
-- [Whose site this is](#whose-site-this-is)
-- [Credits](#credits)
+- **Framework:** [SvelteKit](https://svelte.dev/docs/kit) (Svelte 5 runes + TypeScript `strict: true`), built with `@sveltejs/adapter-cloudflare` for Cloudflare Workers Static Assets (`wrangler.jsonc`).
+- **Rendering:** Prerendered static HTML for [`/`](src/routes/+page.svelte), [`/work`](src/routes/work/+page.svelte), [`/work/emuhub`](src/routes/work/[slug]/+page.ts), `/work/sgeep`, and `/work/finsight`, plus a Worker endpoint at [`/api/github`](src/routes/api/github/+server.ts).
+- **Bilingual (EN / PT-PT):** Typed reactive store in [src/lib/i18n](src/lib/i18n/index.svelte.ts) reading `?lang=pt` / `?lang=en`, `localStorage['lang:v2']`, and `navigator.languages`.
+- **Retro 3D Apple Centerpiece:** Dynamically loaded Three.js (`three` split into its own async chunk) rendering faceted fruit, bark stem, and folded leaf geometry into a `NearestFilter` low-res `WebGLRenderTarget` with a custom 4×4 Bayer ordered-dither GLSL shader and silhouette outline blit pass in [retroAppleShader.ts](src/lib/webgl/retroAppleShader.ts) and [RetroAppleCanvas.svelte](src/lib/components/RetroAppleCanvas.svelte).
+- **Edge-Cached GitHub Activity:** [`/api/github`](src/routes/api/github/+server.ts) caches upstream responses via Cloudflare edge cache (`s-maxage=1800`), uses an optional `GITHUB_TOKEN` Worker secret if configured, and falls back gracefully to [github-snapshot.ts](src/lib/data/github-snapshot.ts).
 
----
+## Routes & Content
 
-## What this is
-
-The personal site of **Rodrigo Macieira** — a full-stack and creative web developer in
-Portugal, building web systems, desktop tools, and interactive graphics where they can be
-seen. It lives at **[macieira.cc](https://macieira.cc)**.
-
-The brief was small and stubborn: put **one big idea on the first screen** instead of five
-small ones, and let everything else earn its place underneath. The one big idea is the
-tree. Everything else on the page is short enough to read standing up.
-
-In `03 — elsewhere` there are **three links** — Steam, Discord, GitHub. That's the whole
-list, and the page says so out loud.
-
----
-
-## The tree
-
-The hero is a tree that isn't drawn — it's **grown**. One recursive generator starts from a
-single seed and branches outward, and the geometry follows the rules a real tree follows:
-
-- Every limb starts *inside* its parent, so the wood is continuous rather than assembled.
-- Radii follow the **pipe model** — a fork's children share out the parent's cross-section —
-  so branches thin the way branches actually thin.
-- The trunk widens into its roots along one unbroken curve.
-- A couple of thousand leaves scatter through the volume *around* each outer branch, not
-  laid on its surface — it's the spread that makes a canopy instead of a garland.
-
-The seed is fixed, so **the same tree grows for everybody**, on every load, in every browser.
-
-### The apples are hidden, and that's the point
-
-Seven apples hang where the tree grew them. That means some are behind the trunk, most are
-half under leaves, and finding them is the interaction. **Drag anywhere to turn the tree** —
-free in yaw, with inertia on release and a slow idle drift, so it reads as turnable before
-you touch it. Each apple you click opens one card: the name, who he is, the training, the
-stack, featured work, direct contact, and GitHub.
-
-Two details worth knowing, because they're what makes it feel fair rather than fiddly:
-
-- **An apple you can't see is never a hit target you can't see.** Fruit facing away fades
-  out *and* stops taking clicks, so you never hit something invisible or miss something you
-  can plainly see.
-- **Keyboard works in reverse.** Tab still reaches all seven — and focusing one that has
-  turned away **spins the tree around to face you**. It's the accessible answer and the
-  nicest thing in the scene.
-
-The idle spin also pauses the moment you hover an apple, because a target that drifts under
-your cursor as you reach for it is a target you miss.
-
----
-
-## What's on the page
-
-| | |
+| Route | Purpose |
 | --- | --- |
-| **Hero** | The tree, the name, seven fact apples, and the local time in Portugal. |
-| **01 — now** | Shipped, working on, next. Three sentences, no roadmap theatre. |
-| **02 — background** | Qualification (*Programador de Informática*, EQF 4), availability, and engineering approach. |
-| **03 — elsewhere** | Steam, Discord, GitHub. Handles that aren't links copy to your clipboard. |
-| **04 — github** | A live panel read from the public GitHub API (with a curated static snapshot fallback if rate-limited or offline): profile counters, recent repositories, and a 14-day activity strip. |
-| **Selected work** | Featured work (`EmuHub` and future projects). The grid ships as real markup and `work.js` re-renders it from `js/data/projects.js`, so it is never blank for a crawler or without JS. |
-| **05 — contact** | Email, Discord copy, GitHub, and a corner of spring-physics draggable stickers you can throw around. |
+| `/` | Above-the-fold identity, interactive 8-bit/16-bit 3D Apple, **01 Selected Work**, **02 Background & Stack** (*Programador de Informática*, EQF Level 4), **03 Open Source & GitHub**, and **04 Contact**. |
+| `/work` | Filterable archive of shipped software (`EmuHub`, `SGEEP.Web`, `FinSight`). |
+| `/work/[slug]` | Detailed engineering case studies covering problem framing, constraints, architecture decisions, security controls, and measured outcomes from [`projects.ts`](src/lib/data/projects.ts). |
+| `/api/github` | Cloudflare Worker endpoint returning normalized profile, repo, and 14-day activity data with automatic `GITHUB_SNAPSHOT` fallback. |
 
-Behind all of it, a second WebGL scene: **26,000 points** drifting as a haze, morphing into
-a wave, and settling into the shape of the apple mark.
+## Development
 
----
-
-## Two languages
-
-The whole page reads in **English and European Portuguese**, switched from the pill in the
-masthead. A Portuguese browser lands in Portuguese without touching it, the choice is
-remembered, and `?lang=pt` forces it — which is what makes a Portuguese link shareable.
-
-The translation is not a JSON file and not a second page. Every translatable element
-carries its Portuguese next to its English, in the markup:
-
-```html
-<p class="card__label" data-pt="Publicado">Shipped</p>
+```bash
+npm install
+npm run dev       # Vite dev server on http://localhost:4321
+npm run check     # Wrangler types check + svelte-kit sync + svelte-check
+npm run build     # Production SSR + client + prerender + Cloudflare Worker build
+npm run preview   # Local Cloudflare Worker runtime via wrangler dev
+npm run og        # Regenerate static/assets/og.png & touch/PWA icons via Chromium
 ```
 
-English is what ships in the document, so a visitor with no JavaScript — or a crawler —
-gets the finished page and never a flash of translation keys; switching swaps one attribute
-for the other. The English is copied back into `data-en` on boot, before anything else has
-touched the DOM, which is also what lets *cloned* content (the marquee duplicates its own
-track) arrive knowing both languages instead of being stranded in whichever one happened to
-be showing.
+Optional environment variable for elevated `/api/github` upstream rate limits:
 
-It isn't only the copy. The headlines are re-split and re-measured for the new line breaks,
-the clock and the GitHub panel's counters and relative dates change locale, and the panel
-redraws itself from the response it already had — no second request to say the same thing
-in Portuguese.
+- `GITHUB_TOKEN` (Worker secret via `npx wrangler secret put GITHUB_TOKEN`), typed cleanly via [`src/env.ts`](src/env.ts). When unset, `/api/github` uses anonymous GitHub requests cached at the edge and drops cleanly to the curated snapshot if rate-limited.
 
----
+## Graceful Degradation & Accessibility
 
-## Under the hood
-
-No framework. No bundler. No CMS. What's in the repository is exactly what the browser gets.
-
-| Library | Job on this page |
-| --- | --- |
-| [Lenis](https://github.com/darkroomengineering/lenis) | The inertia in the scroll — the base *feel* of the page. Nothing else animates on its own clock. |
-| [GSAP](https://gsap.com) + ScrollTrigger | The hero intro, every scroll reveal, the pinned rail, the progress bar. |
-| [Three.js](https://threejs.org) | Both scenes: the tree, and the particle field behind everything. |
-| [anime.js](https://animejs.com) | The fine detail — SVG line-drawing, the apple → GitHub morph, and the spring-physics stickers. |
-
-The clearest place to see them working as **one system** rather than four is the marquee
-between sections 02 and 03: GSAP runs the loop, its speed and skew come from Lenis' scroll
-velocity, and ScrollTrigger decides when to reset it.
-
-**The buttons are always HTML.** All seven apples are real `<button>` elements and all seven
-facts are real `<article>` elements, sitting in the document from the start. The 3D tree is
-a *renderer*, not a rewrite — each frame it projects the fruit's position and moves the
-buttons to sit on the mesh. Tab order, Enter, Space, focus rings and screen-reader output
-are identical whether WebGL runs or not, because they're the same elements either way.
-
-**Nothing loads that isn't needed.** The critical path is about 110 kB gzipped (plus
-self-hosted webfonts); the GitHub panel, the animation detail and all of Three.js wait for
-the browser to be idle. The one exception asked for immediately is the tree — it's the
-front page.
-
-The approach owes its shape to [OFF+BRAND](https://www.itsoffbrand.com) — bold type, one
-heavy motion layer, cinematic scroll, and a hard performance budget — minus the CMS, because
-this page has to survive with JavaScript switched off.
-
----
-
-## When things break
-
-Every degradation is a designed state, not an accident:
-
-| Situation | What you get |
-| --- | --- |
-| **JavaScript disabled** | The entire page, fully readable in English — including a hand-drawn SVG tree with working buttons and all the facts as plain text. Nothing is hidden without JS; the language switch takes itself off the page rather than pretending to work, and the browser's own scrollbar stays where it is instead of being removed for a replacement that will never arrive. |
-| **No WebGL** | The SVG tree takes over, buttons and all. Three.js is never even downloaded. |
-| **Only one WebGL context** | The tree wins it — it's content. The particle field falls back to CSS gradients without a word. |
-| **No GPU at all** | Still runs, on the software renderer, at a lower particle count. |
-| **GitHub API down or rate-limited** | The panel renders a labelled, curated static snapshot (`github-snapshot.js`) and explains why live sync is unavailable. The profile link never depended on the fetch. |
-| **Slow frames** | A watchdog quietly drops the pixel ratio, then the foliage, until it's smooth again. |
-
-**`prefers-reduced-motion`: reduce, don't remove.** Both extremes were tried here and
-both were wrong. Honouring it by switching everything off left half the page animating and
-the other half sitting still, which reads as broken rather than as considerate. Ignoring it
-outright was worse in a quieter way — the claim that justified it ("no parallax on body
-text") wasn't even true, since the hero block scrubs on scroll, headline included.
-
-The line that holds is not *how much* motion but *who started it*. Reactive motion stays:
-the smooth scroll and the tree answer a wheel, a drag or a click, and they stop when you
-do. Self-starting motion goes: the marquee, the pulsing status dots, the scroll cue, the
-idle bob in the canopy, the hero parallax and the entrance reveals all run without being
-asked, and looping ones with no pause control are a WCAG 2.2.2 failure besides. CSS start
-states are released in the reduced-motion block at the bottom of `base.css`; tweens are
-skipped by the module that owns them. The two halves have to agree — release an element in
-CSS while its tween still runs and it flashes.
-
----
-
-## Whose site this is
-
-**Rodrigo Macieira** — *Programador de Informática* (Level 4, Quadro Nacional de Qualificações),
-Portugal. Building full-stack software across TypeScript, C# / .NET, and real-time WebGL.
-
-<div align="center">
-
-[![Website](https://img.shields.io/badge/macieira.cc-ff3b30?style=for-the-badge&logo=safari&logoColor=white&labelColor=08080a)](https://macieira.cc)
-[![GitHub](https://img.shields.io/badge/@MacieiraPT-e8e8ea?style=for-the-badge&logo=github&logoColor=white&labelColor=08080a)](https://github.com/MacieiraPT)
-[![Steam](https://img.shields.io/badge/r__di-66c0f4?style=for-the-badge&logo=steam&logoColor=white&labelColor=08080a)](https://steamcommunity.com/id/r_di/)
-
-Discord: **rvdi**
-
-</div>
-
----
+- **Zero JS:** Prerendered HTML keeps the full page, inline pixel-art SVG apple, Selected Work cards, EQF 4 credential, and contact links completely legible.
+- **No WebGL / Context Loss:** `RetroAppleCanvas.svelte` probes WebGL before importing `three`, leaving the crisp pixel-art SVG fallback visible when WebGL is unavailable.
+- **`prefers-reduced-motion`:** Idle spin and subtle vertex grid snapping turn off automatically while pointer drag stays responsive.
+- **Contrast & Native Scrollbars:** `--ink-faint` (`#858594`) clears WCAG AA contrast on both `#08080a` and `#0f0f13`/`#15151b` card surfaces; native browser scrolling and OS scrollbars are preserved.
 
 ## Credits
 
-Brand icon paths from [simple-icons](https://simple-icons.org) (CC0); each mark identifies
-the service its link points to. Type is [Archivo](https://fonts.google.com/specimen/Archivo)
-and [JetBrains Mono](https://www.jetbrains.com/lp/mono/), both OFL, self-hosted as latin
-subsets.
-
-<div align="center">
-<br>
-<img src="assets/favicon.svg" width="28" alt="">
-<br><br>
-<sub>Grown, not drawn.</sub>
-</div>
+- Typefaces: [Archivo](https://fonts.google.com/specimen/Archivo) & [JetBrains Mono](https://www.jetbrains.com/lp/mono/) (OFL, self-hosted Latin subsets in [`static/assets/fonts`](static/assets/fonts)).
+- Domain & code: [@MacieiraPT](https://github.com/MacieiraPT) (`rodrigo@macieira.cc`).

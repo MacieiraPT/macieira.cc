@@ -1,0 +1,162 @@
+export const en = {
+  meta: {
+    siteName: 'macieira.cc',
+    homeTitle: 'Rodrigo Macieira — Full-Stack & Creative Web Developer | macieira.cc',
+    homeDescription:
+      'Rodrigo Macieira (MacieiraPT) — Full-stack and creative web developer in Portugal. TypeScript and Electron desktop tools, C# / .NET + PostgreSQL systems, and interactive WebGL.',
+    ogLocale: 'en_GB',
+    workTitle: 'Selected Work & Case Studies — macieira.cc',
+    workDescription:
+      'Technical case studies covering EmuHub (TypeScript/Electron), SGEEP.Web (.NET 8 Clean Architecture), and FinSight (ASP.NET Core + PostgreSQL).',
+  },
+  nav: {
+    skip: 'Skip to content',
+    brandAria: 'macieira.cc — home',
+    sectionsAria: 'Primary navigation',
+    work: 'work',
+    background: 'background',
+    github: 'github',
+    contact: 'contact',
+    allWork: 'All case studies',
+    langAria: 'Language selector',
+    githubButton: 'GitHub',
+  },
+  hero: {
+    regionLine: 'Portugal · Full-Stack & Interactive Web',
+    name: 'Rodrigo Macieira',
+    ledeLead: 'Building TypeScript/Electron desktop software and C#/.NET + PostgreSQL systems.',
+    ledeSub:
+      'Paired with lean, interactive WebGL on the front page — engineered without bloat or framework lock-in.',
+    primaryCta: 'View selected work',
+    secondaryCta: 'Email me',
+    tertiaryCta: 'Case studies',
+    proofStackLabel: 'Core Stack',
+    proofStackValue: 'TypeScript · C#\u00A0/\u00A0.NET\u00A08 · SvelteKit · Three.js',
+    proofCredentialLabel: 'Qualification',
+    proofCredentialValue: 'Programador de Informática · EQF\u00A04',
+    proofFocusLabel: 'Focus',
+    proofFocusValue: 'Clean architecture, safe I/O & pixel WebGL',
+    shaderCaption: 'Interactive 16-bit Bayer-dithered WebGL apple (drag to spin)',
+    shaderMode16: '16-BIT',
+    shaderMode8: '8-BIT',
+    shaderCanvasAria: 'Interactive retro 3D apple artwork rendered with Bayer ordered dithering',
+    shaderStatusIdle: 'Drag to spin',
+    shaderStatusReduced: 'Reduced motion active · drag manually',
+  },
+  work: {
+    sectionIndex: '01 — selected work',
+    heading: 'Shipped desktop and backend systems, with architectural proof.',
+    intro:
+      'Three flagship repositories spanning Electron process boundaries and Clean Architecture C#/.NET web platforms.',
+    archiveCta: 'Inspect all case studies',
+    filterAll: 'All (3)',
+    filterDesktop: 'TypeScript / Electron',
+    filterDotnet: 'C# / .NET',
+    filterTitle: 'Archive & Architecture Notes',
+    filterHeading: 'Engineering case studies.',
+    filterSub:
+      'Each entry documents domain constraints, system boundaries, security controls, and measured performance outcomes.',
+    caseStudyLink: 'Case study',
+    sourceLink: 'Source',
+    backToWork: 'Back to selected work',
+    nextProject: 'Next case study',
+    problemHeading: 'Problem',
+    constraintsHeading: 'Technical constraints',
+    decisionsHeading: 'Architecture & key decisions',
+    outcomesHeading: 'Measured outcomes',
+    metaRole: 'Role',
+    metaYear: 'Year',
+    metaLicense: 'License',
+    metaRepo: 'Repository',
+    metaStack: 'Stack',
+  },
+  background: {
+    sectionIndex: '02 — background & stack',
+    heading: 'Verified foundation, modern execution.',
+    capabilities: [
+      {
+        label: 'Systems & Backend',
+        title: 'C# / .NET 8 & Relational SQL',
+        body: 'ASP.NET Core MVC, Entity Framework Core, PostgreSQL indexing, Identity RBAC, audit trails, rate-limiting middleware, and xUnit automated test suites.',
+      },
+      {
+        label: 'Client & Desktop',
+        title: 'TypeScript, SvelteKit & Electron',
+        body: 'Strict multi-process IPC contracts, React and Svelte 5 interfaces, atomic config persistence, Cloudflare Workers edge caching, and accessibility-first HTML.',
+      },
+      {
+        label: 'Graphics & Craft',
+        title: 'Custom WebGL & GLSL Shaders',
+        body: 'Three.js low-res offscreen render targets, ordered Bayer dithering shaders, strict context budgets, and progressive SVG fallbacks for zero-JS visitors.',
+      },
+    ],
+    qualificationLabel: 'National Qualification',
+    qualificationTitle: 'Programador de Informática',
+    qualificationBody:
+      'Three-year Portuguese vocational software engineering track completed at EQF Level 4 (Quadro Nacional de Qualificações) alongside full secondary education.',
+    qualificationCta: 'Catalog entry 481040',
+    qualificationMeta: 'Public Portuguese National Qualifications syllabus reference (SNQ 7382).',
+    principlesLabel: 'Engineering ethos',
+    principlesTitle: 'Constraint-driven engineering.',
+    principlesBody:
+      'Every feature starts with measurable trade-offs: keep bundle size small, isolate unsafe I/O behind typed boundaries, respect native scroll and OS accessibility defaults, and never hide readable copy behind heavy animations.',
+  },
+  github: {
+    sectionIndex: '03 — open source & activity',
+    heading: 'Public repositories, edge-cached via Worker.',
+    prose:
+      'Data loads via /api/github on Cloudflare Workers with edge caching (30-minute TTL) and falls back immediately to a curated local snapshot if upstream rate limits hit.',
+    visitProfile: 'github.com/MacieiraPT',
+    panelTitle: '@MacieiraPT',
+    panelSubFallback: 'Full-stack & creative web developer · Portugal',
+    statsRepos: 'Public repos',
+    statsFollowers: 'Followers',
+    statsSince: 'Member since',
+    activityLabel: 'Public activity',
+    activityDays: (days: number) => `last ${days} days`,
+    connecting: 'syncing…',
+    liveBadge: 'live via edge proxy',
+    cachedBadge: 'edge-cached snapshot',
+    snapshotBadge: (date: string) => `snapshot · ${date}`,
+    snapshotNote: (date: string, rateLimited?: boolean) =>
+      rateLimited
+        ? `GitHub upstream rate limit hit — displaying verified ${date} snapshot.`
+        : `GitHub upstream unreachable right now — displaying verified ${date} snapshot.`,
+    cacheNote: 'Cached at the Cloudflare edge via /api/github to avoid per-visitor API lockouts.',
+    activityCount: (count: number, days: number) =>
+      `${count} event${count === 1 ? '' : 's'} · last ${days} days`,
+    activityQuietSince: (days: number, ago: string) =>
+      `latest push ${ago} · quiet last ${days} days`,
+    activityQuiet: (days: number) => `quiet · last ${days} days`,
+    dayTooltip: (day: string, count: number) =>
+      `${day}: ${count} public event${count === 1 ? '' : 's'}`,
+    activityAria: (count: number, days: number) =>
+      `${count} public GitHub events over the last ${days} days`,
+    noRepos: 'No public repositories returned.',
+    forksOnly: 'Only forked repositories public.',
+    justNow: 'just now',
+  },
+  footer: {
+    sectionIndex: '04 — contact',
+    heading: 'Open to full-stack engineering roles and select freelance work.',
+    emailCta: 'Email rodrigo@macieira.cc',
+    copyEmailCta: 'Copy email',
+    discordCta: 'Copy Discord',
+    githubCta: 'GitHub',
+    colophonTech: 'Built with SvelteKit, TypeScript, and retro WebGL on Cloudflare Workers.',
+    colophonSource: 'Source on GitHub',
+    localTimePrefix: 'Lisbon time',
+    backToTop: 'Back to top',
+    copiedToast: (val: string) => `Copied ${val}`,
+    copyFailedToast: (val: string) => `Copy failed — ${val}`,
+  },
+  errorPage: {
+    code: 'Error',
+    title: 'Nothing on this branch.',
+    body: "That page isn't here — it may have moved during the SvelteKit migration, or the route doesn't exist.",
+    homeCta: 'Return home',
+    workCta: 'Browse case studies',
+  },
+} as const;
+
+export type TranslationShape = typeof en;
