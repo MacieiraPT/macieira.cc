@@ -7,9 +7,9 @@ Personal portfolio and case-study site (`macieira.cc`) built with **SvelteKit 3*
 ```bash
 npm run dev       # Vite dev server at http://localhost:4321
 npm run check     # wrangler types --check && svelte-kit sync && svelte-check
-npm run build     # wrangler types --check && vite build -> .svelte-kit/cloudflare
-npm run preview   # wrangler dev --port 4321 (local Cloudflare Worker runtime)
-npm run deploy    # build + wrangler deploy
+npm run build     # vite build -> .svelte-kit/cloudflare
+npm run preview   # wrangler dev --port 4321 (runs build.command, local Worker runtime)
+npm run deploy    # wrangler deploy (runs build.command via wrangler.jsonc)
 npm run og        # regenerate static/assets/{og,apple-touch-icon,icon-192,icon-512}.png
 ```
 

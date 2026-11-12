@@ -8,6 +8,10 @@
     "binding": "ASSETS",
     "directory": ".svelte-kit/cloudflare"
   },
+  "build": {
+    "command": "npm run build",
+    "watch_dir": "src"
+  },
   "workers_dev": true,
   "preview_urls": true
 }
