@@ -233,11 +233,14 @@ export function mountScene(canvas, { onReady } = {}) {
     // the only thing it can land on is canopy — and travels to centre as it
     // becomes the apple. Keeping it off the right column is what lets the
     // wordmark and the fact cards there stay legible without a scrim behind
-    // them. On phones the hero is one column, so it goes straight overhead.
+    // them. On phones the headline sits at the top, so anchor the cloud lower
+    // behind the orchard silhouette instead of behind the body copy.
     group.position.x = MathUtils.lerp(env.smallScreen ? 0 : -3.4, 0, journey);
-    group.position.y = MathUtils.lerp(env.smallScreen ? 4.0 : 2.2, 0, journey);
+    group.position.y = MathUtils.lerp(env.smallScreen ? -1.5 : 2.2, 0, journey);
 
-    spin += delta * 0.1 * (1 - settle);
+    // Per env.js policy: self-starting rotation and ambient shader drift stop
+    // under reduced motion while scroll-scrubbed morphing stays reactive.
+    if (!env.reducedMotion) spin += delta * 0.1 * (1 - settle);
     group.rotation.y = MathUtils.lerp(spin, 0, settle) + pointerEased.x * 0.22;
     group.rotation.x = -pointerEased.y * 0.13;
 
@@ -249,13 +252,14 @@ export function mountScene(canvas, { onReady } = {}) {
     group.worldToLocal(cursorWorld);
     uniforms.uMouse.value.set(cursorWorld.x, cursorWorld.y);
 
-    uniforms.uTime.value = timer.getElapsed();
+    uniforms.uTime.value = env.reducedMotion ? 0 : timer.getElapsed();
     uniforms.uPhase.value = phase;
     uniforms.uBurst.value = burstEnergy;
     // Phase 0 is atmosphere behind the hero — the tree is the thing being
     // looked at there, and the field's own moment comes later, as the wave and
-    // then the apple. So it starts at half strength and earns the rest.
-    const wanted = targetOpacity * MathUtils.lerp(0.45, 1, MathUtils.clamp(phase, 0, 1));
+    // then the apple. So it starts softly and earns the rest on scroll.
+    const phaseStartOpacity = env.smallScreen ? 0.24 : 0.45;
+    const wanted = targetOpacity * MathUtils.lerp(phaseStartOpacity, 1, MathUtils.clamp(phase, 0, 1));
     uniforms.uOpacity.value += (wanted - uniforms.uOpacity.value) * Math.min(1, delta * 2.5);
 
     const started = performance.now();

@@ -36,24 +36,23 @@
  * work section is *empty* is a different problem, and it had one: three dashed
  * "slot 01 / Reserved" placeholders where the work should be.
  *
- * The first entry is the site itself, which is the one project that was
- * already finished and already public when the grid was empty. It is also
- * written out as real markup in index.html, so the grid is not blank for a
- * crawler or for a visitor with JavaScript off; keep the two in step.
+ * The entry below ships in real HTML inside index.html as well, so the grid
+ * stays populated for crawlers and visitors with JavaScript off; keep the
+ * two in step whenever projects change here.
  */
 
 /** @type {Array<{title: string, summary: string, url?: string, year?: string|number, tags?: string[], pt?: {title?: string, summary?: string}}>} */
 export const projects = [
   {
-    title: 'macieira.cc',
+    title: 'EmuHub',
     summary:
-      'This page: a WebGL apple tree, two scenes, no framework and no build step. Works with JavaScript switched off.',
-    url: 'https://github.com/MacieiraPT/macieira.cc',
+      'Cross-platform desktop launcher centralizing installed emulators across 55 consoles, with atomic JSON storage and release update checks.',
+    url: 'https://github.com/MacieiraPT/EmuHub',
     year: 2026,
-    tags: ['Three.js', 'GSAP', 'WebGL', 'Cloudflare'],
+    tags: ['TypeScript', 'Electron', 'React', 'Vite'],
     pt: {
       summary:
-        'Esta página: uma macieira em WebGL, duas cenas, sem framework e sem build. Funciona com o JavaScript desligado.',
+        'Launcher desktop multiplataforma que reúne emuladores instalados para 55 consolas, com armazenamento JSON atómico e verificação de atualizações.',
     },
   },
 ];

@@ -44,15 +44,16 @@ whose seven apples are the only introduction there is.
 
 ## What this is
 
-The personal site of **Rodrigo Macieira** — a developer in Portugal, 18, early in the work and
-building where it can be seen. It lives at **[macieira.cc](https://macieira.cc)**.
+The personal site of **Rodrigo Macieira** — a full-stack and creative web developer in
+Portugal, building web systems, desktop tools, and interactive graphics where they can be
+seen. It lives at **[macieira.cc](https://macieira.cc)**.
 
 The brief was small and stubborn: put **one big idea on the first screen** instead of five
 small ones, and let everything else earn its place underneath. The one big idea is the
 tree. Everything else on the page is short enough to read standing up.
 
-There are exactly **three links** — Steam, Discord, GitHub. That's the whole list, and the
-page says so out loud.
+In `03 — elsewhere` there are **three links** — Steam, Discord, GitHub. That's the whole
+list, and the page says so out loud.
 
 ---
 
@@ -75,8 +76,8 @@ The seed is fixed, so **the same tree grows for everybody**, on every load, in e
 Seven apples hang where the tree grew them. That means some are behind the trunk, most are
 half under leaves, and finding them is the interaction. **Drag anywhere to turn the tree** —
 free in yaw, with inertia on release and a slow idle drift, so it reads as turnable before
-you touch it. Each apple you click opens one card: the name, the person, the training, the
-stack, and the three places to find him.
+you touch it. Each apple you click opens one card: the name, who he is, the training, the
+stack, featured work, direct contact, and GitHub.
 
 Two details worth knowing, because they're what makes it feel fair rather than fiddly:
 
@@ -96,12 +97,13 @@ your cursor as you reach for it is a target you miss.
 
 | | |
 | --- | --- |
-| **Hero** | The tree, the name, and the local time in Portugal. |
+| **Hero** | The tree, the name, seven fact apples, and the local time in Portugal. |
 | **01 — now** | Shipped, working on, next. Three sentences, no roadmap theatre. |
-| **02 — elsewhere** | Steam, Discord, GitHub. Handles that aren't links copy to your clipboard. |
-| **03 — github** | A live panel read straight from the public GitHub API: profile counters, recent repositories, and a 14-day activity strip. Nothing is typed in by hand. |
-| **Selected work** | Projects, as they arrive. The grid ships as real markup and `work.js` re-renders it from `js/data/projects.js`, so it is never blank for a crawler or without JS. |
-| **04 — contact** | Two buttons, and a corner of draggable stickers you can throw around. |
+| **02 — background** | Qualification (*Programador de Informática*, EQF 4), availability, and engineering approach. |
+| **03 — elsewhere** | Steam, Discord, GitHub. Handles that aren't links copy to your clipboard. |
+| **04 — github** | A live panel read from the public GitHub API (with a curated static snapshot fallback if rate-limited or offline): profile counters, recent repositories, and a 14-day activity strip. |
+| **Selected work** | Featured work (`EmuHub` and future projects). The grid ships as real markup and `work.js` re-renders it from `js/data/projects.js`, so it is never blank for a crawler or without JS. |
+| **05 — contact** | Email, Discord copy, GitHub, and a corner of spring-physics draggable stickers you can throw around. |
 
 Behind all of it, a second WebGL scene: **26,000 points** drifting as a haze, morphing into
 a wave, and settling into the shape of the apple mark.
@@ -147,7 +149,7 @@ No framework. No bundler. No CMS. What's in the repository is exactly what the b
 | [anime.js](https://animejs.com) | The fine detail — SVG line-drawing, the apple → GitHub morph, and the spring-physics stickers. |
 
 The clearest place to see them working as **one system** rather than four is the marquee
-between sections 01 and 02: GSAP runs the loop, its speed and skew come from Lenis' scroll
+between sections 02 and 03: GSAP runs the loop, its speed and skew come from Lenis' scroll
 velocity, and ScrollTrigger decides when to reset it.
 
 **The buttons are always HTML.** All seven apples are real `<button>` elements and all seven
@@ -156,9 +158,10 @@ a *renderer*, not a rewrite — each frame it projects the fruit's position and 
 buttons to sit on the mesh. Tab order, Enter, Space, focus rings and screen-reader output
 are identical whether WebGL runs or not, because they're the same elements either way.
 
-**Nothing loads that isn't needed.** The critical path is about 70 kB gzipped; the GitHub
-panel, the animation detail and all of Three.js wait for the browser to be idle. The one
-exception asked for immediately is the tree — it's the front page.
+**Nothing loads that isn't needed.** The critical path is about 110 kB gzipped (plus
+self-hosted webfonts); the GitHub panel, the animation detail and all of Three.js wait for
+the browser to be idle. The one exception asked for immediately is the tree — it's the
+front page.
 
 The approach owes its shape to [OFF+BRAND](https://www.itsoffbrand.com) — bold type, one
 heavy motion layer, cinematic scroll, and a hard performance budget — minus the CMS, because
@@ -176,7 +179,7 @@ Every degradation is a designed state, not an accident:
 | **No WebGL** | The SVG tree takes over, buttons and all. Three.js is never even downloaded. |
 | **Only one WebGL context** | The tree wins it — it's content. The particle field falls back to CSS gradients without a word. |
 | **No GPU at all** | Still runs, on the software renderer, at a lower particle count. |
-| **GitHub API down or rate-limited** | The panel says `offline` and explains itself. The link to the profile never depended on the fetch. |
+| **GitHub API down or rate-limited** | The panel renders a labelled, curated static snapshot (`github-snapshot.js`) and explains why live sync is unavailable. The profile link never depended on the fetch. |
 | **Slow frames** | A watchdog quietly drops the pixel ratio, then the foliage, until it's smooth again. |
 
 **`prefers-reduced-motion`: reduce, don't remove.** Both extremes were tried here and
@@ -199,8 +202,7 @@ CSS while its tween still runs and it flashes.
 ## Whose site this is
 
 **Rodrigo Macieira** — *Programador de Informática* (Level 4, Quadro Nacional de Qualificações),
-Portugal. Currently on real-time graphics for the web, and the performance work that keeps
-them running on a phone as well as a desktop.
+Portugal. Building full-stack software across TypeScript, C# / .NET, and real-time WebGL.
 
 <div align="center">
 

@@ -209,12 +209,12 @@ const STRINGS = {
      attributes that ship in index.html, which is what a crawler that doesn't
      run JavaScript reads. */
   metaDescription: {
-    en: 'Rodrigo Macieira (MacieiraPT) — developer, Portugal. Macieira is Portuguese for apple tree, so the front page is one: a WebGL tree whose apples are the short version. Steam, Discord and GitHub.',
-    pt: 'Rodrigo Macieira (MacieiraPT) — programador, Portugal. Macieira é a árvore que dá maçãs, por isso a primeira página é uma: uma árvore em WebGL em que cada maçã é a versão curta. Steam, Discord e GitHub.',
+    en: 'Rodrigo Macieira (MacieiraPT) — full-stack and creative web developer in Portugal. WebGL graphics, TypeScript/Electron desktop apps, and C#/.NET web systems.',
+    pt: 'Rodrigo Macieira (MacieiraPT) — programador full-stack e web criativa em Portugal. Gráficos WebGL, aplicações desktop em TypeScript/Electron e sistemas web em C#/.NET.',
   },
   metaOgDescription: {
-    en: 'Developer, Portugal. Macieira is Portuguese for apple tree — so the front page is one, and each apple is the short version.',
-    pt: 'Programador, Portugal. Macieira é a árvore que dá maçãs — por isso a primeira página é uma, e cada maçã é a versão curta.',
+    en: 'Full-stack and creative web developer in Portugal. Interactive WebGL graphics, TypeScript desktop apps, and C#/.NET systems.',
+    pt: 'Programador full-stack e web criativa em Portugal. Gráficos WebGL interativos, aplicações desktop em TypeScript e sistemas em C#/.NET.',
   },
 
   copied: {
@@ -231,6 +231,7 @@ const STRINGS = {
   ghOffline: { en: 'offline', pt: 'offline' },
   ghLive: { en: 'live from the GitHub API', pt: 'em direto da API do GitHub' },
   ghFromCache: { en: 'from cache', pt: 'em cache' },
+  ghSnapshot: { en: (date) => `snapshot · ${date}`, pt: (date) => `arquivo · ${date}` },
   ghRateLimited: {
     en: "GitHub's public API is rate-limited from this network right now — the profile link still works.",
     pt: 'A API pública do GitHub está a limitar os pedidos desta rede neste momento — o link do perfil continua a funcionar.',
@@ -238,6 +239,16 @@ const STRINGS = {
   ghUnreachable: {
     en: "Couldn't reach the GitHub API from here. The profile link still works.",
     pt: 'Não foi possível chegar à API do GitHub a partir daqui. O link do perfil continua a funcionar.',
+  },
+  ghSnapshotRateLimited: {
+    en: (date) =>
+      `GitHub's public API is rate-limited from this network right now — showing the ${date} snapshot.`,
+    pt: (date) =>
+      `A API pública do GitHub está a limitar pedidos desta rede neste momento — a mostrar o registo de ${date}.`,
+  },
+  ghSnapshotUnreachable: {
+    en: (date) => `Couldn't reach the GitHub API from here — showing the ${date} snapshot.`,
+    pt: (date) => `Não foi possível ligar à API do GitHub a partir daqui — a mostrar o registo de ${date}.`,
   },
   ghCacheNote: {
     en: 'Cached for up to 30 minutes to stay inside the public rate limit.',
@@ -268,6 +279,10 @@ const STRINGS = {
   ghQuiet: {
     en: (days) => `quiet · last ${days} days`,
     pt: (days) => `sem atividade · últimos ${days} dias`,
+  },
+  ghQuietSince: {
+    en: (days, ago) => `last push ${ago} · quiet last ${days} days`,
+    pt: (days, ago) => `último push ${ago} · sem eventos nos últimos ${days} dias`,
   },
   ghDayTitle: {
     en: (day, count) => `${day}: ${count} event${count === 1 ? '' : 's'}`,
