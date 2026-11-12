@@ -1,0 +1,57 @@
+@font-face {
+  font-family: 'Archivo';
+  src: url('/assets/fonts/archivo-latin-var.woff2') format('woff2');
+  font-weight: 400 900;
+  font-stretch: 62% 125%;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/assets/fonts/jetbrains-mono-latin-var.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Core dark orchard surface & ink hierarchy (WCAG AA checked) */
+  --bg: #08080a;
+  --bg-raise: #0f0f13;
+  --bg-elev: #15151b;
+  --ink: #f3f1ec;
+  --ink-dim: #a3a3af;
+  --ink-faint: #858594; /* >= 5.0:1 across --bg, --bg-raise, and --bg-elev */
+
+  /* Brand & domain accents */
+  --acid: #cdfb45;
+  --apple: #e4392f;
+  --apple-deep: #96201a;
+  --leaf: var(--acid);
+  --bark: #8b7b69;
+  --tint: var(--acid);
+
+  /* Crisp hairlines (neutral, avoiding neon border clutter) */
+  --line: rgb(255 255 255 / 0.1);
+  --line-strong: rgb(255 255 255 / 0.22);
+
+  /* Typography */
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --step-label: clamp(0.68rem, 0.72vw, 0.76rem);
+  --step-body: clamp(0.98rem, 0.94rem + 0.22vw, 1.1rem);
+  --step-h2: clamp(1.75rem, 1.15rem + 2.4vw, 3.15rem);
+  --step-h3: clamp(1.12rem, 1rem + 0.55vw, 1.45rem);
+
+  /* Layout */
+  --gutter: clamp(1.25rem, 4.2vw, 4.5rem);
+  --measure: 1440px;
+  --section-y: clamp(4.5rem, 11vh, 8.5rem);
+  --radius: 12px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+}

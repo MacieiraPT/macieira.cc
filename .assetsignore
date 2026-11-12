@@ -1,20 +1,15 @@
-# Files in this directory that are NOT part of the published site.
-#
-# Cloudflare's build container installs the devDependencies before running
-# `wrangler deploy`, and the assets directory is the repository root — so
-# without this file the upload includes node_modules, which contains
-# wrangler's own 122 MiB `workerd` binary and blows the 25 MiB asset limit.
-#
-# Same syntax as .gitignore. Note that _headers and _redirects are parsed by
-# the platform rather than served, so they must NOT be listed here.
-
+# Files excluded from static asset uploads.
 node_modules/
+src/
 tools/
 package.json
 package-lock.json
+tsconfig.json
+vite.config.ts
+worker-configuration.d.ts
+wrangler.jsonc
 README.md
 CLAUDE.md
-wrangler.jsonc
 .assetsignore
 .gitignore
 .git/

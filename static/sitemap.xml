@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://macieira.cc/</loc>
+    <lastmod>2026-11-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://macieira.cc/"/>
+    <xhtml:link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/?lang=pt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://macieira.cc/"/>
+  </url>
+  <url>
+    <loc>https://macieira.cc/work</loc>
+    <lastmod>2026-11-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://macieira.cc/work"/>
+    <xhtml:link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/work?lang=pt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://macieira.cc/work"/>
+  </url>
+  <url>
+    <loc>https://macieira.cc/work/emuhub</loc>
+    <lastmod>2026-11-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://macieira.cc/work/emuhub"/>
+    <xhtml:link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/work/emuhub?lang=pt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://macieira.cc/work/emuhub"/>
+  </url>
+  <url>
+    <loc>https://macieira.cc/work/sgeep</loc>
+    <lastmod>2026-11-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://macieira.cc/work/sgeep"/>
+    <xhtml:link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/work/sgeep?lang=pt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://macieira.cc/work/sgeep"/>
+  </url>
+  <url>
+    <loc>https://macieira.cc/work/finsight</loc>
+    <lastmod>2026-11-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://macieira.cc/work/finsight"/>
+    <xhtml:link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/work/finsight?lang=pt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://macieira.cc/work/finsight"/>
+  </url>
+</urlset>
