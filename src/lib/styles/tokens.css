@@ -16,25 +16,29 @@
 }
 
 :root {
-  /* Core dark orchard surface & ink hierarchy (WCAG AA checked) */
+  /* Core dark orchard surface & ink hierarchy (WCAG AA checked >= 5.0:1) */
   --bg: #08080a;
   --bg-raise: #0f0f13;
   --bg-elev: #15151b;
   --ink: #f3f1ec;
   --ink-dim: #a3a3af;
-  --ink-faint: #858594; /* >= 5.0:1 across --bg, --bg-raise, and --bg-elev */
+  --ink-faint: #858594;
 
   /* Brand & domain accents */
   --acid: #cdfb45;
+  --acid-ink: #08080a;
   --apple: #e4392f;
   --apple-deep: #96201a;
+  --apple-hi: #ff886b;
   --leaf: var(--acid);
+  --leaf-mid: #9be028;
   --bark: #8b7b69;
   --tint: var(--acid);
 
-  /* Crisp hairlines (neutral, avoiding neon border clutter) */
+  /* Crisp hairlines & interactive hover wash */
   --line: rgb(255 255 255 / 0.1);
   --line-strong: rgb(255 255 255 / 0.22);
+  --hover-wash: rgb(255 255 255 / 0.05);
 
   /* Typography */
   --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
@@ -54,4 +58,67 @@
   /* Motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root[data-theme='dmg'] {
+  --bg: #0d150c;
+  --bg-raise: #131f11;
+  --bg-elev: #192916;
+  --ink: #d5eab2;
+  --ink-dim: #9ec076;
+  --ink-faint: #84a85e;
+
+  --acid: #9bbc0f;
+  --acid-ink: #081207;
+  --apple: #8bac0f;
+  --apple-deep: #306230;
+  --apple-hi: #cadc9f;
+  --leaf-mid: #9bbc0f;
+  --bark: #5a7a42;
+
+  --line: rgb(180 220 120 / 0.14);
+  --line-strong: rgb(180 220 120 / 0.28);
+  --hover-wash: rgb(180 220 120 / 0.07);
+}
+
+:root[data-theme='amber'] {
+  --bg: #0c0804;
+  --bg-raise: #140e07;
+  --bg-elev: #1c130a;
+  --ink: #ffedd2;
+  --ink-dim: #d4a66a;
+  --ink-faint: #b4864d;
+
+  --acid: #ffb000;
+  --acid-ink: #120902;
+  --apple: #ff6b1a;
+  --apple-deep: #9e3107;
+  --apple-hi: #ffd27a;
+  --leaf-mid: #ffca45;
+  --bark: #8c6438;
+
+  --line: rgb(255 184 80 / 0.14);
+  --line-strong: rgb(255 184 80 / 0.28);
+  --hover-wash: rgb(255 184 80 / 0.07);
+}
+
+:root[data-theme='mac1bit'] {
+  --bg: #f2f1ec;
+  --bg-raise: #e7e5de;
+  --bg-elev: #dddad1;
+  --ink: #101014;
+  --ink-dim: #3d3d47;
+  --ink-faint: #575763;
+
+  --acid: #141418;
+  --acid-ink: #f2f1ec;
+  --apple: #c9241e;
+  --apple-deep: #7a1411;
+  --apple-hi: #f26d63;
+  --leaf-mid: #3a3a44;
+  --bark: #5c5145;
+
+  --line: rgb(16 16 20 / 0.15);
+  --line-strong: rgb(16 16 20 / 0.32);
+  --hover-wash: rgb(16 16 20 / 0.06);
 }

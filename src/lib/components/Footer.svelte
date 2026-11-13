@@ -122,6 +122,11 @@
           <span>{i18n.t.footer.copyEmailCta}</span>
         </button>
 
+        <a class="btn btn--ghost" href="/cv">
+          <Icons name="file-text" class="icon icon--sm" />
+          <span>{i18n.t.footer.cvCta}</span>
+        </a>
+
         <button
           class="btn btn--ghost"
           type="button"
@@ -145,20 +150,28 @@
     </div>
 
     <div class="colophon mono">
-      <p>
-        {i18n.t.footer.colophonTech}
-        <span class="sep" aria-hidden="true">·</span>
-        <a
-          class="colophon__link"
-          href="https://github.com/MacieiraPT/macieira.cc"
-          target="_blank"
-          rel="noopener"
-        >
-          {i18n.t.footer.colophonSource}
-        </a>
-      </p>
+      <div class="colophon__left">
+        <p>
+          {i18n.t.footer.colophonTech}
+          <span class="sep" aria-hidden="true">·</span>
+          <a
+            class="colophon__link"
+            href="https://github.com/MacieiraPT/macieira.cc"
+            target="_blank"
+            rel="noopener"
+          >
+            {i18n.t.footer.colophonSource}
+          </a>
+        </p>
+        <p class="colophon__keys">{i18n.t.footer.shortcutsHint}</p>
+      </div>
 
       <p class="colophon__meta">
+        <span class="worker-status">
+          <span class="worker-status__dot" aria-hidden="true"></span>
+          <span>{i18n.t.footer.workerStatus}</span>
+        </span>
+        <span class="sep" aria-hidden="true">/</span>
         <span>{i18n.t.footer.localTimePrefix}: {clockText}</span>
         <span class="sep" aria-hidden="true">/</span>
         <a class="colophon__link" href="#top">{i18n.t.footer.backToTop}</a>
@@ -207,7 +220,7 @@
   .colophon {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 0.9rem 1.5rem;
     padding-top: 1.25rem;
@@ -215,10 +228,35 @@
     color: var(--ink-faint);
   }
 
+  .colophon__left {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .colophon__keys {
+    font-size: 0.64rem;
+    color: var(--ink-faint);
+  }
+
   .colophon__meta {
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.45rem;
+  }
+
+  .worker-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--ink-dim);
+  }
+
+  .worker-status__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--acid);
   }
 
   .colophon__link {
@@ -234,6 +272,12 @@
 
   .sep {
     color: var(--ink-faint);
-    margin-inline: 0.2rem;
+    margin-inline: 0.15rem;
+  }
+
+  @media (max-width: 899px) {
+    .colophon__keys {
+      display: none;
+    }
   }
 </style>

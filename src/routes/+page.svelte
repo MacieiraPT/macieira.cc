@@ -5,6 +5,21 @@
   import ProjectVisual from '#lib/components/ProjectVisual.svelte';
   import GitHubPanel from '#lib/components/GitHubPanel.svelte';
   import Icons from '#lib/components/Icons.svelte';
+
+  type BackgroundTab = 'how' | 'track' | 'education';
+
+  const TAB_ORDER: BackgroundTab[] = ['how', 'track', 'education'];
+  let activeTab = $state<BackgroundTab>('how');
+
+  function onTabKeyDown(e: KeyboardEvent) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const idx = TAB_ORDER.indexOf(activeTab);
+    const delta = e.key === 'ArrowRight' ? 1 : -1;
+    const next = TAB_ORDER[(idx + delta + TAB_ORDER.length) % TAB_ORDER.length];
+    activeTab = next;
+    document.getElementById(`bg-tab-${next}`)?.focus();
+  }
 </script>
 
 <svelte:head>
@@ -25,7 +40,7 @@
   <meta property="og:image" content="https://macieira.cc/assets/og.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="macieira.cc — Rodrigo Macieira, Full-Stack & WebGL, Portugal." />
+  <meta property="og:image:alt" content="macieira.cc: Rodrigo Macieira, Full-Stack & WebGL, Portugal." />
   <meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
@@ -33,7 +48,13 @@
 <section class="hero wrap" aria-labelledby="hero-name">
   <div class="hero__grid">
     <div class="hero__copy">
-      <p class="hero__region mono">{i18n.t.hero.regionLine}</p>
+      <div class="hero__topline">
+        <p class="hero__region mono">{i18n.t.hero.regionLine}</p>
+        <p class="availability-pill mono">
+          <span class="availability-pill__dot" aria-hidden="true"></span>
+          <span>{i18n.t.hero.availabilityPill}</span>
+        </p>
+      </div>
 
       <h1 class="hero__name" id="hero-name">{i18n.t.hero.name}</h1>
 
@@ -49,6 +70,10 @@
         <a class="btn btn--acid-soft" href="/work">
           <span>{i18n.t.hero.tertiaryCta}</span>
           <Icons name="arrow-up-right" class="icon icon--sm" />
+        </a>
+        <a class="btn btn--ghost" href="/cv">
+          <Icons name="file-text" class="icon icon--sm" />
+          <span>{i18n.t.hero.cvCta}</span>
         </a>
         <a class="btn btn--ghost" href="mailto:rodrigo@macieira.cc">
           <Icons name="mail" />
@@ -100,7 +125,7 @@
 
         <div class="project-card__meta mono">
           <span>{project.year} · {project.categoryLabel[i18n.lang]}</span>
-          <span class="project-card__metric">{project.metrics[0]?.value}</span>
+          <span>{project.license}</span>
         </div>
 
         <h3 class="project-card__title">
@@ -108,6 +133,15 @@
         </h3>
 
         <p class="project-card__summary">{project.summary[i18n.lang]}</p>
+
+        <dl class="project-card__kpis">
+          {#each project.metrics.slice(0, 2) as metric}
+            <div>
+              <dt class="mono">{metric.value}</dt>
+              <dd>{metric.label[i18n.lang]}</dd>
+            </div>
+          {/each}
+        </dl>
 
         <ul class="project-card__tags" aria-label="Tech stack">
           {#each project.stack.slice(0, 4) as tech}
@@ -147,8 +181,106 @@
     {/each}
   </div>
 
-  <div class="foundation-grid">
-    <article class="surface-card">
+  <div class="bg-tabs">
+    <div
+      class="bg-tablist"
+      role="tablist"
+      aria-label={i18n.t.background.tabsAria}
+      tabindex="-1"
+      onkeydown={onTabKeyDown}
+    >
+      <button
+        id="bg-tab-how"
+        type="button"
+        role="tab"
+        class="bg-tab mono"
+        class:is-active={activeTab === 'how'}
+        aria-selected={activeTab === 'how'}
+        aria-controls="bg-panel-how"
+        tabindex={activeTab === 'how' ? 0 : -1}
+        onclick={() => (activeTab = 'how')}
+      >
+        {i18n.t.background.tabHowIWork}
+      </button>
+      <button
+        id="bg-tab-track"
+        type="button"
+        role="tab"
+        class="bg-tab mono"
+        class:is-active={activeTab === 'track'}
+        aria-selected={activeTab === 'track'}
+        aria-controls="bg-panel-track"
+        tabindex={activeTab === 'track' ? 0 : -1}
+        onclick={() => (activeTab = 'track')}
+      >
+        {i18n.t.background.tabTrackRecord}
+      </button>
+      <button
+        id="bg-tab-education"
+        type="button"
+        role="tab"
+        class="bg-tab mono"
+        class:is-active={activeTab === 'education'}
+        aria-selected={activeTab === 'education'}
+        aria-controls="bg-panel-education"
+        tabindex={activeTab === 'education' ? 0 : -1}
+        onclick={() => (activeTab = 'education')}
+      >
+        {i18n.t.background.tabEducation}
+      </button>
+    </div>
+
+    <div
+      id="bg-panel-how"
+      class="bg-panel surface-card"
+      role="tabpanel"
+      aria-labelledby="bg-tab-how"
+      hidden={activeTab !== 'how'}
+    >
+      <p class="surface-card__label mono">{i18n.t.background.principlesLabel}</p>
+      <h3 class="surface-card__title">{i18n.t.background.principlesTitle}</h3>
+      <ul class="ethos-grid">
+        {#each i18n.t.background.howIWorkBullets as item (item.label)}
+          <li class="ethos-item">
+            <p class="ethos-item__label mono">{item.label}</p>
+            <p class="ethos-item__detail">{item.detail}</p>
+          </li>
+        {/each}
+      </ul>
+    </div>
+
+    <div
+      id="bg-panel-track"
+      class="bg-panel surface-card"
+      role="tabpanel"
+      aria-labelledby="bg-tab-track"
+      hidden={activeTab !== 'track'}
+    >
+      <p class="surface-card__label mono">{i18n.t.background.trackRecordLabel}</p>
+      <h3 class="surface-card__title">{i18n.t.background.trackRecordTitle}</h3>
+      <ol class="timeline">
+        {#each i18n.t.background.trackRecordItems as entry (entry.name)}
+          <li class="timeline__item">
+            <span class="timeline__year mono">{entry.period}</span>
+            <div class="timeline__body">
+              <div class="timeline__head">
+                <a class="timeline__name" href={entry.href}>{entry.name}</a>
+                <span class="timeline__scope mono">{entry.scope}</span>
+              </div>
+              <p class="timeline__desc">{entry.detail}</p>
+            </div>
+          </li>
+        {/each}
+      </ol>
+    </div>
+
+    <div
+      id="bg-panel-education"
+      class="bg-panel surface-card"
+      role="tabpanel"
+      aria-labelledby="bg-tab-education"
+      hidden={activeTab !== 'education'}
+    >
       <p class="surface-card__label mono">{i18n.t.background.qualificationLabel}</p>
       <h3 class="surface-card__title">{i18n.t.background.qualificationTitle}</h3>
       <p class="surface-card__body">{i18n.t.background.qualificationBody}</p>
@@ -162,13 +294,7 @@
         <Icons name="arrow-up-right" class="icon icon--sm" />
       </a>
       <p class="surface-card__footnote mono">{i18n.t.background.qualificationMeta}</p>
-    </article>
-
-    <article class="surface-card">
-      <p class="surface-card__label mono">{i18n.t.background.principlesLabel}</p>
-      <h3 class="surface-card__title">{i18n.t.background.principlesTitle}</h3>
-      <p class="surface-card__body">{i18n.t.background.principlesBody}</p>
-    </article>
+    </div>
   </div>
 </section>
 
@@ -213,13 +339,41 @@
   .hero__copy {
     display: grid;
     justify-items: start;
-    gap: clamp(1.1rem, 2.2vh, 1.6rem);
+    gap: clamp(1.05rem, 2vh, 1.5rem);
+  }
+
+  .hero__topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem 1rem;
   }
 
   .hero__region {
     color: var(--ink-dim);
     text-transform: uppercase;
     letter-spacing: 0.14em;
+  }
+
+  .availability-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    padding: 0.25rem 0.62rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--acid) 45%, transparent);
+    background: color-mix(in oklab, var(--acid) 10%, transparent);
+    color: var(--ink);
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .availability-pill__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--acid);
   }
 
   .hero__name {
@@ -256,7 +410,7 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
     padding-top: 1.15rem;
     border-top: 1px solid var(--line);
   }
@@ -308,7 +462,7 @@
   .project-card {
     display: flex;
     flex-direction: column;
-    gap: 0.9rem;
+    gap: 0.85rem;
     padding: clamp(1rem, 1.8vw, 1.35rem);
     border: 1px solid var(--line);
     border-radius: var(--radius);
@@ -329,10 +483,6 @@
     color: var(--ink-faint);
   }
 
-  .project-card__metric {
-    color: var(--acid);
-  }
-
   .project-card__title {
     font-size: var(--step-h3);
     font-weight: 700;
@@ -346,8 +496,29 @@
 
   .project-card__summary {
     color: var(--ink-dim);
-    font-size: 0.95rem;
+    font-size: 0.94rem;
     line-height: 1.5;
+  }
+
+  .project-card__kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    padding-block: 0.7rem;
+    border-block: 1px solid var(--line);
+  }
+
+  .project-card__kpis dt {
+    color: var(--acid);
+    font-weight: 600;
+    font-size: 0.78rem;
+  }
+
+  .project-card__kpis dd {
+    color: var(--ink-faint);
+    font-size: 0.76rem;
+    line-height: 1.35;
+    margin-top: 0.15rem;
   }
 
   .project-card__tags {
@@ -398,11 +569,54 @@
     gap: clamp(1rem, 2vw, 1.35rem);
   }
 
-  .foundation-grid {
+  .bg-tabs {
+    margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(1rem, 2vw, 1.35rem);
-    margin-top: clamp(1rem, 2vw, 1.35rem);
+    gap: 0.9rem;
+  }
+
+  .bg-tablist {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 4px;
+    width: fit-content;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--bg-raise);
+  }
+
+  .bg-tab {
+    padding: 0.42rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    cursor: pointer;
+    transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+  }
+
+  .bg-tab:hover {
+    color: var(--ink);
+  }
+
+  .bg-tab.is-active {
+    background: var(--acid);
+    color: var(--acid-ink);
+    font-weight: 600;
+  }
+
+  .bg-panel[hidden] {
+    display: none;
+  }
+
+  :global(html.no-js) .bg-tablist {
+    display: none;
+  }
+
+  :global(html.no-js) .bg-panel[hidden] {
+    display: grid;
   }
 
   .surface-card {
@@ -445,6 +659,86 @@
     font-size: 0.68rem;
   }
 
+  .ethos-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 0.35rem;
+  }
+
+  .ethos-item {
+    display: grid;
+    align-content: start;
+    gap: 0.45rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .ethos-item__label {
+    color: var(--ink);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ethos-item__detail {
+    color: var(--ink-dim);
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .timeline {
+    width: 100%;
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 0.35rem;
+  }
+
+  .timeline__item {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .timeline__year {
+    color: var(--acid);
+    font-size: 0.72rem;
+  }
+
+  .timeline__body {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .timeline__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 0.9rem;
+  }
+
+  .timeline__name {
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  .timeline__name:hover {
+    color: var(--acid);
+  }
+
+  .timeline__scope {
+    color: var(--ink-faint);
+    font-size: 0.66rem;
+  }
+
+  .timeline__desc {
+    color: var(--ink-dim);
+    font-size: 0.92rem;
+  }
+
   /* 03 GitHub */
   .github-split {
     display: grid;
@@ -466,8 +760,9 @@
     }
 
     .work-grid,
-    .capability-grid {
-      grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    .capability-grid,
+    .ethos-grid {
+      grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
     }
 
     .github-split {
@@ -477,8 +772,13 @@
 
   @media (max-width: 700px) {
     .hero-proof,
-    .foundation-grid {
+    .project-card__kpis {
       grid-template-columns: 1fr;
+    }
+
+    .timeline__item {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
     }
   }
 </style>

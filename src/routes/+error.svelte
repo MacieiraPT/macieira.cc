@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>{page.status} — macieira.cc</title>
+  <title>{page.status} | macieira.cc</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 

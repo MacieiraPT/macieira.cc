@@ -3,6 +3,8 @@ import { GITHUB_TOKEN } from '$app/env/private';
 import {
   GITHUB_SNAPSHOT,
   SNAPSHOT_DATE,
+  computeLanguageStats,
+  extractLatestPush,
   type GitHubEvent,
   type GitHubPayload,
   type GitHubProfile,
@@ -50,7 +52,7 @@ async function fetchGitHub<T>(path: string, headers: HeadersInit): Promise<Upstr
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-  const cacheUrl = new URL(url.origin + '/api/github');
+  const cacheUrl = new URL(url.origin + '/api/github?v=2');
   const cacheStorage =
     typeof caches !== 'undefined' && 'default' in caches
       ? (caches as unknown as { default: Cache }).default
@@ -63,6 +65,8 @@ export const GET: RequestHandler = async ({ url }) => {
         const payload = (await hit.json()) as GitHubPayload;
         const cachedPayload: GitHubPayload = {
           ...payload,
+          languages: payload.languages ?? computeLanguageStats(payload.repos ?? []),
+          latestPush: payload.latestPush ?? extractLatestPush(payload.repos ?? [], payload.events ?? []),
           source: payload.source === 'snapshot' ? 'snapshot' : 'edge-cache',
         };
         return json(cachedPayload, {
@@ -94,24 +98,24 @@ export const GET: RequestHandler = async ({ url }) => {
   const liveSuccess = profileRes.ok && Boolean(profileRes.data) && reposRes.ok && Array.isArray(reposRes.data);
   const rateLimited = profileRes.rateLimited || reposRes.rateLimited || eventsRes.rateLimited;
 
-  const payload: GitHubPayload = liveSuccess
-    ? {
-        source: 'live',
-        fetchedAt: new Date().toISOString(),
-        snapshotDate: SNAPSHOT_DATE,
-        profile: profileRes.data!,
-        repos: reposRes.data!,
-        events: eventsRes.ok && Array.isArray(eventsRes.data) ? eventsRes.data : [],
-      }
-    : {
-        source: 'snapshot',
-        fetchedAt: new Date().toISOString(),
-        snapshotDate: SNAPSHOT_DATE,
-        rateLimited,
-        profile: GITHUB_SNAPSHOT.profile,
-        repos: GITHUB_SNAPSHOT.repos,
-        events: GITHUB_SNAPSHOT.events,
-      };
+  const repos = liveSuccess ? reposRes.data! : GITHUB_SNAPSHOT.repos;
+  const events = liveSuccess
+    ? eventsRes.ok && Array.isArray(eventsRes.data)
+      ? eventsRes.data
+      : []
+    : GITHUB_SNAPSHOT.events;
+
+  const payload: GitHubPayload = {
+    source: liveSuccess ? 'live' : 'snapshot',
+    fetchedAt: new Date().toISOString(),
+    snapshotDate: SNAPSHOT_DATE,
+    ...(liveSuccess ? {} : { rateLimited }),
+    profile: liveSuccess ? profileRes.data! : GITHUB_SNAPSHOT.profile,
+    repos,
+    events,
+    languages: computeLanguageStats(repos),
+    latestPush: extractLatestPush(repos, events),
+  };
 
   const cacheHeader = liveSuccess
     ? `public, max-age=300, s-maxage=${EDGE_TTL_SECONDS}, stale-while-revalidate=3600`

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * og.mjs — renders tools/og-template.html to the raster assets that a site
+ * og.mjs renders tools/og-template.html to the raster assets that a site
  * can't generate at runtime:
  *
  *   static/assets/og.png               1200×630 social share card

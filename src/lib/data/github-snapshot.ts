@@ -23,9 +23,28 @@ export interface GitHubRepo {
 export interface GitHubEvent {
   type: string;
   created_at: string;
-  payload?: {
-    commits?: Array<unknown>;
+  repo?: {
+    name?: string;
   };
+  payload?: {
+    head?: string;
+    commits?: Array<{
+      sha?: string;
+      message?: string;
+    }>;
+  };
+}
+
+export interface GitHubLanguageStat {
+  name: string;
+  count: number;
+  pct: number;
+}
+
+export interface GitHubLatestPush {
+  repo: string;
+  message?: string;
+  at: string;
 }
 
 export interface GitHubPayload {
@@ -36,6 +55,60 @@ export interface GitHubPayload {
   profile: GitHubProfile;
   repos: GitHubRepo[];
   events: GitHubEvent[];
+  languages: GitHubLanguageStat[];
+  latestPush: GitHubLatestPush | null;
+}
+
+export function computeLanguageStats(repos: GitHubRepo[]): GitHubLanguageStat[] {
+  const counts = new Map<string, number>();
+  let total = 0;
+
+  for (const repo of repos) {
+    if (repo.fork || repo.archived || !repo.language) continue;
+    counts.set(repo.language, (counts.get(repo.language) ?? 0) + 1);
+    total += 1;
+  }
+
+  if (total === 0) return [];
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([name, count]) => ({
+      name,
+      count,
+      pct: Math.round((count / total) * 100),
+    }));
+}
+
+export function extractLatestPush(
+  repos: GitHubRepo[],
+  events: GitHubEvent[]
+): GitHubLatestPush | null {
+  for (const ev of events) {
+    if (ev.type !== 'PushEvent') continue;
+    const rawName = ev.repo?.name ?? '';
+    const repo = rawName.includes('/') ? rawName.split('/').slice(1).join('/') : rawName;
+    const rawMsg = ev.payload?.commits?.[0]?.message?.split('\n')[0]?.trim();
+    if (repo) {
+      return {
+        repo,
+        message: rawMsg && rawMsg.length > 72 ? `${rawMsg.slice(0, 69)}...` : rawMsg,
+        at: ev.created_at,
+      };
+    }
+  }
+
+  const ownSorted = repos
+    .filter((r) => !r.fork && !r.archived && r.pushed_at)
+    .sort((a, b) => Date.parse(b.pushed_at) - Date.parse(a.pushed_at));
+
+  if (ownSorted[0]) {
+    return {
+      repo: ownSorted[0].name,
+      at: ownSorted[0].pushed_at,
+    };
+  }
+  return null;
 }
 
 export const SNAPSHOT_DATE = '2026-11-12';

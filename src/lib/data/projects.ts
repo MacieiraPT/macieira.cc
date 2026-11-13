@@ -136,7 +136,7 @@ export const PROJECTS: Project[] = [
       pt: 'Atinge arranque abaixo de 1 segundo e ~3 ms de CPU em 3 segundos de repouso, protegendo configurações locais contra falhas inesperadas.',
     },
     seoTitle: {
-      en: 'EmuHub Case Study — Desktop Electron Architecture · macieira.cc',
+      en: 'EmuHub Case Study · Desktop Electron Architecture | macieira.cc',
       pt: 'EmuHub · Estudo de Caso Arquitetura Electron · macieira.cc',
     },
     seoDescription: {
@@ -212,8 +212,8 @@ export const PROJECTS: Project[] = [
           pt: 'Visibilidade por perfil e validação de estados',
         },
         body: {
-          en: 'Server policies restrict queries per role — enforcing Professor_SoVeEstagiosProprios and blocking overlapping date ranges, invalid internship transitions, or inconsistent logged hours.',
-          pt: 'Políticas de servidor restringem queries por perfil — aplicando Professor_SoVeEstagiosProprios e impedindo sobreposições de datas, transições inválidas ou excessos de horas.',
+          en: 'Server policies restrict queries per role, enforcing Professor_SoVeEstagiosProprios and blocking overlapping date ranges, invalid internship transitions, or inconsistent logged hours.',
+          pt: 'Políticas de servidor restringem queries por perfil, aplicando Professor_SoVeEstagiosProprios e impedindo sobreposições de datas, transições inválidas ou excessos de horas.',
         },
       },
       {
@@ -242,7 +242,7 @@ export const PROJECTS: Project[] = [
       pt: 'Substitui processos manuais por uma aplicação .NET 8 auditável sobre PostgreSQL com integridade referencial e testes automatizados.',
     },
     seoTitle: {
-      en: 'SGEEP.Web Case Study — .NET 8 Clean Architecture · macieira.cc',
+      en: 'SGEEP.Web Case Study · .NET 8 Clean Architecture | macieira.cc',
       pt: 'SGEEP.Web · Estudo de Caso .NET 8 e PostgreSQL · macieira.cc',
     },
     seoDescription: {
@@ -348,7 +348,7 @@ export const PROJECTS: Project[] = [
       pt: 'Entrega uma suíte de contabilidade pessoal auto-alojável com integridade relacional, 2FA, recorrência automática e exportação contabilística imediata.',
     },
     seoTitle: {
-      en: 'FinSight Case Study — ASP.NET Core 8 & PostgreSQL · macieira.cc',
+      en: 'FinSight Case Study · ASP.NET Core 8 & PostgreSQL | macieira.cc',
       pt: 'FinSight · Estudo de Caso .NET 8 e Finanças Pessoais · macieira.cc',
     },
     seoDescription: {

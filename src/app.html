@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="no-js" data-lang="en">
+<html lang="en" class="no-js" data-lang="en" data-theme="orchard">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -48,6 +48,24 @@
         }
         root.dataset.lang = lang;
         root.lang = lang === 'pt' ? 'pt-PT' : 'en';
+
+        var theme = 'orchard';
+        try {
+          var savedTheme = window.localStorage.getItem('theme:v1');
+          if (savedTheme === 'orchard' || savedTheme === 'dmg' || savedTheme === 'amber' || savedTheme === 'mac1bit') {
+            theme = savedTheme;
+          }
+        } catch (e) {
+          theme = 'orchard';
+        }
+        root.dataset.theme = theme;
+        var colors = { orchard: '#08080a', dmg: '#0d150c', amber: '#0c0804', mac1bit: '#f2f1ec' };
+        var scheme = theme === 'mac1bit' ? 'light' : 'dark';
+        root.style.colorScheme = scheme;
+        var tc = document.querySelector('meta[name="theme-color"]');
+        if (tc) tc.setAttribute('content', colors[theme]);
+        var cs = document.querySelector('meta[name="color-scheme"]');
+        if (cs) cs.setAttribute('content', scheme);
       })();
     </script>
 

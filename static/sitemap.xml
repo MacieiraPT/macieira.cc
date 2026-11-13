@@ -16,6 +16,13 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://macieira.cc/work"/>
   </url>
   <url>
+    <loc>https://macieira.cc/cv</loc>
+    <lastmod>2026-11-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://macieira.cc/cv"/>
+    <xhtml:link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/cv?lang=pt"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://macieira.cc/cv"/>
+  </url>
+  <url>
     <loc>https://macieira.cc/work/emuhub</loc>
     <lastmod>2026-11-12</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://macieira.cc/work/emuhub"/>

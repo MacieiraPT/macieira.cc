@@ -201,7 +201,7 @@
   }
 
   .lang__btn[aria-pressed='true'] {
-    color: #08080a;
+    color: var(--acid-ink);
   }
 
   .masthead__gh {

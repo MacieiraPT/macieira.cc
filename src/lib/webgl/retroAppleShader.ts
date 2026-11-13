@@ -34,6 +34,7 @@ export {
   Scene,
   ShaderMaterial,
   Vector2,
+  Vector3,
   WebGLRenderTarget,
   WebGLRenderer,
 };
@@ -69,6 +70,7 @@ export const RETRO_FRAGMENT_SHADER = /* glsl */ `
 
   uniform float uMatId;
   uniform float uSteps;
+  uniform float uPaletteId;
 
   varying vec3 vNormalWorld;
   varying vec3 vWorldPos;
@@ -96,44 +98,80 @@ export const RETRO_FRAGMENT_SHADER = /* glsl */ `
     return 5.0 / 16.0;
   }
 
-  vec3 fruitPalette(float t) {
-    // Deep plum shadow -> deep orchard crimson -> apple red -> warm coral specular
-    vec3 c0 = vec3(0.165, 0.039, 0.047);
-    vec3 c1 = vec3(0.451, 0.086, 0.075);
-    vec3 c2 = vec3(0.588, 0.125, 0.102);
-    vec3 c3 = vec3(0.894, 0.224, 0.184);
-    vec3 c4 = vec3(1.000, 0.541, 0.431);
-
-    if (t < 0.25) return c0;
-    if (t < 0.50) return c1;
-    if (t < 0.75) return c2;
-    if (t < 0.94) return c3;
-    return c4;
+  vec3 fruitPalette(float t, float pid) {
+    if (pid < 0.5) {
+      // 0: Acid Orchard (crimson fruit + warm coral highlight)
+      if (t < 0.25) return vec3(0.165, 0.039, 0.047);
+      if (t < 0.50) return vec3(0.451, 0.086, 0.075);
+      if (t < 0.75) return vec3(0.588, 0.125, 0.102);
+      if (t < 0.94) return vec3(0.894, 0.224, 0.184);
+      return vec3(1.000, 0.541, 0.431);
+    }
+    if (pid < 1.5) {
+      // 1: Game Boy DMG 4-shade olive LCD
+      if (t < 0.28) return vec3(0.059, 0.220, 0.059);
+      if (t < 0.55) return vec3(0.188, 0.384, 0.188);
+      if (t < 0.84) return vec3(0.545, 0.675, 0.059);
+      return vec3(0.792, 0.863, 0.624);
+    }
+    if (pid < 2.5) {
+      // 2: Amber CRT phosphor glow
+      if (t < 0.25) return vec3(0.180, 0.067, 0.012);
+      if (t < 0.50) return vec3(0.478, 0.176, 0.024);
+      if (t < 0.78) return vec3(0.831, 0.420, 0.035);
+      if (t < 0.94) return vec3(1.000, 0.690, 0.000);
+      return vec3(1.000, 0.878, 0.580);
+    }
+    // 3: Classic 1-Bit Mac monochrome bitmap ink & paper
+    if (t < 0.26) return vec3(0.063, 0.063, 0.078);
+    if (t < 0.56) return vec3(0.240, 0.240, 0.275);
+    if (t < 0.84) return vec3(0.740, 0.729, 0.698);
+    return vec3(0.950, 0.945, 0.925);
   }
 
-  vec3 barkPalette(float t) {
-    vec3 c0 = vec3(0.145, 0.114, 0.090);
-    vec3 c1 = vec3(0.329, 0.275, 0.227);
-    vec3 c2 = vec3(0.545, 0.482, 0.412);
-    vec3 c3 = vec3(0.761, 0.698, 0.616);
-
-    if (t < 0.33) return c0;
-    if (t < 0.66) return c1;
-    if (t < 0.90) return c2;
-    return c3;
+  vec3 barkPalette(float t, float pid) {
+    if (pid < 0.5) {
+      if (t < 0.33) return vec3(0.145, 0.114, 0.090);
+      if (t < 0.66) return vec3(0.329, 0.275, 0.227);
+      if (t < 0.90) return vec3(0.545, 0.482, 0.412);
+      return vec3(0.761, 0.698, 0.616);
+    }
+    if (pid < 1.5) {
+      if (t < 0.40) return vec3(0.059, 0.220, 0.059);
+      if (t < 0.80) return vec3(0.188, 0.384, 0.188);
+      return vec3(0.545, 0.675, 0.059);
+    }
+    if (pid < 2.5) {
+      if (t < 0.35) return vec3(0.180, 0.067, 0.012);
+      if (t < 0.75) return vec3(0.549, 0.310, 0.110);
+      return vec3(0.831, 0.490, 0.120);
+    }
+    if (t < 0.45) return vec3(0.063, 0.063, 0.078);
+    if (t < 0.80) return vec3(0.360, 0.318, 0.270);
+    return vec3(0.650, 0.620, 0.580);
   }
 
-  vec3 leafPalette(float t) {
-    // Deep olive shadow -> grass green -> brand acid lime #cdfb45
-    vec3 c0 = vec3(0.125, 0.204, 0.039);
-    vec3 c1 = vec3(0.341, 0.529, 0.075);
-    vec3 c2 = vec3(0.608, 0.855, 0.157);
-    vec3 c3 = vec3(0.804, 0.984, 0.271);
-
-    if (t < 0.30) return c0;
-    if (t < 0.62) return c1;
-    if (t < 0.88) return c2;
-    return c3;
+  vec3 leafPalette(float t, float pid) {
+    if (pid < 0.5) {
+      // Deep olive shadow -> grass green -> brand acid lime #cdfb45
+      if (t < 0.30) return vec3(0.125, 0.204, 0.039);
+      if (t < 0.62) return vec3(0.341, 0.529, 0.075);
+      if (t < 0.88) return vec3(0.608, 0.855, 0.157);
+      return vec3(0.804, 0.984, 0.271);
+    }
+    if (pid < 1.5) {
+      if (t < 0.35) return vec3(0.188, 0.384, 0.188);
+      if (t < 0.72) return vec3(0.608, 0.737, 0.059);
+      return vec3(0.792, 0.863, 0.624);
+    }
+    if (pid < 2.5) {
+      if (t < 0.35) return vec3(0.478, 0.220, 0.024);
+      if (t < 0.72) return vec3(1.000, 0.690, 0.000);
+      return vec3(1.000, 0.878, 0.580);
+    }
+    if (t < 0.45) return vec3(0.063, 0.063, 0.078);
+    if (t < 0.80) return vec3(0.240, 0.240, 0.275);
+    return vec3(0.788, 0.141, 0.118);
   }
 
   void main() {
@@ -150,7 +188,6 @@ export const RETRO_FRAGMENT_SHADER = /* glsl */ `
     float specStrength = uMatId < 0.5 ? 0.55 : (uMatId > 1.5 ? 0.22 : 0.06);
     float spec = pow(max(dot(N, halfVec), 0.0), specPower) * specStrength;
 
-    // Subtle cool-warm rim keeps the silhouette crisp on dark background
     float rim = pow(1.0 - max(dot(N, V), 0.0), 2.5) * 0.28;
 
     float lum = clamp(0.14 + diff * 0.72 + fill + spec + rim, 0.0, 1.0);
@@ -162,11 +199,11 @@ export const RETRO_FRAGMENT_SHADER = /* glsl */ `
 
     vec3 color;
     if (uMatId < 0.5) {
-      color = fruitPalette(quantized);
+      color = fruitPalette(quantized, uPaletteId);
     } else if (uMatId < 1.5) {
-      color = barkPalette(quantized);
+      color = barkPalette(quantized, uPaletteId);
     } else {
-      color = leafPalette(quantized);
+      color = leafPalette(quantized, uPaletteId);
     }
 
     gl_FragColor = vec4(color, 1.0);
@@ -186,6 +223,7 @@ export const BLIT_FRAGMENT_SHADER = /* glsl */ `
 
   uniform sampler2D tDiffuse;
   uniform vec2 uTexelSize;
+  uniform vec3 uOutline;
 
   varying vec2 vUv;
 
@@ -204,7 +242,7 @@ export const BLIT_FRAGMENT_SHADER = /* glsl */ `
 
     float border = max(max(aUp, aDown), max(aLeft, aRight));
     if (border > 0.5) {
-      gl_FragColor = vec4(0.04, 0.02, 0.03, 0.95);
+      gl_FragColor = vec4(uOutline, 0.96);
       return;
     }
 
@@ -223,15 +261,13 @@ export function buildAppleFruitGeometry(radialSegments = 18, heightSegments = 16
 
   for (let iy = 0; iy <= heightSegments; iy++) {
     const t = iy / heightSegments;
-    const v = t * Math.PI; // 0 = bottom pole, PI = top stem center
+    const v = t * Math.PI;
     const sinV = Math.sin(v);
     const cosV = Math.cos(v);
 
-    // Classic apple profile: narrower rounded base, broad upper shoulder, inward rim
     const widthBias = 0.8 + 0.34 * Math.sin(t * Math.PI * 0.82);
     const baseRadius = sinV * widthBias * 0.96;
 
-    // Deep stem socket at top, subtle calyx hollow at bottom
     const topDimple = -0.46 * Math.exp(-Math.pow((Math.PI - v) / 0.5, 2));
     const bottomDimple = 0.2 * Math.exp(-Math.pow(v / 0.42, 2));
     const y = -cosV * 0.95 + topDimple + bottomDimple;
@@ -287,7 +323,6 @@ export function buildAppleStemGeometry(): BufferGeometry {
  * Generates an angular 16-bit faceted double-sided folded leaf off the stem.
  */
 export function buildAppleLeafGeometry(): BufferGeometry {
-  // 6 vertices forming a crisp folded leaf blade with thickness / 3D ridge
   const verts = new Float32Array([
     // Top face left
     0.0, 0.0, 0.0,

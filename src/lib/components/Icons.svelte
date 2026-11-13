@@ -6,7 +6,9 @@
     | 'arrow-up-right'
     | 'arrow-left'
     | 'copy'
-    | 'check';
+    | 'check'
+    | 'file-text'
+    | 'printer';
 
   interface Props {
     name: IconName;
@@ -28,11 +30,11 @@
   >
     <rect x="7" y="1" width="2" height="2" fill="var(--bark)" />
     <rect x="9" y="2" width="3" height="2" fill="var(--acid)" />
-    <rect x="10" y="1" width="2" height="1" fill="#9be028" />
+    <rect x="10" y="1" width="2" height="1" fill="var(--leaf-mid)" />
     <rect x="4" y="4" width="3" height="1" fill="var(--apple)" />
     <rect x="9" y="4" width="3" height="1" fill="var(--apple)" />
     <rect x="3" y="5" width="10" height="6" fill="var(--apple)" />
-    <rect x="10" y="6" width="2" height="2" fill="#ff886b" />
+    <rect x="10" y="6" width="2" height="2" fill="var(--apple-hi)" />
     <rect x="3" y="9" width="2" height="3" fill="var(--apple-deep)" />
     <rect x="4" y="11" width="8" height="2" fill="var(--apple-deep)" />
     <rect x="5" y="13" width="2" height="1" fill="var(--apple-deep)" />
@@ -127,5 +129,38 @@
     aria-hidden="true"
   >
     <path d="m4 12.5 5.5 5.5L20 6.5" />
+  </svg>
+{:else if name === 'file-text'}
+  <svg
+    class={className}
+    width={size ?? 16}
+    height={size ?? 16}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+  </svg>
+{:else if name === 'printer'}
+  <svg
+    class={className}
+    width={size ?? 16}
+    height={size ?? 16}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M6 9V2h12v7" />
+    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+    <rect x="6" y="14" width="12" height="8" rx="1" />
   </svg>
 {/if}
