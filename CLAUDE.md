@@ -19,21 +19,25 @@ npm run og        # regenerate static/assets/{og,apple-touch-icon,icon-192,icon-
 src/
   env.ts                       SvelteKit 3 env schema (@sveltejs/kit/env) for optional GITHUB_TOKEN
   hooks.server.ts              Strict security headers & CSP for dynamic Worker responses
-  app.html / app.d.ts          Document shell (no-js/js boot, lang:v2 detection, JSON-LD)
+  app.html / app.d.ts          Document shell (no-js/js boot, lang:v2 + theme:v1, JSON-LD)
+  cloudflare-workers.d.ts      Ambient cloudflare:workers module declaration (isolated from DOM TS)
   lib/
     data/projects.ts           Single source of truth for Selected Work & /work/[slug]
-    data/github-snapshot.ts    Curated offline/rate-limit fallback for /api/github
+    data/github-snapshot.ts    Curated offline/rate-limit fallback & language/push helpers
     i18n/                      en.ts, pt.ts, index.svelte.ts ($app/env)
-    styles/                    tokens.css (palette/fonts), global.css (base layout)
-    webgl/retroAppleShader.ts  4x4 Bayer ordered-dither GLSL + low-poly fruit/stem/leaf meshes
+    state/workbench.svelte.ts  Theme presets (theme:v1), bit depth, CRT scanlines, spin sync
+    styles/                    tokens.css (4-theme palette ramps/fonts), global.css (base layout)
+    webgl/retroAppleShader.ts  4x4 Bayer ordered-dither GLSL (4 palettes) + low-poly meshes
     components/                Header, Footer, Icons, ProjectVisual, RetroAppleCanvas, GitHubPanel
   routes/
-    +layout.ts / +layout.svelte Prerender config (prerender = true) & shared shell
-    +page.svelte               Landing page (Hero + 01 Work + 02 Background + 03 GitHub + Footer)
+    +layout.ts / +layout.svelte Prerender config, shared shell & keyboard shortcuts (1-4, P, B, R)
+    +page.svelte               Landing page (Hero + 01 Work + 02 Tabbed Background + 03 GitHub)
     +error.svelte              Bilingual 404/error view
+    cv/+page.svelte            Bilingual print-to-PDF CV sheet
     work/+page.svelte          Filterable Selected Work archive
     work/[slug]/+page.ts|.svelte Engineering case study pages (emuhub, sgeep, finsight)
     api/github/+server.ts      Cloudflare edge-cached GitHub endpoint with snapshot fallback
+    api/apple/+server.ts       Global spin counter via optional APPLE_KV binding (Edge Cache fallback)
 static/                        manifest.webmanifest, robots.txt, sitemap.xml, .well-known/, assets/
 _headers                       Root Cloudflare edge headers (adapter merges immutable /_app/* rules)
 vite.config.ts                 SvelteKit 3 Vite plugin + @sveltejs/adapter-cloudflare config

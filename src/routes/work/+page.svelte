@@ -160,7 +160,7 @@
   .filter-btn.is-active {
     background: var(--acid);
     border-color: var(--acid);
-    color: #08080a;
+    color: var(--acid-ink);
     font-weight: 600;
   }
 

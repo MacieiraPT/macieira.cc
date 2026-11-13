@@ -4,6 +4,8 @@
   import {
     GITHUB_SNAPSHOT,
     SNAPSHOT_DATE,
+    computeLanguageStats,
+    extractLatestPush,
     type GitHubPayload,
   } from '#lib/data/github-snapshot.ts';
   import Icons from './Icons.svelte';
@@ -30,6 +32,8 @@
     profile: GITHUB_SNAPSHOT.profile,
     repos: GITHUB_SNAPSHOT.repos,
     events: GITHUB_SNAPSHOT.events,
+    languages: computeLanguageStats(GITHUB_SNAPSHOT.repos),
+    latestPush: extractLatestPush(GITHUB_SNAPSHOT.repos, GITHUB_SNAPSHOT.events),
   });
 
   let loading = $state(false);
@@ -49,7 +53,11 @@
           if (data.profile.avatar_url !== payload.profile.avatar_url) {
             avatarFailed = false;
           }
-          payload = data;
+          payload = {
+            ...data,
+            languages: data.languages ?? computeLanguageStats(data.repos),
+            latestPush: data.latestPush ?? extractLatestPush(data.repos, data.events ?? []),
+          };
           loadedFromWorker = true;
         }
       })
@@ -113,7 +121,9 @@
       .slice(0, MAX_REPOS)
   );
 
-  let latestPushAt = $derived(ownRepos[0]?.pushed_at ?? null);
+  let languages = $derived(payload.languages?.length ? payload.languages : computeLanguageStats(payload.repos));
+  let latestPush = $derived(payload.latestPush ?? extractLatestPush(payload.repos, payload.events));
+  let latestPushAt = $derived(latestPush?.at ?? ownRepos[0]?.pushed_at ?? null);
 
   let activityBuckets = $derived.by(() => {
     const counts = new Array(ACTIVITY_DAYS).fill(0);
@@ -222,6 +232,47 @@
     </div>
   </dl>
 
+  {#if languages.length > 0}
+    <div class="gh__langs">
+      <div class="gh__langs-head">
+        <span class="section-label">{i18n.t.github.langMixLabel}</span>
+        {#if latestPush}
+          <span class="gh__push mono">
+            {i18n.t.github.latestPushLabel}: <b>{latestPush.repo}</b>
+            {#if latestPush.message}
+              · {latestPush.message}
+            {/if}
+          </span>
+        {/if}
+      </div>
+
+      <div class="langbar" role="img" aria-label={languages.map((l) => `${l.name} ${l.pct}%`).join(', ')}>
+        {#each languages as lang (lang.name)}
+          <span
+            class="langbar__seg"
+            style:width="{lang.pct}%"
+            style:background={LANGUAGE_COLORS[lang.name] ?? 'var(--acid)'}
+            title="{lang.name}: {lang.pct}%"
+          ></span>
+        {/each}
+      </div>
+
+      <ul class="langbar__legend mono">
+        {#each languages as lang (lang.name)}
+          <li>
+            <span
+              class="repo__lang-dot"
+              style:background={LANGUAGE_COLORS[lang.name] ?? 'var(--acid)'}
+              aria-hidden="true"
+            ></span>
+            <span>{lang.name}</span>
+            <span class="gh__dim">{lang.pct}%</span>
+          </li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
+
   <div class="gh__activity">
     <div class="gh__activity-head">
       <span class="section-label">{i18n.t.github.activityLabel}</span>
@@ -298,6 +349,7 @@
   }
 
   .gh__head,
+  .gh__langs,
   .gh__activity,
   .gh__repos {
     padding: clamp(1rem, 2vw, 1.4rem);
@@ -393,6 +445,61 @@
     line-height: 1;
   }
 
+  .gh__langs {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .gh__langs-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .gh__push {
+    color: var(--ink-faint);
+    font-size: 0.66rem;
+    max-width: 44ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .gh__push b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .langbar {
+    display: flex;
+    gap: 2px;
+    height: 7px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--bg-elev);
+  }
+
+  .langbar__seg {
+    height: 100%;
+    min-width: 4px;
+  }
+
+  .langbar__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.1rem;
+    font-size: 0.66rem;
+    color: var(--ink-dim);
+  }
+
+  .langbar__legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
   .gh__activity-head {
     display: flex;
     align-items: baseline;
@@ -447,7 +554,7 @@
   }
 
   .repo:hover {
-    background: rgb(255 255 255 / 0.04);
+    background: var(--hover-wash);
   }
 
   .repo__name {
