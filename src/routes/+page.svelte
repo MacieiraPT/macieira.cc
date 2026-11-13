@@ -25,7 +25,7 @@
   <meta property="og:image" content="https://macieira.cc/assets/og.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="macieira.cc — Rodrigo Macieira, Full-Stack & WebGL, Portugal." />
+  <meta property="og:image:alt" content="macieira.cc: Rodrigo Macieira, Full-Stack & WebGL, Portugal." />
   <meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 

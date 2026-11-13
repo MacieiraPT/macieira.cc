@@ -1,17 +1,17 @@
 export const en = {
   meta: {
     siteName: 'macieira.cc',
-    homeTitle: 'Rodrigo Macieira — Full-Stack & Creative Web Developer | macieira.cc',
+    homeTitle: 'Rodrigo Macieira · Full-Stack & Creative Web Developer | macieira.cc',
     homeDescription:
-      'Rodrigo Macieira (MacieiraPT) — Full-stack and creative web developer in Portugal. TypeScript and Electron desktop tools, C# / .NET + PostgreSQL systems, and interactive WebGL.',
+      'Rodrigo Macieira (MacieiraPT): Full-stack and creative web developer in Portugal. TypeScript and Electron desktop tools, C# / .NET + PostgreSQL systems, and interactive WebGL.',
     ogLocale: 'en_GB',
-    workTitle: 'Selected Work & Case Studies — macieira.cc',
+    workTitle: 'Selected Work & Case Studies | macieira.cc',
     workDescription:
       'Technical case studies covering EmuHub (TypeScript/Electron), SGEEP.Web (.NET 8 Clean Architecture), and FinSight (ASP.NET Core + PostgreSQL).',
   },
   nav: {
     skip: 'Skip to content',
-    brandAria: 'macieira.cc — home',
+    brandAria: 'macieira.cc home',
     sectionsAria: 'Primary navigation',
     work: 'work',
     background: 'background',
@@ -26,7 +26,7 @@ export const en = {
     name: 'Rodrigo Macieira',
     ledeLead: 'Building TypeScript/Electron desktop software and C#/.NET + PostgreSQL systems.',
     ledeSub:
-      'Paired with lean, interactive WebGL on the front page — engineered without bloat or framework lock-in.',
+      'Paired with lean, interactive WebGL on the front page, engineered without bloat or framework lock-in.',
     primaryCta: 'View selected work',
     secondaryCta: 'Email me',
     tertiaryCta: 'Case studies',
@@ -44,7 +44,7 @@ export const en = {
     shaderStatusReduced: 'Reduced motion active · drag manually',
   },
   work: {
-    sectionIndex: '01 — selected work',
+    sectionIndex: '01 · selected work',
     heading: 'Shipped desktop and backend systems, with architectural proof.',
     intro:
       'Three flagship repositories spanning Electron process boundaries and Clean Architecture C#/.NET web platforms.',
@@ -71,7 +71,7 @@ export const en = {
     metaStack: 'Stack',
   },
   background: {
-    sectionIndex: '02 — background & stack',
+    sectionIndex: '02 · background & stack',
     heading: 'Verified foundation, modern execution.',
     capabilities: [
       {
@@ -102,7 +102,7 @@ export const en = {
       'Every feature starts with measurable trade-offs: keep bundle size small, isolate unsafe I/O behind typed boundaries, respect native scroll and OS accessibility defaults, and never hide readable copy behind heavy animations.',
   },
   github: {
-    sectionIndex: '03 — open source & activity',
+    sectionIndex: '03 · open source & activity',
     heading: 'Public repositories, edge-cached via Worker.',
     prose:
       'Data loads via /api/github on Cloudflare Workers with edge caching (30-minute TTL) and falls back immediately to a curated local snapshot if upstream rate limits hit.',
@@ -120,8 +120,8 @@ export const en = {
     snapshotBadge: (date: string) => `snapshot · ${date}`,
     snapshotNote: (date: string, rateLimited?: boolean) =>
       rateLimited
-        ? `GitHub upstream rate limit hit — displaying verified ${date} snapshot.`
-        : `GitHub upstream unreachable right now — displaying verified ${date} snapshot.`,
+        ? `GitHub upstream rate limit hit; displaying verified ${date} snapshot.`
+        : `GitHub upstream unreachable right now; displaying verified ${date} snapshot.`,
     cacheNote: 'Cached at the Cloudflare edge via /api/github to avoid per-visitor API lockouts.',
     activityCount: (count: number, days: number) =>
       `${count} event${count === 1 ? '' : 's'} · last ${days} days`,
@@ -137,7 +137,7 @@ export const en = {
     justNow: 'just now',
   },
   footer: {
-    sectionIndex: '04 — contact',
+    sectionIndex: '04 · contact',
     heading: 'Open to full-stack engineering roles and select freelance work.',
     emailCta: 'Email rodrigo@macieira.cc',
     copyEmailCta: 'Copy email',
@@ -148,12 +148,12 @@ export const en = {
     localTimePrefix: 'Lisbon time',
     backToTop: 'Back to top',
     copiedToast: (val: string) => `Copied ${val}`,
-    copyFailedToast: (val: string) => `Copy failed — ${val}`,
+    copyFailedToast: (val: string) => `Copy failed: ${val}`,
   },
   errorPage: {
     code: 'Error',
     title: 'Nothing on this branch.',
-    body: "That page isn't here — it may have moved during the SvelteKit migration, or the route doesn't exist.",
+    body: "That page isn't here. It may have moved during the SvelteKit migration, or the route doesn't exist.",
     homeCta: 'Return home',
     workCta: 'Browse case studies',
   },

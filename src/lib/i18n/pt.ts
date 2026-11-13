@@ -1,17 +1,17 @@
 export const pt = {
   meta: {
     siteName: 'macieira.cc',
-    homeTitle: 'Rodrigo Macieira — Programador Full-Stack & Web Criativa | macieira.cc',
+    homeTitle: 'Rodrigo Macieira · Programador Full-Stack & Web Criativa | macieira.cc',
     homeDescription:
-      'Rodrigo Macieira (MacieiraPT) — programador full-stack e web criativa em Portugal. Aplicações desktop TypeScript/Electron, sistemas C#/.NET + PostgreSQL e WebGL interativo.',
+      'Rodrigo Macieira (MacieiraPT): programador full-stack e web criativa em Portugal. Aplicações desktop TypeScript/Electron, sistemas C#/.NET + PostgreSQL e WebGL interativo.',
     ogLocale: 'pt_PT',
-    workTitle: 'Projetos Escolhidos e Estudos de Caso — macieira.cc',
+    workTitle: 'Projetos Escolhidos e Estudos de Caso | macieira.cc',
     workDescription:
       'Estudos de caso técnicos do EmuHub (TypeScript/Electron), SGEEP.Web (Arquitetura Limpa .NET 8) e FinSight (ASP.NET Core + PostgreSQL).',
   },
   nav: {
     skip: 'Saltar para o conteúdo',
-    brandAria: 'macieira.cc — início',
+    brandAria: 'macieira.cc início',
     sectionsAria: 'Navegação principal',
     work: 'projetos',
     background: 'percurso',
@@ -26,7 +26,7 @@ export const pt = {
     name: 'Rodrigo Macieira',
     ledeLead: 'Software desktop em TypeScript/Electron e sistemas web em C#/.NET com PostgreSQL.',
     ledeSub:
-      'Combinado com gráficos WebGL leves na página inicial — construído sem peso desnecessário.',
+      'Combinado com gráficos WebGL leves na página inicial, construído sem peso desnecessário.',
     primaryCta: 'Ver projetos escolhidos',
     secondaryCta: 'Enviar email',
     tertiaryCta: 'Estudos de caso',
@@ -44,7 +44,7 @@ export const pt = {
     shaderStatusReduced: 'Movimento reduzido ativo · arrasta manualmente',
   },
   work: {
-    sectionIndex: '01 — trabalho escolhido',
+    sectionIndex: '01 · trabalho escolhido',
     heading: 'Sistemas desktop e backend publicados, com detalhe arquitetural.',
     intro:
       'Três repositórios principais entre fronteiras de processos Electron e plataformas C#/.NET em Arquitetura Limpa.',
@@ -71,7 +71,7 @@ export const pt = {
     metaStack: 'Stack',
   },
   background: {
-    sectionIndex: '02 — percurso e stack',
+    sectionIndex: '02 · percurso e stack',
     heading: 'Base sólida, execução atual.',
     capabilities: [
       {
@@ -102,7 +102,7 @@ export const pt = {
       'Cada decisão parte de compromissos reais: manter o bundle leve, isolar I/O atrás de interfaces tipadas, respeitar scroll nativo e acessibilidade do sistema e mostrar conteúdo útil sem bloqueios.',
   },
   github: {
-    sectionIndex: '03 — código aberto e atividade',
+    sectionIndex: '03 · código aberto e atividade',
     heading: 'Repositórios públicos com cache na Worker.',
     prose:
       'Os dados são lidos através de /api/github em Cloudflare Workers com cache de 30 minutos na edge e fallback imediato para registo local verificado se a API limitar pedidos.',
@@ -120,8 +120,8 @@ export const pt = {
     snapshotBadge: (date: string) => `arquivo · ${date}`,
     snapshotNote: (date: string, rateLimited?: boolean) =>
       rateLimited
-        ? `Limite de pedidos do GitHub atingido — a mostrar o registo verificado de ${date}.`
-        : `API do GitHub inacessível neste momento — a mostrar o registo verificado de ${date}.`,
+        ? `Limite de pedidos do GitHub atingido; a mostrar o registo verificado de ${date}.`
+        : `API do GitHub inacessível neste momento; a mostrar o registo verificado de ${date}.`,
     cacheNote: 'Em cache na edge Cloudflare via /api/github para evitar bloqueios de limite por visitante.',
     activityCount: (count: number, days: number) =>
       `${count} evento${count === 1 ? '' : 's'} · últimos ${days} dias`,
@@ -137,7 +137,7 @@ export const pt = {
     justNow: 'agora mesmo',
   },
   footer: {
-    sectionIndex: '04 — contacto',
+    sectionIndex: '04 · contacto',
     heading: 'Disponível para equipas de engenharia e projetos freelance selecionados.',
     emailCta: 'Email rodrigo@macieira.cc',
     copyEmailCta: 'Copiar email',
@@ -148,12 +148,12 @@ export const pt = {
     localTimePrefix: 'Hora em Lisboa',
     backToTop: 'Voltar ao topo',
     copiedToast: (val: string) => `${val} copiado`,
-    copyFailedToast: (val: string) => `Não deu para copiar — ${val}`,
+    copyFailedToast: (val: string) => `Não deu para copiar: ${val}`,
   },
   errorPage: {
     code: 'Erro',
     title: 'Nada neste ramo.',
-    body: 'Esta página não está aqui — pode ter mudado de sítio durante a migração para SvelteKit ou o endereço não existe.',
+    body: 'Esta página não está aqui. Pode ter mudado de sítio durante a migração para SvelteKit ou o endereço não existe.',
     homeCta: 'Voltar ao início',
     workCta: 'Ver estudos de caso',
   },
