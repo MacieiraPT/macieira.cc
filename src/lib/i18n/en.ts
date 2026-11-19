@@ -1,16 +1,17 @@
 export const en = {
   meta: {
-    siteName: 'macieira.cc',
     homeTitle: 'Rodrigo Macieira · Full-Stack & Creative Web Developer | macieira.cc',
     homeDescription:
       'Rodrigo Macieira (MacieiraPT): Full-stack and creative web developer in Portugal. TypeScript and Electron desktop tools, C# / .NET + PostgreSQL systems, and interactive WebGL.',
     ogLocale: 'en_GB',
+    ogLocaleAlt: 'pt_PT',
+    ogImageAlt: 'macieira.cc: Rodrigo Macieira, Full-Stack & WebGL, Portugal.',
     workTitle: 'Selected Work & Case Studies | macieira.cc',
     workDescription:
       'Technical case studies covering EmuHub (TypeScript/Electron), SGEEP.Web (.NET 8 Clean Architecture), and FinSight (ASP.NET Core + PostgreSQL).',
     cvTitle: 'CV / Resume · Rodrigo Macieira | macieira.cc',
     cvDescription:
-      'Printable CV and technical summary for Rodrigo Macieira: TypeScript, C# / .NET 8, PostgreSQL, SvelteKit, Electron, and WebGL.',
+      'Printable CV and technical summary for Rodrigo Macieira: TypeScript, C# / .NET 8, PostgreSQL, SvelteKit, Electron, and raw WebGL.',
   },
   nav: {
     skip: 'Skip to content',
@@ -19,11 +20,14 @@ export const en = {
     work: 'work',
     background: 'background',
     github: 'github',
+    cv: 'cv',
     contact: 'contact',
-    allWork: 'All case studies',
-    cv: 'CV',
     langAria: 'Language selector',
     githubButton: 'GitHub',
+    menuOpenAria: 'Open navigation menu',
+    menuCloseAria: 'Close navigation menu',
+    themeCycleAria: (label: string) => `Theme: ${label}. Click to cycle palette`,
+    themeToast: (label: string) => `Theme: ${label}`,
   },
   hero: {
     regionLine: 'Portugal · Full-Stack & Interactive Web',
@@ -31,29 +35,32 @@ export const en = {
     name: 'Rodrigo Macieira',
     ledeLead: 'Building TypeScript/Electron desktop software and C#/.NET + PostgreSQL systems.',
     ledeSub:
-      'Paired with lean, interactive WebGL on the front page, engineered without bloat or framework lock-in.',
+      'Paired with zero-dependency Bayer WebGL on the front page, engineered without bloat or framework lock-in.',
     primaryCta: 'View selected work',
     secondaryCta: 'Email me',
-    tertiaryCta: 'Case studies',
     cvCta: 'CV / Resume',
     proofStackLabel: 'Core Stack',
-    proofStackValue: 'TypeScript · C#\u00A0/\u00A0.NET\u00A08 · SvelteKit · Three.js',
+    proofStackValue: 'TypeScript · C#\u00A0/\u00A0.NET\u00A08 · SvelteKit · WebGL',
     proofCredentialLabel: 'Qualification',
     proofCredentialValue: 'Programador de Informática · EQF\u00A04',
     proofFocusLabel: 'Focus',
-    proofFocusValue: 'Clean architecture, safe I/O & pixel WebGL',
-    shaderCaption: 'Interactive Bayer-dithered WebGL apple (drag, double-click, or press R)',
+    proofFocusValue: 'Clean architecture, safe I/O & pixel GLSL',
+    shaderCaption: 'Interactive raw-WebGL Bayer apple (drag, double-click, or press R)',
     shaderMode16: '16-BIT',
     shaderMode8: '8-BIT',
+    shaderModeGroupAria: 'Pixel quantization mode',
     shaderCanvasAria: 'Interactive retro 3D apple artwork rendered with Bayer ordered dithering',
     shaderStatusIdle: 'Drag or spin',
-    shaderStatusReduced: 'Reduced motion active · drag manually',
+    shaderStatusReduced: 'Reduced motion · drag manually',
     workbenchTag: 'SPECIMEN 01 // APPLE.GLSL',
     crtToggleLabel: 'CRT',
     crtToggleAria: 'Toggle subtle CRT scanline overlay',
-    spinCta: 'SPIN +1',
-    spinAria: 'Apply spin impulse and increment global orchard counter',
-    spinsCount: (n: string, raw?: number) => `${n} ${raw === 1 ? 'global spin' : 'global spins'}`,
+    spinCta: 'SPIN',
+    spinAria: 'Apply rotational spin impulse to the 3D apple',
+    telemetryIdle: (tris: number, fps: number) => `${tris} TRIS · ${fps} FPS`,
+    telemetryStatic: (tris: number) => `${tris} TRIS · STATIC`,
+    telemetrySpins: (n: string, raw: number, fps?: number) =>
+      fps ? `${n} ${raw === 1 ? 'SPIN' : 'SPINS'} · ${fps} FPS` : `${n} ${raw === 1 ? 'SPIN' : 'SPINS'}`,
     themeGroupAria: 'Retro shader and site palette presets',
   },
   work: {
@@ -62,9 +69,10 @@ export const en = {
     intro:
       'Three flagship repositories spanning Electron process boundaries and Clean Architecture C#/.NET web platforms.',
     archiveCta: 'Inspect all case studies',
-    filterAll: 'All (3)',
-    filterDesktop: 'TypeScript / Electron',
-    filterDotnet: 'C# / .NET',
+    filterGroupAria: 'Filter projects by technology',
+    filterAll: (n: number) => `All (${n})`,
+    filterDesktop: (n: number) => `TypeScript / Electron (${n})`,
+    filterDotnet: (n: number) => `C# / .NET (${n})`,
     filterTitle: 'Archive & Architecture Notes',
     filterHeading: 'Engineering case studies.',
     filterSub:
@@ -72,6 +80,10 @@ export const en = {
     caseStudyLink: 'Case study',
     sourceLink: 'Source',
     backToWork: 'Back to selected work',
+    breadcrumbAria: 'Breadcrumb',
+    metricsAria: 'Measured indicators',
+    techStackAria: 'Tech stack',
+    architectureLabel: 'Architecture',
     nextProject: 'Next case study',
     problemHeading: 'Problem',
     constraintsHeading: 'Technical constraints',
@@ -99,8 +111,8 @@ export const en = {
       },
       {
         label: 'Graphics & Craft',
-        title: 'Custom WebGL & GLSL Shaders',
-        body: 'Three.js low-res offscreen render targets, ordered Bayer dithering shaders, strict context budgets, and progressive SVG fallbacks for zero-JS visitors.',
+        title: 'Raw WebGL & GLSL Shaders',
+        body: 'Zero-dependency WebGL offscreen render targets, 4x4 ordered Bayer dithering shaders, strict bundle budgets, and crisp SVG fallbacks for zero-JS visitors.',
       },
     ],
     tabsAria: 'Background details',
@@ -112,15 +124,18 @@ export const en = {
     howIWorkBullets: [
       {
         label: '01 · Typed boundaries first',
-        detail: 'Isolate unsafe I/O behind explicit contracts: argv process spawning and contextBridge in Electron, Clean Architecture layers and Query/Role policies in .NET 8.',
+        detail:
+          'Isolate unsafe I/O behind explicit contracts: argv process spawning and contextBridge in Electron, Clean Architecture layers and Query/Role policies in .NET 8.',
       },
       {
         label: '02 · Measured weight & budgets',
-        detail: 'Ship only the runtime a page actually uses: Three.js is dynamically loaded after WebGL probing, static pages prerender at build time, and desktop bundles avoid router bloat.',
+        detail:
+          'Ship only the runtime a page actually uses: the 3D Bayer apple runs on ~5 kB gz of zero-dependency WebGL, pages prerender in EN and PT at build time, and desktop bundles avoid router bloat.',
       },
       {
         label: '03 · Resilient fallbacks & ownership',
-        detail: 'Expect crashes and upstream limits: atomic .tmp-to-rename JSON saves, verified offline API snapshots, xUnit business-rule tests, and accessibility before visual polish.',
+        detail:
+          'Expect crashes and upstream limits: atomic .tmp-to-rename JSON saves, verified offline API snapshots, xUnit business-rule tests, and accessibility before visual polish.',
       },
     ],
     trackRecordLabel: 'Shipped systems',
@@ -129,29 +144,33 @@ export const en = {
       {
         period: '2026',
         name: 'macieira.cc (v2)',
-        scope: 'SvelteKit 3 · Cloudflare Workers · GLSL',
-        detail: 'Replaced single-file portfolio with edge-cached GitHub & KV telemetry, prerendered bilingual case studies, and custom 4x4 Bayer shaders.',
+        scope: 'SvelteKit 3 · Cloudflare Workers · Raw WebGL',
+        detail:
+          'Prerendered bilingual EN/PT portfolio with edge-cached GitHub proxy, hash-mode CSP, 1-page printable CV, and zero-dependency 4x4 Bayer shaders.',
         href: '/',
       },
       {
         period: '2026',
         name: 'EmuHub',
         scope: 'TypeScript · Electron 44 · React 19',
-        detail: 'Architected 55-console launcher hitting 0.7–0.9 s cold boot, ~9.5 MB heap usage, argv-safe process spawning, and atomic JSON backups.',
+        detail:
+          'Architected 55-console launcher hitting 0.7–0.9 s cold boot, ~9.5 MB heap usage, argv-safe process spawning, and atomic JSON backups.',
         href: '/work/emuhub',
       },
       {
         period: '2026',
         name: 'SGEEP.Web',
         scope: 'C# / .NET 8 · PostgreSQL · xUnit',
-        detail: 'Designed 4-layer Clean Architecture internship platform with 4-role RBAC, NIF modulo-11 checksums, QuestPDF/ClosedXML reports, and rate-limited Identity.',
+        detail:
+          'Designed 4-layer Clean Architecture internship platform with 4-role RBAC, NIF modulo-11 checksums, QuestPDF/ClosedXML reports, and rate-limited Identity.',
         href: '/work/sgeep',
       },
       {
         period: '2026',
         name: 'FinSight',
         scope: 'ASP.NET Core 8 · PostgreSQL 16',
-        detail: 'Built multi-provider personal ledger combining Google OAuth + QR TOTP 2FA, DeleteBehavior.Restrict integrity, and filter-synced .xlsx exports.',
+        detail:
+          'Built multi-provider personal ledger combining Google OAuth + QR TOTP 2FA, DeleteBehavior.Restrict integrity, and filter-synced .xlsx exports.',
         href: '/work/finsight',
       },
     ],
@@ -171,12 +190,11 @@ export const en = {
     panelTitle: '@MacieiraPT',
     panelSubFallback: 'Full-stack & creative web developer · Portugal',
     statsRepos: 'Public repos',
-    statsFollowers: 'Followers',
-    statsSince: 'Member since',
+    statsLanguages: 'Languages',
+    statsLatestPush: 'Latest push',
     langMixLabel: 'Owned repo languages',
     latestPushLabel: 'Latest push',
     activityLabel: 'Public activity',
-    activityDays: (days: number) => `last ${days} days`,
     connecting: 'syncing…',
     liveBadge: 'live via edge proxy',
     cachedBadge: 'edge-cached snapshot',
@@ -207,10 +225,10 @@ export const en = {
     cvCta: 'View CV / Print',
     discordCta: 'Copy Discord',
     githubCta: 'GitHub',
-    colophonTech: 'Built with SvelteKit, TypeScript, and retro WebGL on Cloudflare Workers.',
+    colophonTech: 'Built with SvelteKit, TypeScript, and zero-dependency WebGL on Cloudflare Workers.',
     colophonSource: 'Source on GitHub',
-    workerStatus: 'Edge Worker · Nominal',
-    shortcutsHint: 'Keys: [1-4] sections · [P] theme · [B] bit · [R] spin',
+    hostedOn: 'Cloudflare Workers',
+    shortcutsHint: 'Keys: [1-5] sections · [P] theme · [B] bit · [R] spin',
     localTimePrefix: 'Lisbon time',
     backToTop: 'Back to top',
     copiedToast: (val: string) => `Copied ${val}`,
@@ -222,19 +240,37 @@ export const en = {
     roleTitle: 'Full-Stack & Creative Web Developer',
     location: 'Portugal · Remote & Hybrid (EU / Lisbon TZ)',
     status: 'Available for full-stack roles and select freelance',
+    contactWeb: 'Web',
+    contactEmail: 'Email',
+    contactGitHub: 'GitHub',
+    contactStatus: 'Status',
+    contactLanguages: 'Languages',
+    languagesValue: 'Portuguese (Native) · English (Fluent)',
     summaryHeading: 'Profile',
     summaryBody:
-      'Portuguese full-stack software developer building TypeScript / Electron desktop software, Clean Architecture C# / .NET 8 + PostgreSQL backends, and lean interactive WebGL frontends.',
+      'Portuguese full-stack software developer building TypeScript / Electron desktop software, Clean Architecture C# / .NET 8 + PostgreSQL backends, and lean zero-dependency WebGL frontends.',
     skillsHeading: 'Technical Stack',
     skillGroups: [
-      { label: 'Backend & Data', items: 'C# · .NET 8 · ASP.NET Core MVC · EF Core · PostgreSQL · ASP.NET Identity · xUnit + Moq' },
-      { label: 'Frontend & Desktop', items: 'TypeScript · SvelteKit · Svelte 5 · React 19 · Electron · HTML/CSS accessibility' },
-      { label: 'WebGL & Edge Infra', items: 'Three.js · GLSL ES shaders · Bayer dithering · Cloudflare Workers · KV / Edge Cache' },
+      {
+        label: 'Backend & Data',
+        items:
+          'C# · .NET 8 · ASP.NET Core MVC · EF Core · PostgreSQL · ASP.NET Identity · xUnit + Moq',
+      },
+      {
+        label: 'Frontend & Desktop',
+        items:
+          'TypeScript · SvelteKit · Svelte 5 · React 19 · Electron · Accessible HTML/CSS',
+      },
+      {
+        label: 'WebGL & Edge Infra',
+        items:
+          'Raw WebGL · GLSL ES shaders · Bayer dithering · Cloudflare Workers · Edge Cache',
+      },
     ],
     projectsHeading: 'Selected Engineering Work',
     educationHeading: 'Qualification',
+    educationCredentialMeta: 'EQF Level 4 · Quadro Nacional de Qualificações (SNQ 7382)',
     ethosHeading: 'Engineering Principles',
-    contactHeading: 'Contact & Links',
   },
   errorPage: {
     code: 'Error',
@@ -245,4 +281,14 @@ export const en = {
   },
 } as const;
 
-export type TranslationShape = typeof en;
+type DeepWiden<T> = T extends (...args: infer A) => infer R
+  ? (...args: A) => R extends string ? string : R
+  : T extends string
+    ? string
+    : T extends readonly (infer U)[]
+      ? readonly DeepWiden<U>[]
+      : T extends object
+        ? { readonly [K in keyof T]: DeepWiden<T[K]> }
+        : T;
+
+export type TranslationShape = DeepWiden<typeof en>;

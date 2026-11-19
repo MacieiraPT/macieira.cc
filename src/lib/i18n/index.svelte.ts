@@ -1,35 +1,33 @@
 import { browser } from '$app/env';
-import { en } from './en.ts';
+import { page } from '$app/state';
+import { en, type TranslationShape } from './en.ts';
 import { pt } from './pt.ts';
 
 export type Lang = 'en' | 'pt';
 
 const STORAGE_KEY = 'lang:v2';
 
-let currentLang = $state<Lang>('en');
+export function langFromPathname(pathname: string): Lang {
+  return pathname === '/pt' || pathname.startsWith('/pt/') ? 'pt' : 'en';
+}
 
-export function detectClientLang(): Lang {
-  if (!browser) return 'en';
+export function stripLangPrefix(pathname: string): string {
+  if (pathname === '/pt') return '/';
+  if (pathname.startsWith('/pt/')) return pathname.slice(3) || '/';
+  return pathname || '/';
+}
 
-  try {
-    const param = new URLSearchParams(window.location.search)
-      .get('lang')
-      ?.slice(0, 2)
-      .toLowerCase();
-    if (param === 'pt' || param === 'en') return param;
-  } catch {
-    /* ignore query parsing failures */
+export function localizePath(path: string, targetLang: Lang): string {
+  const hashIdx = path.indexOf('#');
+  const rawPath = hashIdx >= 0 ? path.slice(0, hashIdx) : path;
+  const hash = hashIdx >= 0 ? path.slice(hashIdx) : '';
+  const clean = stripLangPrefix(rawPath.startsWith('/') ? rawPath : `/${rawPath}`);
+
+  if (targetLang === 'pt') {
+    const ptPath = clean === '/' ? '/pt' : `/pt${clean}`;
+    return `${ptPath}${hash}`;
   }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved === 'pt' || saved === 'en') return saved;
-  } catch {
-    /* private browsing */
-  }
-
-  const offered = navigator.languages?.length ? navigator.languages : [navigator.language ?? ''];
-  return offered.some((tag) => /^pt\b/i.test(tag)) ? 'pt' : 'en';
+  return `${clean}${hash}`;
 }
 
 export function applyDocumentLang(lang: Lang): void {
@@ -40,38 +38,31 @@ export function applyDocumentLang(lang: Lang): void {
 
 export const i18n = {
   get lang(): Lang {
-    return currentLang;
+    return langFromPathname(page.url.pathname);
   },
   get locale(): string {
-    return currentLang === 'pt' ? 'pt-PT' : 'en-GB';
+    return this.lang === 'pt' ? 'pt-PT' : 'en-GB';
   },
-  get t() {
-    return currentLang === 'pt' ? pt : en;
+  get t(): TranslationShape {
+    return this.lang === 'pt' ? pt : en;
   },
-  syncFromClient(): void {
-    const next = detectClientLang();
-    currentLang = next;
-    applyDocumentLang(next);
+  get isHome(): boolean {
+    const clean = stripLangPrefix(page.url.pathname);
+    return clean === '/';
   },
-  set(next: Lang): void {
-    if (next === currentLang) return;
-    currentLang = next;
-    applyDocumentLang(next);
-    if (browser) {
-      try {
-        window.localStorage.setItem(STORAGE_KEY, next);
-      } catch {
-        /* non-fatal */
-      }
-      try {
-        const url = new URL(window.location.href);
-        if (url.searchParams.has('lang')) {
-          url.searchParams.set('lang', next);
-          window.history.replaceState({}, '', url);
-        }
-      } catch {
-        /* ignore history failures */
-      }
+  href(path: string, targetLang?: Lang): string {
+    return localizePath(path, targetLang ?? this.lang);
+  },
+  alternatePath(targetLang: Lang): string {
+    return localizePath(page.url.pathname, targetLang);
+  },
+  remember(lang: Lang): void {
+    applyDocumentLang(lang);
+    if (!browser) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, lang);
+    } catch {
+      /* private browsing */
     }
   },
 };

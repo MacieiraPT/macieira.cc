@@ -197,6 +197,10 @@ main:focus-visible {
   border-top: 1px solid var(--line);
 }
 
+.section[id] {
+  scroll-margin-top: 72px;
+}
+
 .section__head {
   display: grid;
   gap: 0.9rem;
@@ -271,7 +275,7 @@ main:focus-visible {
   height: 13px;
 }
 
-/* Toast banner for copy confirmations */
+/* Toast banner for copy & theme confirmations */
 .toast {
   position: fixed;
   left: 50%;
@@ -295,4 +299,12 @@ main:focus-visible {
 .toast.is-visible {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+@media print {
+  .skip-link,
+  .toast,
+  .atmosphere {
+    display: none !important;
+  }
 }

@@ -6,29 +6,37 @@
   let { data } = $props();
   let project = $derived(data.project);
   let nextProject = $derived(data.nextProject);
+
+  let enUrl = $derived(`https://macieira.cc/work/${project.slug}`);
+  let ptUrl = $derived(`https://macieira.cc/pt/work/${project.slug}`);
+  let canonicalUrl = $derived(i18n.lang === 'pt' ? ptUrl : enUrl);
 </script>
 
 <svelte:head>
   <title>{project.seoTitle[i18n.lang]}</title>
   <meta name="description" content={project.seoDescription[i18n.lang]} />
-  <link rel="canonical" href="https://macieira.cc/work/{project.slug}" />
-  <link rel="alternate" hreflang="en" href="https://macieira.cc/work/{project.slug}" />
-  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/work/{project.slug}?lang=pt" />
-  <link rel="alternate" hreflang="x-default" href="https://macieira.cc/work/{project.slug}" />
+  <link rel="canonical" href={canonicalUrl} />
+  <link rel="alternate" hreflang="en" href={enUrl} />
+  <link rel="alternate" hreflang="pt-PT" href={ptUrl} />
+  <link rel="alternate" hreflang="x-default" href={enUrl} />
 
   <meta property="og:type" content="article" />
-  <meta property="og:url" content="https://macieira.cc/work/{project.slug}" />
+  <meta property="og:url" content={canonicalUrl} />
   <meta property="og:site_name" content="macieira.cc" />
   <meta property="og:title" content={project.seoTitle[i18n.lang]} />
   <meta property="og:description" content={project.seoDescription[i18n.lang]} />
   <meta property="og:locale" content={i18n.t.meta.ogLocale} />
+  <meta property="og:locale:alternate" content={i18n.t.meta.ogLocaleAlt} />
   <meta property="og:image" content="https://macieira.cc/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={i18n.t.meta.ogImageAlt} />
   <meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <article class="case-study wrap">
-  <nav class="case-study__crumb" aria-label="Breadcrumb">
-    <a class="crumb-link mono" href="/work">
+  <nav class="case-study__crumb" aria-label={i18n.t.work.breadcrumbAria}>
+    <a class="crumb-link mono" href={i18n.href('/work')}>
       <Icons name="arrow-left" class="icon icon--sm" />
       <span>{i18n.t.work.backToWork}</span>
     </a>
@@ -47,7 +55,7 @@
           <span>{project.repoName}</span>
           <Icons name="arrow-up-right" class="icon icon--sm" />
         </a>
-        <a class="btn btn--ghost" href="/#contact">
+        <a class="btn btn--ghost" href={i18n.href('/#contact')}>
           <Icons name="mail" />
           <span>{i18n.t.hero.secondaryCta}</span>
         </a>
@@ -82,7 +90,7 @@
     </div>
   </dl>
 
-  <section class="metrics-band" aria-label="Measured indicators">
+  <section class="metrics-band" aria-label={i18n.t.work.metricsAria}>
     {#each project.metrics as metric}
       <div class="metric-tile">
         <p class="metric-tile__val">{metric.value}</p>
@@ -104,7 +112,7 @@
 
   <section class="decisions" aria-labelledby="decisions-title">
     <div class="section__head">
-      <p class="section-label">ARCHITECTURE</p>
+      <p class="section-label">{i18n.t.work.architectureLabel}</p>
       <h2 class="h2" id="decisions-title">{i18n.t.work.decisionsHeading}</h2>
     </div>
 
@@ -137,7 +145,7 @@
   </section>
 
   <nav class="next-nav" aria-label={i18n.t.work.nextProject}>
-    <a class="next-card" href="/work/{nextProject.slug}">
+    <a class="next-card" href={i18n.href(`/work/${nextProject.slug}`)}>
       <span class="section-label">{i18n.t.work.nextProject}</span>
       <span class="next-card__row">
         <span class="next-card__title">{nextProject.title}</span>

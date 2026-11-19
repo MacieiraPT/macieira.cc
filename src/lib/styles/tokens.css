@@ -30,10 +30,8 @@
   --apple: #e4392f;
   --apple-deep: #96201a;
   --apple-hi: #ff886b;
-  --leaf: var(--acid);
   --leaf-mid: #9be028;
   --bark: #8b7b69;
-  --tint: var(--acid);
 
   /* Crisp hairlines & interactive hover wash */
   --line: rgb(255 255 255 / 0.1);
@@ -57,7 +55,6 @@
 
   /* Motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 :root[data-theme='dmg'] {

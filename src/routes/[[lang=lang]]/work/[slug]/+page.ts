@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { getNextProject, getProjectBySlug, PROJECTS } from '#lib/data/projects.ts';
 
 export function entries() {
-  return PROJECTS.map((p) => ({ slug: p.slug }));
+  return PROJECTS.flatMap((p) => [{ slug: p.slug }, { lang: 'pt', slug: p.slug }]);
 }
 
 export function load({ params }: { params: { slug: string } }) {

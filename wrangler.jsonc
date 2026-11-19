@@ -12,6 +12,6 @@
     "command": "npm run build",
     "watch_dir": "src"
   },
-  "workers_dev": true,
+  "workers_dev": false,
   "preview_urls": true
 }

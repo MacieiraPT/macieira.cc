@@ -39,6 +39,23 @@
   let loading = $state(false);
   let loadedFromWorker = $state(false);
   let avatarFailed = $state(false);
+  let avatarEl: HTMLImageElement | undefined = $state();
+
+  $effect(() => {
+    const el = avatarEl;
+    if (!el) return;
+    if (el.complete && el.naturalWidth === 0) {
+      avatarFailed = true;
+      return;
+    }
+    const onError = () => {
+      avatarFailed = true;
+    };
+    el.addEventListener('error', onError);
+    return () => {
+      el.removeEventListener('error', onError);
+    };
+  });
 
   onMount(() => {
     loading = true;
@@ -81,6 +98,9 @@
     new Intl.DateTimeFormat(i18n.locale, { month: 'short', year: 'numeric', timeZone: 'UTC' })
   );
   let relativeFmt = $derived(new Intl.RelativeTimeFormat(i18n.locale, { numeric: 'auto' }));
+  let relativeShortFmt = $derived(
+    new Intl.RelativeTimeFormat(i18n.locale, { numeric: 'auto', style: 'short' })
+  );
 
   function safeAvatarUrl(raw: string | undefined): string | null {
     if (!raw) return null;
@@ -96,7 +116,7 @@
     }
   }
 
-  function timeAgo(iso: string): string {
+  function timeAgo(iso: string, compact = false): string {
     const seconds = (Date.parse(iso) - Date.now()) / 1000;
     const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
       ['year', 365 * 24 * 3600],
@@ -106,9 +126,10 @@
       ['hour', 3600],
       ['minute', 60],
     ];
+    const fmt = compact ? relativeShortFmt : relativeFmt;
     for (const [unit, size] of units) {
       if (Math.abs(seconds) >= size) {
-        return relativeFmt.format(Math.round(seconds / size), unit);
+        return fmt.format(Math.round(seconds / size), unit);
       }
     }
     return i18n.t.github.justNow;
@@ -121,9 +142,12 @@
       .slice(0, MAX_REPOS)
   );
 
-  let languages = $derived(payload.languages?.length ? payload.languages : computeLanguageStats(payload.repos));
+  let languages = $derived(
+    payload.languages?.length ? payload.languages : computeLanguageStats(payload.repos)
+  );
   let latestPush = $derived(payload.latestPush ?? extractLatestPush(payload.repos, payload.events));
   let latestPushAt = $derived(latestPush?.at ?? ownRepos[0]?.pushed_at ?? null);
+  let latestPushDisplay = $derived(latestPushAt ? timeAgo(latestPushAt, true) : '—');
 
   let activityBuckets = $derived.by(() => {
     const counts = new Array(ACTIVITY_DAYS).fill(0);
@@ -155,7 +179,9 @@
     return { bars, total };
   });
 
-  let snapshotFormatted = $derived(monthYearFmt.format(Date.parse(payload.snapshotDate || SNAPSHOT_DATE)));
+  let snapshotFormatted = $derived(
+    monthYearFmt.format(Date.parse(payload.snapshotDate || SNAPSHOT_DATE))
+  );
 
   let statusText = $derived.by(() => {
     if (loading) return i18n.t.github.connecting;
@@ -183,9 +209,6 @@
   });
 
   let avatarHref = $derived(safeAvatarUrl(payload.profile.avatar_url));
-  let sinceYear = $derived(
-    payload.profile.created_at ? new Date(payload.profile.created_at).getFullYear() : '2026'
-  );
 </script>
 
 <div class="gh" data-gh-source={payload.source}>
@@ -193,6 +216,7 @@
     <div class="gh__id">
       {#if avatarHref && !avatarFailed}
         <img
+          bind:this={avatarEl}
           class="gh__avatar"
           src={avatarHref}
           alt="@MacieiraPT"
@@ -200,7 +224,6 @@
           height="44"
           loading="lazy"
           decoding="async"
-          onerror={() => (avatarFailed = true)}
         />
       {:else}
         <span class="gh__avatar gh__avatar--placeholder" aria-hidden="true">RM</span>
@@ -212,7 +235,11 @@
     </div>
 
     <p class="gh__status mono">
-      <span class="gh__led" class:is-live={payload.source === 'live' || payload.source === 'edge-cache'} aria-hidden="true"></span>
+      <span
+        class="gh__led"
+        class:is-live={payload.source === 'live' || payload.source === 'edge-cache'}
+        aria-hidden="true"
+      ></span>
       <span>{statusText}</span>
     </p>
   </header>
@@ -223,12 +250,12 @@
       <dd>{numberFmt.format(payload.profile.public_repos ?? 0)}</dd>
     </div>
     <div>
-      <dt class="mono">{i18n.t.github.statsFollowers}</dt>
-      <dd>{numberFmt.format(payload.profile.followers ?? 0)}</dd>
+      <dt class="mono">{i18n.t.github.statsLanguages}</dt>
+      <dd>{numberFmt.format(languages.length)}</dd>
     </div>
     <div>
-      <dt class="mono">{i18n.t.github.statsSince}</dt>
-      <dd>{sinceYear}</dd>
+      <dt class="mono">{i18n.t.github.statsLatestPush}</dt>
+      <dd class="gh__stat-compact">{latestPushDisplay}</dd>
     </div>
   </dl>
 
@@ -246,7 +273,11 @@
         {/if}
       </div>
 
-      <div class="langbar" role="img" aria-label={languages.map((l) => `${l.name} ${l.pct}%`).join(', ')}>
+      <div
+        class="langbar"
+        role="img"
+        aria-label={languages.map((l) => `${l.name} ${l.pct}%`).join(', ')}
+      >
         {#each languages as lang (lang.name)}
           <span
             class="langbar__seg"
@@ -297,7 +328,9 @@
 
   <div class="gh__repos">
     {#if ownRepos.length === 0}
-      <p class="gh__empty">{payload.repos.length ? i18n.t.github.forksOnly : i18n.t.github.noRepos}</p>
+      <p class="gh__empty">
+        {payload.repos.length ? i18n.t.github.forksOnly : i18n.t.github.noRepos}
+      </p>
     {:else}
       {#each ownRepos as repo (repo.name)}
         <a class="repo" href={repo.html_url} target="_blank" rel="noopener">
@@ -422,7 +455,7 @@
   }
 
   .gh__stats > div {
-    padding: clamp(0.9rem, 1.8vw, 1.25rem);
+    padding: clamp(0.85rem, 1.8vw, 1.25rem);
   }
 
   .gh__stats > div + div {
@@ -432,17 +465,24 @@
   .gh__stats dt {
     color: var(--ink-faint);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 0.62rem;
-    margin-bottom: 0.45rem;
+    letter-spacing: 0.12em;
+    font-size: 0.6rem;
+    margin-bottom: 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .gh__stats dd {
-    font-size: clamp(1.4rem, 2.5vw, 1.95rem);
+    font-size: clamp(1.25rem, 2.3vw, 1.85rem);
     font-weight: 700;
     letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
-    line-height: 1;
+    line-height: 1.1;
+  }
+
+  .gh__stats dd.gh__stat-compact {
+    font-size: clamp(1rem, 1.8vw, 1.45rem);
   }
 
   .gh__langs {
@@ -606,13 +646,8 @@
   }
 
   @media (max-width: 580px) {
-    .gh__stats {
-      grid-template-columns: 1fr;
-    }
-
-    .gh__stats > div + div {
-      border-left: 0;
-      border-top: 1px solid var(--line);
+    .gh__stats > div {
+      padding: 0.75rem 0.65rem;
     }
 
     .repo {

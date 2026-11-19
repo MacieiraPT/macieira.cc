@@ -14,6 +14,7 @@ import {
 const USER = 'MacieiraPT';
 const GITHUB_API = 'https://api.github.com';
 const EDGE_TTL_SECONDS = 1800; // 30 minutes
+const FALLBACK_EDGE_TTL_SECONDS = 120; // 2 minutes to prevent retry storms
 const UPSTREAM_TIMEOUT_MS = 4500;
 
 interface UpstreamResult<T> {
@@ -34,11 +35,14 @@ async function fetchGitHub<T>(path: string, headers: HeadersInit): Promise<Upstr
     });
 
     if (!res.ok) {
+      const rateLimited =
+        res.status === 429 ||
+        (res.status === 403 &&
+          (res.headers.get('x-ratelimit-remaining') === '0' || res.headers.has('retry-after')));
       return {
         ok: false,
         status: res.status,
-        rateLimited:
-          res.status === 403 && res.headers.get('x-ratelimit-remaining') === '0',
+        rateLimited,
       };
     }
 
@@ -52,13 +56,13 @@ async function fetchGitHub<T>(path: string, headers: HeadersInit): Promise<Upstr
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-  const cacheUrl = new URL(url.origin + '/api/github?v=2');
+  const cacheUrl = new URL(url.origin + '/api/github?v=3');
   const cacheStorage =
     typeof caches !== 'undefined' && 'default' in caches
       ? (caches as unknown as { default: Cache }).default
       : undefined;
 
-  if (cacheStorage && !url.searchParams.has('fresh')) {
+  if (cacheStorage) {
     try {
       const hit = await cacheStorage.match(cacheUrl.toString());
       if (hit) {
@@ -66,12 +70,18 @@ export const GET: RequestHandler = async ({ url }) => {
         const cachedPayload: GitHubPayload = {
           ...payload,
           languages: payload.languages ?? computeLanguageStats(payload.repos ?? []),
-          latestPush: payload.latestPush ?? extractLatestPush(payload.repos ?? [], payload.events ?? []),
+          latestPush:
+            payload.latestPush ?? extractLatestPush(payload.repos ?? [], payload.events ?? []),
           source: payload.source === 'snapshot' ? 'snapshot' : 'edge-cache',
         };
+        const cacheControl =
+          cachedPayload.source === 'snapshot'
+            ? `public, max-age=60, s-maxage=${FALLBACK_EDGE_TTL_SECONDS}`
+            : `public, max-age=300, s-maxage=${EDGE_TTL_SECONDS}, stale-while-revalidate=3600`;
+
         return json(cachedPayload, {
           headers: {
-            'Cache-Control': `public, max-age=300, s-maxage=${EDGE_TTL_SECONDS}, stale-while-revalidate=3600`,
+            'Cache-Control': cacheControl,
             'X-GitHub-Source': cachedPayload.source,
           },
         });
@@ -83,7 +93,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
   const reqHeaders = new Headers({
     Accept: 'application/vnd.github+json',
-    'User-Agent': 'macieira.cc-worker/2.0 (+https://macieira.cc)',
+    'User-Agent': 'macieira.cc-worker/2.1 (+https://macieira.cc)',
   });
   if (GITHUB_TOKEN) {
     reqHeaders.set('Authorization', `Bearer ${GITHUB_TOKEN}`);
@@ -95,7 +105,8 @@ export const GET: RequestHandler = async ({ url }) => {
     fetchGitHub<GitHubEvent[]>(`/users/${USER}/events/public?per_page=100`, reqHeaders),
   ]);
 
-  const liveSuccess = profileRes.ok && Boolean(profileRes.data) && reposRes.ok && Array.isArray(reposRes.data);
+  const liveSuccess =
+    profileRes.ok && Boolean(profileRes.data) && reposRes.ok && Array.isArray(reposRes.data);
   const rateLimited = profileRes.rateLimited || reposRes.rateLimited || eventsRes.rateLimited;
 
   const repos = liveSuccess ? reposRes.data! : GITHUB_SNAPSHOT.repos;
@@ -119,7 +130,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
   const cacheHeader = liveSuccess
     ? `public, max-age=300, s-maxage=${EDGE_TTL_SECONDS}, stale-while-revalidate=3600`
-    : 'public, max-age=60, s-maxage=120';
+    : `public, max-age=60, s-maxage=${FALLBACK_EDGE_TTL_SECONDS}`;
 
   const response = json(payload, {
     headers: {
@@ -128,7 +139,7 @@ export const GET: RequestHandler = async ({ url }) => {
     },
   });
 
-  if (cacheStorage && liveSuccess) {
+  if (cacheStorage) {
     try {
       await cacheStorage.put(cacheUrl.toString(), response.clone());
     } catch {
