@@ -19,11 +19,11 @@
   <p class="lost__body prose">{i18n.t.errorPage.body}</p>
 
   <div class="lost__actions">
-    <a class="btn btn--solid" href="/">
+    <a class="btn btn--solid" href={i18n.href('/')}>
       <Icons name="arrow-left" class="icon icon--sm" />
       <span>{i18n.t.errorPage.homeCta}</span>
     </a>
-    <a class="btn btn--ghost" href="/work">
+    <a class="btn btn--ghost" href={i18n.href('/work')}>
       <span>{i18n.t.errorPage.workCta}</span>
       <Icons name="arrow-up-right" class="icon icon--sm" />
     </a>

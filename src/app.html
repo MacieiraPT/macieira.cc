@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="no-js" data-lang="en" data-theme="orchard">
+<html lang="%lang%" class="no-js" data-lang="%dataLang%" data-theme="orchard">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -16,87 +16,15 @@
       type="font/woff2"
       crossorigin="anonymous"
     />
+    <link
+      rel="preload"
+      href="/assets/fonts/jetbrains-mono-latin-var.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
 
-    <script>
-      (function () {
-        var root = document.documentElement;
-        root.classList.remove('no-js');
-        root.classList.add('js');
-
-        var lang = 'en';
-        try {
-          var q = new URLSearchParams(window.location.search).get('lang');
-          if (q && q.slice(0, 2).toLowerCase() === 'pt') lang = 'pt';
-          else if (q && q.slice(0, 2).toLowerCase() === 'en') lang = 'en';
-          else {
-            var stored = window.localStorage.getItem('lang:v2');
-            if (stored === 'pt' || stored === 'en') lang = stored;
-            else {
-              var langs = navigator.languages && navigator.languages.length
-                ? navigator.languages
-                : [navigator.language || ''];
-              for (var i = 0; i < langs.length; i++) {
-                if (/^pt\b/i.test(langs[i])) {
-                  lang = 'pt';
-                  break;
-                }
-              }
-            }
-          }
-        } catch (e) {
-          lang = 'en';
-        }
-        root.dataset.lang = lang;
-        root.lang = lang === 'pt' ? 'pt-PT' : 'en';
-
-        var theme = 'orchard';
-        try {
-          var savedTheme = window.localStorage.getItem('theme:v1');
-          if (savedTheme === 'orchard' || savedTheme === 'dmg' || savedTheme === 'amber' || savedTheme === 'mac1bit') {
-            theme = savedTheme;
-          }
-        } catch (e) {
-          theme = 'orchard';
-        }
-        root.dataset.theme = theme;
-        var colors = { orchard: '#08080a', dmg: '#0d150c', amber: '#0c0804', mac1bit: '#f2f1ec' };
-        var scheme = theme === 'mac1bit' ? 'light' : 'dark';
-        root.style.colorScheme = scheme;
-        var tc = document.querySelector('meta[name="theme-color"]');
-        if (tc) tc.setAttribute('content', colors[theme]);
-        var cs = document.querySelector('meta[name="color-scheme"]');
-        if (cs) cs.setAttribute('content', scheme);
-      })();
-    </script>
-
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Rodrigo Macieira",
-        "alternateName": "MacieiraPT",
-        "url": "https://macieira.cc/",
-        "nationality": "PT",
-        "jobTitle": "Full-stack and creative web developer",
-        "email": "rodrigo@macieira.cc",
-        "sameAs": ["https://github.com/MacieiraPT"],
-        "makesOffer": {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Full-stack and creative web development",
-            "description": "TypeScript and Electron desktop software, C# / .NET web systems with PostgreSQL, and interactive WebGL graphics."
-          }
-        },
-        "hasCredential": {
-          "@type": "EducationalOccupationalCredential",
-          "name": "Programador/a de Informática",
-          "credentialCategory": "Professional certification",
-          "educationalLevel": "Level 4, Quadro Nacional de Qualificações (EQF 4)",
-          "url": "https://catalogo.snq.gov.pt/qualificacoesDetalhe/7382"
-        }
-      }
-    </script>
+    <script src="/assets/boot.js"></script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">

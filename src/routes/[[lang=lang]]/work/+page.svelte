@@ -8,18 +8,38 @@
 
   let activeFilter = $state<Filter>('all');
 
+  let desktopCount = $derived(PROJECTS.filter((p) => p.category === 'desktop').length);
+  let dotnetCount = $derived(PROJECTS.filter((p) => p.category === 'dotnet').length);
+
   let filteredProjects = $derived(
     activeFilter === 'all' ? PROJECTS : PROJECTS.filter((p) => p.category === activeFilter)
+  );
+
+  let canonicalUrl = $derived(
+    i18n.lang === 'pt' ? 'https://macieira.cc/pt/work' : 'https://macieira.cc/work'
   );
 </script>
 
 <svelte:head>
   <title>{i18n.t.meta.workTitle}</title>
   <meta name="description" content={i18n.t.meta.workDescription} />
-  <link rel="canonical" href="https://macieira.cc/work" />
+  <link rel="canonical" href={canonicalUrl} />
   <link rel="alternate" hreflang="en" href="https://macieira.cc/work" />
-  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/work?lang=pt" />
+  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/pt/work" />
   <link rel="alternate" hreflang="x-default" href="https://macieira.cc/work" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:site_name" content="macieira.cc" />
+  <meta property="og:title" content={i18n.t.meta.workTitle} />
+  <meta property="og:description" content={i18n.t.meta.workDescription} />
+  <meta property="og:locale" content={i18n.t.meta.ogLocale} />
+  <meta property="og:locale:alternate" content={i18n.t.meta.ogLocaleAlt} />
+  <meta property="og:image" content="https://macieira.cc/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={i18n.t.meta.ogImageAlt} />
+  <meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <section class="archive wrap">
@@ -28,7 +48,7 @@
     <h1 class="archive__title">{i18n.t.work.filterHeading}</h1>
     <p class="prose">{i18n.t.work.filterSub}</p>
 
-    <div class="filters" role="group" aria-label="Filter projects by technology">
+    <div class="filters" role="group" aria-label={i18n.t.work.filterGroupAria}>
       <button
         type="button"
         class="filter-btn mono"
@@ -36,7 +56,7 @@
         aria-pressed={activeFilter === 'all'}
         onclick={() => (activeFilter = 'all')}
       >
-        {i18n.t.work.filterAll}
+        {i18n.t.work.filterAll(PROJECTS.length)}
       </button>
       <button
         type="button"
@@ -45,7 +65,7 @@
         aria-pressed={activeFilter === 'desktop'}
         onclick={() => (activeFilter = 'desktop')}
       >
-        {i18n.t.work.filterDesktop}
+        {i18n.t.work.filterDesktop(desktopCount)}
       </button>
       <button
         type="button"
@@ -54,7 +74,7 @@
         aria-pressed={activeFilter === 'dotnet'}
         onclick={() => (activeFilter = 'dotnet')}
       >
-        {i18n.t.work.filterDotnet}
+        {i18n.t.work.filterDotnet(dotnetCount)}
       </button>
     </div>
   </header>
@@ -62,9 +82,14 @@
   <div class="archive__list">
     {#each filteredProjects as project (project.slug)}
       <article class="archive-card">
-        <div class="archive-card__visual">
+        <a
+          class="archive-card__visual"
+          href={i18n.href(`/work/${project.slug}`)}
+          tabindex="-1"
+          aria-hidden="true"
+        >
           <ProjectVisual slug={project.slug} />
-        </div>
+        </a>
 
         <div class="archive-card__content">
           <div class="archive-card__meta mono">
@@ -73,7 +98,7 @@
           </div>
 
           <h2 class="archive-card__title">
-            <a href="/work/{project.slug}">{project.title}</a>
+            <a href={i18n.href(`/work/${project.slug}`)}>{project.title}</a>
           </h2>
 
           <p class="archive-card__headline">{project.headline[i18n.lang]}</p>
@@ -88,14 +113,14 @@
             {/each}
           </dl>
 
-          <ul class="archive-card__tags">
+          <ul class="archive-card__tags" aria-label={i18n.t.work.techStackAria}>
             {#each project.stack as tech}
               <li class="mono">{tech}</li>
             {/each}
           </ul>
 
           <div class="archive-card__actions">
-            <a class="btn btn--solid" href="/work/{project.slug}">
+            <a class="btn btn--solid" href={i18n.href(`/work/${project.slug}`)}>
               <span>{i18n.t.work.caseStudyLink}</span>
               <Icons name="arrow-up-right" class="icon icon--sm" />
             </a>
@@ -148,7 +173,9 @@
     border: 1px solid var(--line-strong);
     color: var(--ink-dim);
     cursor: pointer;
-    transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out),
+    transition:
+      background-color 0.2s var(--ease-out),
+      color 0.2s var(--ease-out),
       border-color 0.2s var(--ease-out);
   }
 
@@ -178,6 +205,11 @@
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: var(--bg-raise);
+  }
+
+  .archive-card__visual {
+    display: block;
+    border-radius: 8px;
   }
 
   .archive-card__content {

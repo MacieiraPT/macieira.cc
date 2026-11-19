@@ -1,23 +1,29 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { i18n } from '#lib/i18n/index.svelte.ts';
+  import { page } from '$app/state';
+  import { i18n, stripLangPrefix } from '#lib/i18n/index.svelte.ts';
+  import { workbench } from '#lib/state/workbench.svelte.ts';
   import Icons from './Icons.svelte';
 
-  let clockText = $state('--:--');
-  let toastText = $state('');
-  let toastVisible = $state(false);
+  let nowDate = $state<Date | null>(null);
   let copiedKey = $state<string | null>(null);
+  let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
-  let toastTimer: ReturnType<typeof setTimeout> | undefined;
+  let isCvPage = $derived(stripLangPrefix(page.url.pathname) === '/cv');
 
-  function showToast(msg: string) {
-    toastText = msg;
-    toastVisible = true;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      toastVisible = false;
-    }, 2200);
-  }
+  let clockText = $derived.by(() => {
+    if (!nowDate) return '--:--';
+    try {
+      return new Intl.DateTimeFormat(i18n.locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Europe/Lisbon',
+      }).format(nowDate);
+    } catch {
+      return '--:--';
+    }
+  });
 
   async function copyValue(key: string, val: string) {
     let ok = false;
@@ -46,29 +52,21 @@
     }
 
     if (!ok) {
-      showToast(i18n.t.footer.copyFailedToast(val));
+      workbench.showToast(i18n.t.footer.copyFailedToast(val));
       return;
     }
 
     copiedKey = key;
-    showToast(i18n.t.footer.copiedToast(val));
-    setTimeout(() => {
+    workbench.showToast(i18n.t.footer.copiedToast(val));
+    clearTimeout(copiedTimer);
+    copiedTimer = setTimeout(() => {
       if (copiedKey === key) copiedKey = null;
     }, 2000);
   }
 
   onMount(() => {
     const updateClock = () => {
-      try {
-        clockText = new Intl.DateTimeFormat(i18n.locale, {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-          timeZone: 'Europe/Lisbon',
-        }).format(new Date());
-      } catch {
-        clockText = '--:--';
-      }
+      nowDate = new Date();
     };
 
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -95,7 +93,8 @@
 
     return () => {
       clearTimeout(timer);
-      clearTimeout(toastTimer);
+      clearTimeout(copiedTimer);
+      workbench.clearToastTimer();
       document.removeEventListener('visibilitychange', onVisibility);
     };
   });
@@ -122,10 +121,12 @@
           <span>{i18n.t.footer.copyEmailCta}</span>
         </button>
 
-        <a class="btn btn--ghost" href="/cv">
-          <Icons name="file-text" class="icon icon--sm" />
-          <span>{i18n.t.footer.cvCta}</span>
-        </a>
+        {#if !isCvPage}
+          <a class="btn btn--ghost" href={i18n.href('/cv')}>
+            <Icons name="file-text" class="icon icon--sm" />
+            <span>{i18n.t.footer.cvCta}</span>
+          </a>
+        {/if}
 
         <button
           class="btn btn--ghost"
@@ -167,10 +168,7 @@
       </div>
 
       <p class="colophon__meta">
-        <span class="worker-status">
-          <span class="worker-status__dot" aria-hidden="true"></span>
-          <span>{i18n.t.footer.workerStatus}</span>
-        </span>
+        <span>{i18n.t.footer.hostedOn}</span>
         <span class="sep" aria-hidden="true">/</span>
         <span>{i18n.t.footer.localTimePrefix}: {clockText}</span>
         <span class="sep" aria-hidden="true">/</span>
@@ -180,8 +178,8 @@
   </div>
 </footer>
 
-<div class="toast" class:is-visible={toastVisible} role="status" aria-live="polite">
-  {toastText}
+<div class="toast" class:is-visible={workbench.toastVisible} role="status" aria-live="polite">
+  {workbench.toastText}
 </div>
 
 <style>
@@ -243,20 +241,6 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.45rem;
-  }
-
-  .worker-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: var(--ink-dim);
-  }
-
-  .worker-status__dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 2px;
-    background: var(--acid);
   }
 
   .colophon__link {

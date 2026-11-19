@@ -11,6 +11,37 @@
   const TAB_ORDER: BackgroundTab[] = ['how', 'track', 'education'];
   let activeTab = $state<BackgroundTab>('how');
 
+  let canonicalUrl = $derived(i18n.lang === 'pt' ? 'https://macieira.cc/pt' : 'https://macieira.cc/');
+
+  let personJsonLd = $derived(
+    JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: 'Rodrigo Macieira',
+      alternateName: 'MacieiraPT',
+      url: canonicalUrl,
+      nationality: 'PT',
+      jobTitle: i18n.t.cv.roleTitle,
+      email: 'rodrigo@macieira.cc',
+      sameAs: ['https://github.com/MacieiraPT'],
+      makesOffer: {
+        '@type': 'Offer',
+        itemOffered: {
+          '@type': 'Service',
+          name: i18n.t.cv.roleTitle,
+          description: i18n.t.cv.summaryBody,
+        },
+      },
+      hasCredential: {
+        '@type': 'EducationalOccupationalCredential',
+        name: 'Programador/a de Informática',
+        credentialCategory: 'Professional certification',
+        educationalLevel: 'Level 4, Quadro Nacional de Qualificações (EQF 4)',
+        url: 'https://catalogo.snq.gov.pt/qualificacoesDetalhe/7382',
+      },
+    })
+  );
+
   function onTabKeyDown(e: KeyboardEvent) {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     e.preventDefault();
@@ -25,23 +56,24 @@
 <svelte:head>
   <title>{i18n.t.meta.homeTitle}</title>
   <meta name="description" content={i18n.t.meta.homeDescription} />
-  <link rel="canonical" href="https://macieira.cc/" />
+  <link rel="canonical" href={canonicalUrl} />
   <link rel="alternate" hreflang="en" href="https://macieira.cc/" />
-  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/?lang=pt" />
+  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/pt" />
   <link rel="alternate" hreflang="x-default" href="https://macieira.cc/" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://macieira.cc/" />
+  <meta property="og:url" content={canonicalUrl} />
   <meta property="og:site_name" content="macieira.cc" />
   <meta property="og:title" content={i18n.t.meta.homeTitle} />
   <meta property="og:description" content={i18n.t.meta.homeDescription} />
   <meta property="og:locale" content={i18n.t.meta.ogLocale} />
-  <meta property="og:locale:alternate" content="pt_PT" />
+  <meta property="og:locale:alternate" content={i18n.t.meta.ogLocaleAlt} />
   <meta property="og:image" content="https://macieira.cc/assets/og.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="macieira.cc: Rodrigo Macieira, Full-Stack & WebGL, Portugal." />
+  <meta property="og:image:alt" content={i18n.t.meta.ogImageAlt} />
   <meta name="twitter:card" content="summary_large_image" />
+  {@html `<script type="application/ld+json">${personJsonLd}</script>`}
 </svelte:head>
 
 <!-- HERO -->
@@ -67,11 +99,7 @@
         <a class="btn btn--solid" href="#work">
           <span>{i18n.t.hero.primaryCta}</span>
         </a>
-        <a class="btn btn--acid-soft" href="/work">
-          <span>{i18n.t.hero.tertiaryCta}</span>
-          <Icons name="arrow-up-right" class="icon icon--sm" />
-        </a>
-        <a class="btn btn--ghost" href="/cv">
+        <a class="btn btn--acid-soft" href={i18n.href('/cv')}>
           <Icons name="file-text" class="icon icon--sm" />
           <span>{i18n.t.hero.cvCta}</span>
         </a>
@@ -80,22 +108,22 @@
           <span>{i18n.t.hero.secondaryCta}</span>
         </a>
       </div>
-
-      <dl class="hero-proof">
-        <div>
-          <dt class="mono">{i18n.t.hero.proofStackLabel}</dt>
-          <dd>{i18n.t.hero.proofStackValue}</dd>
-        </div>
-        <div>
-          <dt class="mono">{i18n.t.hero.proofCredentialLabel}</dt>
-          <dd>{i18n.t.hero.proofCredentialValue}</dd>
-        </div>
-        <div>
-          <dt class="mono">{i18n.t.hero.proofFocusLabel}</dt>
-          <dd>{i18n.t.hero.proofFocusValue}</dd>
-        </div>
-      </dl>
     </div>
+
+    <dl class="hero-proof">
+      <div>
+        <dt class="mono">{i18n.t.hero.proofStackLabel}</dt>
+        <dd>{i18n.t.hero.proofStackValue}</dd>
+      </div>
+      <div>
+        <dt class="mono">{i18n.t.hero.proofCredentialLabel}</dt>
+        <dd>{i18n.t.hero.proofCredentialValue}</dd>
+      </div>
+      <div>
+        <dt class="mono">{i18n.t.hero.proofFocusLabel}</dt>
+        <dd>{i18n.t.hero.proofFocusValue}</dd>
+      </div>
+    </dl>
 
     <div class="hero__visual">
       <RetroAppleCanvas />
@@ -112,7 +140,7 @@
       <h2 class="h2" id="work-heading">{i18n.t.work.heading}</h2>
       <p class="prose">{i18n.t.work.intro}</p>
     </div>
-    <a class="btn btn--ghost" href="/work">
+    <a class="btn btn--ghost" href={i18n.href('/work')}>
       <span>{i18n.t.work.archiveCta}</span>
       <Icons name="arrow-up-right" class="icon icon--sm" />
     </a>
@@ -121,7 +149,14 @@
   <div class="work-grid">
     {#each PROJECTS as project (project.slug)}
       <article class="project-card">
-        <ProjectVisual slug={project.slug} compact />
+        <a
+          class="project-card__visual"
+          href={i18n.href(`/work/${project.slug}`)}
+          tabindex="-1"
+          aria-hidden="true"
+        >
+          <ProjectVisual slug={project.slug} compact />
+        </a>
 
         <div class="project-card__meta mono">
           <span>{project.year} · {project.categoryLabel[i18n.lang]}</span>
@@ -129,7 +164,7 @@
         </div>
 
         <h3 class="project-card__title">
-          <a href="/work/{project.slug}">{project.title}</a>
+          <a href={i18n.href(`/work/${project.slug}`)}>{project.title}</a>
         </h3>
 
         <p class="project-card__summary">{project.summary[i18n.lang]}</p>
@@ -143,14 +178,17 @@
           {/each}
         </dl>
 
-        <ul class="project-card__tags" aria-label="Tech stack">
+        <ul class="project-card__tags" aria-label={i18n.t.work.techStackAria}>
           {#each project.stack.slice(0, 4) as tech}
             <li class="mono">{tech}</li>
           {/each}
         </ul>
 
         <div class="project-card__links">
-          <a class="project-link project-link--primary mono" href="/work/{project.slug}">
+          <a
+            class="project-link project-link--primary mono"
+            href={i18n.href(`/work/${project.slug}`)}
+          >
             <span>{i18n.t.work.caseStudyLink}</span>
             <Icons name="arrow-up-right" class="icon icon--sm" />
           </a>
@@ -264,7 +302,7 @@
             <span class="timeline__year mono">{entry.period}</span>
             <div class="timeline__body">
               <div class="timeline__head">
-                <a class="timeline__name" href={entry.href}>{entry.name}</a>
+                <a class="timeline__name" href={i18n.href(entry.href)}>{entry.name}</a>
                 <span class="timeline__scope mono">{entry.scope}</span>
               </div>
               <p class="timeline__desc">{entry.detail}</p>
@@ -326,27 +364,33 @@
 <style>
   /* Hero */
   .hero {
-    padding-block: clamp(2.5rem, 6vh, 4.75rem) clamp(3.5rem, 8vh, 6rem);
+    padding-block: clamp(2rem, 5.5vh, 4.5rem) clamp(3.25rem, 7.5vh, 5.75rem);
   }
 
   .hero__grid {
     display: grid;
     grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+    grid-template-areas:
+      'copy visual'
+      'proof visual';
     align-items: center;
-    gap: clamp(2rem, 4.5vw, 4.5rem);
+    column-gap: clamp(2rem, 4.5vw, 4.5rem);
+    row-gap: clamp(1.25rem, 2.5vh, 1.75rem);
   }
 
   .hero__copy {
+    grid-area: copy;
     display: grid;
     justify-items: start;
-    gap: clamp(1.05rem, 2vh, 1.5rem);
+    align-self: end;
+    gap: clamp(0.95rem, 1.8vh, 1.45rem);
   }
 
   .hero__topline {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.65rem 1rem;
+    gap: 0.55rem 0.9rem;
   }
 
   .hero__region {
@@ -377,7 +421,7 @@
   }
 
   .hero__name {
-    font-size: clamp(2.6rem, 6.2vw, 5.75rem);
+    font-size: clamp(2.5rem, 6.2vw, 5.75rem);
     font-weight: 800;
     font-variation-settings: 'wdth' 116;
     line-height: 0.96;
@@ -389,7 +433,7 @@
 
   .hero__lede {
     max-width: 48ch;
-    padding-top: 1.05rem;
+    padding-top: 1rem;
     border-top: 1px solid var(--line);
     color: var(--ink-dim);
     text-wrap: pretty;
@@ -406,11 +450,12 @@
   }
 
   .hero-proof {
+    grid-area: proof;
+    align-self: start;
     width: 100%;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
-    margin-top: 0.4rem;
     padding-top: 1.15rem;
     border-top: 1px solid var(--line);
   }
@@ -430,6 +475,7 @@
   }
 
   .hero__visual {
+    grid-area: visual;
     display: grid;
     gap: 0.65rem;
   }
@@ -473,6 +519,11 @@
   .project-card:hover {
     border-color: var(--line-strong);
     transform: translateY(-2px);
+  }
+
+  .project-card__visual {
+    display: block;
+    border-radius: 8px;
   }
 
   .project-card__meta {
@@ -755,8 +806,17 @@
 
   /* Responsive */
   @media (max-width: 1020px) {
+    .hero {
+      padding-block: 1.5rem 2.75rem;
+    }
+
     .hero__grid {
       grid-template-columns: 1fr;
+      grid-template-areas:
+        'copy'
+        'visual'
+        'proof';
+      row-gap: 1.5rem;
     }
 
     .work-grid,

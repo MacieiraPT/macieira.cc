@@ -2,20 +2,37 @@
   import { i18n } from '#lib/i18n/index.svelte.ts';
   import { PROJECTS } from '#lib/data/projects.ts';
   import Icons from '#lib/components/Icons.svelte';
+
+  let canonicalUrl = $derived(
+    i18n.lang === 'pt' ? 'https://macieira.cc/pt/cv' : 'https://macieira.cc/cv'
+  );
 </script>
 
 <svelte:head>
   <title>{i18n.t.meta.cvTitle}</title>
   <meta name="description" content={i18n.t.meta.cvDescription} />
-  <link rel="canonical" href="https://macieira.cc/cv" />
+  <link rel="canonical" href={canonicalUrl} />
   <link rel="alternate" hreflang="en" href="https://macieira.cc/cv" />
-  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/cv?lang=pt" />
+  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/pt/cv" />
   <link rel="alternate" hreflang="x-default" href="https://macieira.cc/cv" />
+
+  <meta property="og:type" content="profile" />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:site_name" content="macieira.cc" />
+  <meta property="og:title" content={i18n.t.meta.cvTitle} />
+  <meta property="og:description" content={i18n.t.meta.cvDescription} />
+  <meta property="og:locale" content={i18n.t.meta.ogLocale} />
+  <meta property="og:locale:alternate" content={i18n.t.meta.ogLocaleAlt} />
+  <meta property="og:image" content="https://macieira.cc/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={i18n.t.meta.ogImageAlt} />
+  <meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <article class="cv wrap">
   <div class="cv-toolbar">
-    <a class="crumb-link mono" href="/">
+    <a class="crumb-link mono" href={i18n.href('/')}>
       <Icons name="arrow-left" class="icon icon--sm" />
       <span>{i18n.t.cv.backHome}</span>
     </a>
@@ -28,7 +45,7 @@
 
   <div class="cv-sheet">
     <header class="cv-header">
-      <div>
+      <div class="cv-header__id">
         <h1 class="cv-header__name">{i18n.t.hero.name}</h1>
         <p class="cv-header__role">{i18n.t.cv.roleTitle}</p>
         <p class="cv-header__meta mono">{i18n.t.cv.location}</p>
@@ -36,19 +53,27 @@
 
       <dl class="cv-contact mono">
         <div>
-          <dt>Web</dt>
+          <dt>{i18n.t.cv.contactWeb}</dt>
           <dd><a href="https://macieira.cc">macieira.cc</a></dd>
         </div>
         <div>
-          <dt>Email</dt>
+          <dt>{i18n.t.cv.contactEmail}</dt>
           <dd><a href="mailto:rodrigo@macieira.cc">rodrigo@macieira.cc</a></dd>
         </div>
         <div>
-          <dt>GitHub</dt>
-          <dd><a href="https://github.com/MacieiraPT" target="_blank" rel="noopener">github.com/MacieiraPT</a></dd>
+          <dt>{i18n.t.cv.contactGitHub}</dt>
+          <dd>
+            <a href="https://github.com/MacieiraPT" target="_blank" rel="noopener">
+              github.com/MacieiraPT
+            </a>
+          </dd>
         </div>
         <div>
-          <dt>Status</dt>
+          <dt>{i18n.t.cv.contactLanguages}</dt>
+          <dd>{i18n.t.cv.languagesValue}</dd>
+        </div>
+        <div>
+          <dt>{i18n.t.cv.contactStatus}</dt>
           <dd>{i18n.t.cv.status}</dd>
         </div>
       </dl>
@@ -78,10 +103,15 @@
           <div class="cv-project">
             <div class="cv-project__head">
               <h3>
-                <a href="/work/{project.slug}">{project.title}</a>
+                <a href={i18n.href(`/work/${project.slug}`)}>{project.title}</a>
                 <span class="cv-project__role mono"> · {project.role[i18n.lang]}</span>
               </h3>
-              <span class="mono">{project.year}</span>
+              <span class="cv-project__right mono">
+                <a class="cv-project__repo" href={project.repoUrl} target="_blank" rel="noopener">
+                  github.com/{project.repoName}
+                </a>
+                <span> · {project.year}</span>
+              </span>
             </div>
             <p class="cv-project__headline">{project.headline[i18n.lang]}</p>
             <p class="cv-project__outcomes">{project.outcomes[i18n.lang]}</p>
@@ -98,7 +128,7 @@
         <h2 class="cv-section__h mono">{i18n.t.cv.educationHeading}</h2>
         <div class="cv-edu">
           <h3>{i18n.t.background.qualificationTitle}</h3>
-          <p class="cv-edu__meta mono">{i18n.t.hero.proofCredentialValue}</p>
+          <p class="cv-edu__meta mono">{i18n.t.cv.educationCredentialMeta}</p>
           <p>{i18n.t.background.qualificationBody}</p>
           <p class="cv-edu__ref mono">{i18n.t.background.qualificationMeta}</p>
         </div>
@@ -196,7 +226,8 @@
   }
 
   .cv-contact dt {
-    width: 4.5rem;
+    width: 5.75rem;
+    flex: none;
     color: var(--ink-faint);
     text-transform: uppercase;
   }
@@ -219,7 +250,7 @@
 
   .cv-summary {
     color: var(--ink-dim);
-    max-width: 72ch;
+    max-width: 74ch;
   }
 
   .cv-skills {
@@ -261,7 +292,8 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
   }
 
   .cv-project__head h3 {
@@ -269,11 +301,13 @@
     font-weight: 700;
   }
 
-  .cv-project__head h3 a:hover {
+  .cv-project__head h3 a:hover,
+  .cv-project__repo:hover {
     color: var(--acid);
   }
 
-  .cv-project__role {
+  .cv-project__role,
+  .cv-project__right {
     color: var(--ink-faint);
     font-weight: 400;
   }
@@ -297,7 +331,7 @@
 
   .cv-split {
     display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
     gap: 1.5rem 2.25rem;
     padding-top: 1rem;
     border-top: 1px solid var(--line);
@@ -344,7 +378,7 @@
     font-size: 0.9rem;
   }
 
-  @media (max-width: 780px) {
+  @media screen and (max-width: 780px) {
     .cv-skills__row,
     .cv-split {
       grid-template-columns: 1fr;
@@ -354,12 +388,14 @@
   @media print {
     @page {
       size: A4 portrait;
-      margin: 12mm;
+      margin: 10mm 11mm;
     }
 
     :global(.masthead),
     :global(.footer),
     :global(.atmosphere),
+    :global(.skip-link),
+    :global(.toast),
     .cv-toolbar {
       display: none !important;
     }
@@ -368,7 +404,8 @@
     :global(body) {
       background: #fff !important;
       color: #111 !important;
-      font-size: 9.5pt;
+      font-size: 8.6pt !important;
+      line-height: 1.34 !important;
       width: auto !important;
       max-width: 100% !important;
       min-height: 0 !important;
@@ -378,6 +415,7 @@
     }
 
     :global(.wrap.cv) {
+      display: block !important;
       width: 100% !important;
       max-width: 100% !important;
       padding: 0 !important;
@@ -385,35 +423,213 @@
     }
 
     .cv-sheet {
-      width: 100%;
-      max-width: 100%;
-      border: 0;
-      padding: 0;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
       background: #fff !important;
       color: #111 !important;
-      gap: 0.95rem;
     }
 
-    .cv-header,
-    .cv-split,
-    .cv-section,
-    .cv-project,
-    .cv-skills__row,
-    .cv-split > *,
-    .cv-contact {
+    .cv-header {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+      justify-content: space-between !important;
+      align-items: flex-start !important;
+      gap: 12pt !important;
+      padding-bottom: 8pt !important;
+      margin-bottom: 9pt !important;
+      border-bottom: 1px solid #d4d4d8 !important;
+    }
+
+    .cv-header__id {
+      flex: 1 1 52%;
       min-width: 0;
-      max-width: 100%;
     }
 
     .cv-header__name {
-      font-size: 24pt !important;
+      font-size: 20pt !important;
+      line-height: 1 !important;
     }
 
-    .cv-header,
-    .cv-skills__row,
-    .cv-project,
+    .cv-header__role {
+      margin-top: 3pt !important;
+      font-size: 9.8pt !important;
+    }
+
+    .cv-header__meta {
+      margin-top: 2pt !important;
+      font-size: 7.2pt !important;
+    }
+
+    .cv-contact {
+      display: block !important;
+      flex: 0 1 46%;
+      min-width: 0;
+      font-size: 7pt !important;
+      line-height: 1.4 !important;
+    }
+
+    .cv-contact > div {
+      display: flex !important;
+      gap: 6pt !important;
+      margin-bottom: 1.5pt !important;
+    }
+
+    .cv-contact dt {
+      width: 48pt !important;
+      flex: none !important;
+    }
+
+    .cv-contact dd {
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+
+    .cv-section {
+      display: block !important;
+      margin-bottom: 9pt !important;
+      break-inside: avoid;
+    }
+
+    .cv-section__h {
+      font-size: 7pt !important;
+      margin-bottom: 4pt !important;
+    }
+
+    .cv-summary {
+      font-size: 8.6pt !important;
+      max-width: none !important;
+    }
+
+    .cv-skills {
+      display: block !important;
+    }
+
+    .cv-skills__row {
+      display: flex !important;
+      align-items: baseline !important;
+      gap: 10pt !important;
+      padding-top: 3.5pt !important;
+      margin-top: 3.5pt !important;
+      border-top: 1px solid #e4e4e7 !important;
+    }
+
+    .cv-skills__row dt {
+      width: 96pt !important;
+      flex: none !important;
+      font-size: 7.2pt !important;
+    }
+
+    .cv-skills__row dd {
+      flex: 1 1 auto !important;
+      font-size: 8.4pt !important;
+    }
+
+    .cv-projects {
+      display: block !important;
+    }
+
+    .cv-project {
+      display: block !important;
+      padding-top: 5.5pt !important;
+      margin-top: 5.5pt !important;
+      border-top: 1px solid #e4e4e7 !important;
+      break-inside: avoid;
+    }
+
+    .cv-project__head {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: baseline !important;
+      flex-wrap: nowrap !important;
+      gap: 8pt !important;
+      margin-bottom: 2pt !important;
+    }
+
+    .cv-project__head h3 {
+      font-size: 9.4pt !important;
+    }
+
+    .cv-project__role,
+    .cv-project__right {
+      font-size: 7pt !important;
+      white-space: nowrap;
+    }
+
+    .cv-project__headline {
+      font-size: 8.5pt !important;
+      margin-bottom: 1.5pt !important;
+    }
+
+    .cv-project__outcomes {
+      font-size: 8.2pt !important;
+      margin-bottom: 2pt !important;
+    }
+
+    .cv-project__metrics {
+      font-size: 7pt !important;
+      margin-top: 0 !important;
+    }
+
     .cv-split {
-      border-color: #d4d4d8 !important;
+      display: flex !important;
+      gap: 16pt !important;
+      padding-top: 8pt !important;
+      margin-top: 8pt !important;
+      border-top: 1px solid #d4d4d8 !important;
+      break-inside: avoid;
+    }
+
+    .cv-split > .cv-section {
+      flex: 1 1 50% !important;
+      min-width: 0 !important;
+      margin-bottom: 0 !important;
+    }
+
+    .cv-split > .cv-section:first-child {
+      flex: 0 1 42% !important;
+    }
+
+    .cv-edu {
+      display: block !important;
+    }
+
+    .cv-edu h3 {
+      font-size: 9.2pt !important;
+      margin-bottom: 2pt !important;
+    }
+
+    .cv-edu p {
+      font-size: 8.1pt !important;
+      margin-bottom: 3pt !important;
+    }
+
+    .cv-edu__meta,
+    .cv-edu__ref {
+      font-size: 7pt !important;
+    }
+
+    .cv-principles {
+      display: block !important;
+    }
+
+    .cv-principles li {
+      display: block !important;
+      margin-bottom: 4.5pt !important;
+    }
+
+    .cv-principles strong {
+      display: block !important;
+      font-size: 7pt !important;
+      margin-bottom: 1pt !important;
+    }
+
+    .cv-principles span {
+      display: block !important;
+      font-size: 8pt !important;
     }
 
     .cv-section__h,
@@ -432,6 +648,7 @@
     .cv-principles span,
     .cv-header__meta,
     .cv-project__role,
+    .cv-project__right,
     .cv-project__metrics,
     .cv-edu__meta,
     .cv-edu__ref,

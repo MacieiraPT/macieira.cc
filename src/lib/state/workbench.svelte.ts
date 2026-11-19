@@ -8,6 +8,7 @@ export interface ThemeMeta {
   code: string;
   shortLabel: string;
   label: string;
+  swatch: string;
   paletteIndex: 0 | 1 | 2 | 3;
   themeColor: string;
   colorScheme: 'dark' | 'light';
@@ -19,6 +20,7 @@ export const THEMES: ThemeMeta[] = [
     code: '01',
     shortLabel: 'ORCHARD',
     label: 'Acid Orchard',
+    swatch: '#cdfb45',
     paletteIndex: 0,
     themeColor: '#08080a',
     colorScheme: 'dark',
@@ -28,6 +30,7 @@ export const THEMES: ThemeMeta[] = [
     code: '02',
     shortLabel: 'DMG',
     label: 'Game Boy DMG',
+    swatch: '#9bbc0f',
     paletteIndex: 1,
     themeColor: '#0d150c',
     colorScheme: 'dark',
@@ -37,6 +40,7 @@ export const THEMES: ThemeMeta[] = [
     code: '03',
     shortLabel: 'AMBER',
     label: 'Amber CRT',
+    swatch: '#ffb000',
     paletteIndex: 2,
     themeColor: '#0c0804',
     colorScheme: 'dark',
@@ -46,6 +50,7 @@ export const THEMES: ThemeMeta[] = [
     code: '04',
     shortLabel: '1-BIT',
     label: '1-Bit Mac',
+    swatch: '#f2f1ec',
     paletteIndex: 3,
     themeColor: '#f2f1ec',
     colorScheme: 'light',
@@ -66,6 +71,9 @@ let currentTheme = $state<ThemeId>('orchard');
 let currentMode = $state<PixelMode>('16bit');
 let scanlinesEnabled = $state(true);
 let spinNonce = $state(0);
+let toastText = $state('');
+let toastVisible = $state(false);
+let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
 function applyDocumentTheme(id: ThemeId): void {
   if (!browser) return;
@@ -97,6 +105,23 @@ export const workbench = {
   get spinNonce(): number {
     return spinNonce;
   },
+  get toastText(): string {
+    return toastText;
+  },
+  get toastVisible(): boolean {
+    return toastVisible;
+  },
+  showToast(msg: string): void {
+    toastText = msg;
+    toastVisible = true;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastVisible = false;
+    }, 2200);
+  },
+  clearToastTimer(): void {
+    clearTimeout(toastTimer);
+  },
   syncFromClient(): void {
     if (!browser) return;
     let next: ThemeId = 'orchard';
@@ -120,10 +145,10 @@ export const workbench = {
       }
     }
   },
-  cycleTheme(): ThemeId {
+  cycleTheme(): ThemeMeta {
     const idx = THEMES.findIndex((t) => t.id === currentTheme);
-    const next = THEMES[(idx + 1) % THEMES.length].id;
-    this.setTheme(next);
+    const next = THEMES[(idx + 1) % THEMES.length];
+    this.setTheme(next.id);
     return next;
   },
   setMode(next: PixelMode): void {

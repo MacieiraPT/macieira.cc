@@ -2,11 +2,14 @@
   import { onMount, untrack } from 'svelte';
   import { i18n } from '#lib/i18n/index.svelte.ts';
   import { THEMES, workbench, type PixelMode } from '#lib/state/workbench.svelte.ts';
+  import type { RetroAppleRenderer } from '#lib/webgl/retroAppleShader.ts';
 
   let webglReady = $state(false);
   let isDragging = $state(false);
   let reducedMotion = $state(false);
-  let spinCount = $state<number | null>(null);
+  let sessionSpins = $state(0);
+  let triangleCount = $state(678);
+  let measuredFps = $state(60);
   let spinningPulse = $state(false);
 
   let hostEl: HTMLDivElement | undefined = $state();
@@ -19,25 +22,13 @@
   let prevSpinNonce = workbench.spinNonce;
   let spinTimer: ReturnType<typeof setTimeout> | undefined;
 
-  function recordGlobalSpin() {
-    spinCount = (spinCount ?? 0) + 1;
+  function triggerPulse() {
+    sessionSpins += 1;
     spinningPulse = true;
     clearTimeout(spinTimer);
     spinTimer = setTimeout(() => {
       spinningPulse = false;
-    }, 380);
-
-    fetch('/api/apple', { method: 'POST' })
-      .then(async (res) => {
-        if (!res.ok) return;
-        const data = (await res.json()) as { count?: number };
-        if (typeof data?.count === 'number' && data.count >= (spinCount ?? 0)) {
-          spinCount = data.count;
-        }
-      })
-      .catch(() => {
-        /* keep optimistic count */
-      });
+    }, 360);
   }
 
   function handleInteractiveSpin() {
@@ -61,7 +52,7 @@
       prevSpinNonce = nextNonce;
       untrack(() => {
         applyImpulse?.();
-        recordGlobalSpin();
+        triggerPulse();
       });
     }
   });
@@ -72,178 +63,50 @@
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     reducedMotion = mq.matches;
 
-    const controller = new AbortController();
-    fetch('/api/apple', { signal: controller.signal })
-      .then(async (res) => {
-        if (!res.ok) return;
-        const data = (await res.json()) as { count?: number };
-        if (typeof data?.count === 'number') {
-          spinCount = data.count;
-        }
-      })
-      .catch(() => {
-        spinCount = 0;
-      });
-
     let disposed = false;
     let cleanup: (() => void) | undefined;
 
     (async () => {
       try {
-        const probe = document.createElement('canvas');
-        const hasGl = Boolean(
-          probe.getContext('webgl2', { alpha: true }) ||
-            probe.getContext('webgl', { alpha: true })
-        );
-        if (!hasGl || disposed) return;
-
-        const {
-          BLIT_FRAGMENT_SHADER,
-          BLIT_VERTEX_SHADER,
-          DoubleSide,
-          FrontSide,
-          Group,
-          MathUtils,
-          Mesh,
-          NearestFilter,
-          OrthographicCamera,
-          PerspectiveCamera,
-          PlaneGeometry,
-          RETRO_FRAGMENT_SHADER,
-          RETRO_VERTEX_SHADER,
-          Scene,
-          ShaderMaterial,
-          Vector2,
-          Vector3,
-          WebGLRenderTarget,
-          WebGLRenderer,
-          buildAppleFruitGeometry,
-          buildAppleLeafGeometry,
-          buildAppleStemGeometry,
-        } = await import('#lib/webgl/retroAppleShader.ts');
-
-        if (disposed || !canvasEl || !hostEl) return;
-
-        const renderer = new WebGLRenderer({
-          canvas: canvasEl,
+        const glOpts: WebGLContextAttributes = {
           alpha: true,
           antialias: false,
+          depth: false,
+          premultipliedAlpha: true,
           powerPreference: 'default',
-        });
-        renderer.setPixelRatio(1);
-        renderer.setClearColor(0x000000, 0);
+        };
+        const gl =
+          (canvasEl.getContext('webgl2', glOpts) as WebGLRenderingContext | null) ||
+          canvasEl.getContext('webgl', glOpts);
+        if (!gl || disposed) return;
 
-        const scene = new Scene();
-        const camera = new PerspectiveCamera(34, 1, 0.1, 20);
-        camera.position.set(0, 0.2, 4.35);
-        camera.lookAt(0, 0.12, 0);
+        const { createRetroAppleRenderer } = await import('#lib/webgl/retroAppleShader.ts');
+        if (disposed || !canvasEl || !hostEl) return;
 
-        const group = new Group();
-        group.position.set(0, -0.04, 0);
-        group.rotation.set(0.18, -0.45, -0.06);
-        scene.add(group);
+        let renderer: RetroAppleRenderer | null = null;
 
-        const initPid = workbench.themeMeta.paletteIndex;
-
-        const makeMat = (matId: number) =>
-          new ShaderMaterial({
-            vertexShader: RETRO_VERTEX_SHADER,
-            fragmentShader: RETRO_FRAGMENT_SHADER,
-            side: matId === 2 ? DoubleSide : FrontSide,
-            uniforms: {
-              uMatId: { value: matId },
-              uSteps: { value: workbench.mode === '16bit' ? 4.0 : 2.0 },
-              uPaletteId: { value: initPid },
-              uSnapGrid: { value: workbench.mode === '16bit' ? 112.0 : 60.0 },
-              uSnapEnabled: { value: reducedMotion ? 0.0 : 1.0 },
-            },
+        const initRenderer = () => {
+          renderer?.dispose();
+          renderer = createRetroAppleRenderer(gl, {
+            mode: workbench.mode,
+            paletteId: workbench.themeMeta.paletteIndex,
+            snapEnabled: !reducedMotion,
           });
-
-        const fruitGeo = buildAppleFruitGeometry(18, 16);
-        const fruitMat = makeMat(0.0);
-        group.add(new Mesh(fruitGeo, fruitMat));
-
-        const stemGeo = buildAppleStemGeometry();
-        const stemMat = makeMat(1.0);
-        group.add(new Mesh(stemGeo, stemMat));
-
-        const leafGeo = buildAppleLeafGeometry();
-        const leafMat = makeMat(2.0);
-        const leafMesh = new Mesh(leafGeo, leafMat);
-        leafMesh.position.set(0.08, 0.88, 0.02);
-        leafMesh.rotation.set(0.16, 0.35, 0.14);
-        leafMesh.scale.setScalar(1.06);
-        group.add(leafMesh);
-
-        const getRes = (m: PixelMode) => (m === '16bit' ? 148 : 82);
-
-        let rtSize = getRes(workbench.mode);
-        let target = new WebGLRenderTarget(rtSize, rtSize, {
-          minFilter: NearestFilter,
-          magFilter: NearestFilter,
-          generateMipmaps: false,
-          depthBuffer: true,
-        });
-
-        const outlineColor = (pid: number) =>
-          pid > 2.5 ? new Vector3(0.06, 0.06, 0.08) : new Vector3(0.04, 0.02, 0.03);
-
-        const blitScene = new Scene();
-        const blitCam = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        const blitMat = new ShaderMaterial({
-          vertexShader: BLIT_VERTEX_SHADER,
-          fragmentShader: BLIT_FRAGMENT_SHADER,
-          transparent: true,
-          depthTest: false,
-          uniforms: {
-            tDiffuse: { value: target.texture },
-            uTexelSize: { value: new Vector2(1 / rtSize, 1 / rtSize) },
-            uOutline: { value: outlineColor(initPid) },
-          },
-        });
-        const quadGeo = new PlaneGeometry(2, 2);
-        blitScene.add(new Mesh(quadGeo, blitMat));
-
-        const renderFrame = () => {
-          renderer.setRenderTarget(target);
-          renderer.clear();
-          renderer.render(scene, camera);
-
-          renderer.setRenderTarget(null);
-          renderer.clear();
-          renderer.render(blitScene, blitCam);
-        };
-
-        setShaderMode = (nextMode: PixelMode) => {
-          rtSize = getRes(nextMode);
-          target.setSize(rtSize, rtSize);
-          blitMat.uniforms.uTexelSize.value.set(1 / rtSize, 1 / rtSize);
-
-          const steps = nextMode === '16bit' ? 4.0 : 2.0;
-          const grid = nextMode === '16bit' ? 112.0 : 60.0;
-          for (const mat of [fruitMat, stemMat, leafMat]) {
-            mat.uniforms.uSteps.value = steps;
-            mat.uniforms.uSnapGrid.value = grid;
-          }
-          renderFrame();
-        };
-
-        setShaderPalette = (pid: number) => {
-          for (const mat of [fruitMat, stemMat, leafMat]) {
-            mat.uniforms.uPaletteId.value = pid;
-          }
-          blitMat.uniforms.uOutline.value.copy(outlineColor(pid));
-          renderFrame();
+          triangleCount = renderer.triangleCount;
+          syncCanvasSize();
         };
 
         const syncCanvasSize = () => {
-          if (!hostEl) return;
+          if (!hostEl || !renderer) return;
           const rect = hostEl.getBoundingClientRect();
           const side = Math.max(200, Math.round(Math.min(rect.width, rect.height || rect.width)));
-          renderer.setSize(side, side, false);
+          renderer.resize(side);
         };
-        syncCanvasSize();
 
+        let rotX = 0.18;
+        let rotY = -0.45;
+        const rotZ = -0.06;
+        let bobY = -0.04;
         let velX = 0;
         let velY = 0;
         let lastX = 0;
@@ -252,45 +115,78 @@
         let inViewport = true;
         let rafId = 0;
         let lastTs = performance.now();
+        let fpsFrames = 0;
+        let fpsWindowStart = lastTs;
+
+        const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
+
+        const renderFrame = () => {
+          if (!renderer || gl.isContextLost()) return;
+          renderer.render(rotX, rotY, rotZ, bobY);
+        };
+
+        initRenderer();
+
+        setShaderMode = (nextMode: PixelMode) => {
+          renderer?.setMode(nextMode);
+          renderFrame();
+        };
+
+        setShaderPalette = (pid: number) => {
+          renderer?.setPalette(pid);
+          renderFrame();
+        };
 
         const tick = (ts: number) => {
           rafId = 0;
-          if (disposed || !inViewport || document.hidden) return;
+          if (disposed || !inViewport || document.hidden || gl.isContextLost()) return;
 
-          const dt = Math.min((ts - lastTs) / 1000, 0.05);
+          const dt = Math.min(Math.max((ts - lastTs) / 1000, 0.001), 0.05);
           lastTs = ts;
 
+          fpsFrames += 1;
+          const fpsElapsed = ts - fpsWindowStart;
+          if (fpsElapsed >= 500) {
+            measuredFps = Math.max(1, Math.min(240, Math.round((fpsFrames * 1000) / fpsElapsed)));
+            fpsFrames = 0;
+            fpsWindowStart = ts;
+          }
+
           if (!isDragging) {
-            group.rotation.y += velY;
-            group.rotation.x = MathUtils.clamp(group.rotation.x + velX, -0.58, 0.68);
-            velY *= 0.92;
-            velX *= 0.9;
+            const step60 = dt * 60;
+            rotY += velY * step60;
+            rotX = clamp(rotX + velX * step60, -0.58, 0.68);
+            velY *= Math.pow(0.92, step60);
+            velX *= Math.pow(0.9, step60);
 
             if (!reducedMotion) {
-              group.rotation.y += dt * 0.45;
-              group.position.y = -0.04 + Math.sin(ts * 0.0018) * 0.045;
+              rotY += dt * 0.45;
+              bobY = -0.04 + Math.sin(ts * 0.0018) * 0.045;
             }
           }
 
           renderFrame();
 
-          const moving = !reducedMotion || Math.abs(velX) > 0.0004 || Math.abs(velY) > 0.0004 || isDragging;
+          const moving =
+            !reducedMotion || Math.abs(velX) > 0.0004 || Math.abs(velY) > 0.0004 || isDragging;
           if (moving) {
             rafId = requestAnimationFrame(tick);
           }
         };
 
         const kickLoop = () => {
-          if (!rafId && !disposed && inViewport && !document.hidden) {
+          if (!rafId && !disposed && inViewport && !document.hidden && !gl.isContextLost()) {
             lastTs = performance.now();
+            fpsFrames = 0;
+            fpsWindowStart = lastTs;
             rafId = requestAnimationFrame(tick);
           }
         };
 
         applyImpulse = () => {
           if (reducedMotion) {
-            group.rotation.y += 0.65;
-            group.rotation.x = 0.18;
+            rotY += 0.65;
+            rotX = 0.18;
             renderFrame();
             return;
           }
@@ -319,8 +215,8 @@
           lastY = e.clientY;
 
           const sens = 0.011;
-          group.rotation.y += dx * sens;
-          group.rotation.x = MathUtils.clamp(group.rotation.x + dy * sens, -0.58, 0.68);
+          rotY += dx * sens;
+          rotX = clamp(rotX + dy * sens, -0.58, 0.68);
           velY = dx * sens * 0.65;
           velX = dy * sens * 0.45;
           if (reducedMotion) renderFrame();
@@ -345,12 +241,20 @@
           }
         };
 
+        const onContextRestored = () => {
+          try {
+            initRenderer();
+            renderFrame();
+            webglReady = true;
+            kickLoop();
+          } catch {
+            webglReady = false;
+          }
+        };
+
         const onMotionChange = (ev: MediaQueryListEvent) => {
           reducedMotion = ev.matches;
-          const snapFlag = reducedMotion ? 0.0 : 1.0;
-          for (const mat of [fruitMat, stemMat, leafMat]) {
-            mat.uniforms.uSnapEnabled.value = snapFlag;
-          }
+          renderer?.setSnapEnabled(!reducedMotion);
           if (!reducedMotion) kickLoop();
           else renderFrame();
         };
@@ -380,6 +284,7 @@
         canvasEl.addEventListener('pointercancel', endDrag);
         canvasEl.addEventListener('dblclick', onDoubleClick);
         canvasEl.addEventListener('webglcontextlost', onContextLost);
+        canvasEl.addEventListener('webglcontextrestored', onContextRestored);
         mq.addEventListener('change', onMotionChange);
         document.addEventListener('visibilitychange', onVisibility);
 
@@ -400,19 +305,11 @@
           canvasEl?.removeEventListener('pointercancel', endDrag);
           canvasEl?.removeEventListener('dblclick', onDoubleClick);
           canvasEl?.removeEventListener('webglcontextlost', onContextLost);
+          canvasEl?.removeEventListener('webglcontextrestored', onContextRestored);
           mq.removeEventListener('change', onMotionChange);
           document.removeEventListener('visibilitychange', onVisibility);
-
-          fruitGeo.dispose();
-          stemGeo.dispose();
-          leafGeo.dispose();
-          quadGeo.dispose();
-          fruitMat.dispose();
-          stemMat.dispose();
-          leafMat.dispose();
-          blitMat.dispose();
-          target.dispose();
-          renderer.dispose();
+          renderer?.dispose();
+          renderer = null;
         };
       } catch {
         // Keep inline 16-bit pixel SVG fallback cleanly active
@@ -422,13 +319,27 @@
     return () => {
       disposed = true;
       clearTimeout(spinTimer);
-      controller.abort();
       cleanup?.();
     };
   });
 
   let numberFmt = $derived(new Intl.NumberFormat(i18n.locale));
   let resSpec = $derived(workbench.mode === '16bit' ? '148x148 · 4-STEP' : '82x82 · 2-STEP');
+  let telemetryText = $derived.by(() => {
+    if (!webglReady) {
+      return reducedMotion ? i18n.t.hero.shaderStatusReduced : i18n.t.hero.shaderStatusIdle;
+    }
+    if (sessionSpins > 0) {
+      return i18n.t.hero.telemetrySpins(
+        numberFmt.format(sessionSpins),
+        sessionSpins,
+        reducedMotion ? undefined : measuredFps
+      );
+    }
+    return reducedMotion
+      ? i18n.t.hero.telemetryStatic(triangleCount)
+      : i18n.t.hero.telemetryIdle(triangleCount, measuredFps);
+  });
 </script>
 
 <div class="apple-stage" data-mode={workbench.mode} data-theme-id={workbench.theme}>
@@ -537,7 +448,7 @@
     {/each}
   </div>
 
-  <!-- Quantization Mode & Global Spin Counter -->
+  <!-- Quantization Mode & Real Local Shader Telemetry -->
   <div class="apple-stage__bar">
     <div class="spin-cluster">
       <button
@@ -549,16 +460,10 @@
       >
         {i18n.t.hero.spinCta}
       </button>
-      <span class="apple-stage__status mono">
-        {#if spinCount !== null}
-          {i18n.t.hero.spinsCount(numberFmt.format(spinCount), spinCount)}
-        {:else}
-          {reducedMotion ? i18n.t.hero.shaderStatusReduced : i18n.t.hero.shaderStatusIdle}
-        {/if}
-      </span>
+      <span class="apple-stage__status mono">{telemetryText}</span>
     </div>
 
-    <div class="mode-toggle" role="group" aria-label="Pixel quantization mode">
+    <div class="mode-toggle" role="group" aria-label={i18n.t.hero.shaderModeGroupAria}>
       <button
         type="button"
         class="mode-toggle__btn mono"
@@ -624,14 +529,18 @@
   }
 
   .crt-btn {
-    padding: 0.18rem 0.48rem;
+    min-height: 28px;
+    padding: 0.2rem 0.55rem;
     border-radius: 4px;
     border: 1px solid var(--line);
     font-size: 0.58rem;
     letter-spacing: 0.1em;
     color: var(--ink-faint);
     cursor: pointer;
-    transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+    transition:
+      background-color 0.2s var(--ease-out),
+      color 0.2s var(--ease-out),
+      border-color 0.2s var(--ease-out);
   }
 
   .crt-btn.is-on {
@@ -649,9 +558,8 @@
 
   .apple-stage__viewport {
     position: relative;
-    width: 100%;
+    width: min(100%, clamp(240px, 42svh, 390px));
     aspect-ratio: 1 / 1;
-    max-height: clamp(240px, 42svh, 390px);
     margin-inline: auto;
     display: grid;
     place-items: center;
@@ -699,7 +607,7 @@
     z-index: 1;
     width: 68%;
     height: 68%;
-    transition: opacity 0.35s var(--ease-out), transform 0.32s var(--ease-out);
+    transition: opacity 0.3s var(--ease-out), transform 0.32s var(--ease-out);
   }
 
   .apple-stage__fallback.is-pulsing {
@@ -720,12 +628,8 @@
   .apple-stage__canvas {
     position: absolute;
     inset: 0;
-    margin: auto;
     width: 100%;
     height: 100%;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
     z-index: 2;
     opacity: 0;
     cursor: grab;
@@ -734,7 +638,7 @@
     -webkit-user-select: none;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    transition: opacity 0.45s var(--ease-out);
+    transition: opacity 0.3s var(--ease-out);
   }
 
   .apple-stage__canvas.is-live {
@@ -758,6 +662,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.32rem;
+    min-height: 32px;
     padding: 0.34rem 0.35rem;
     border-radius: 6px;
     border: 1px solid var(--line);
@@ -810,7 +715,8 @@
   }
 
   .spin-btn {
-    padding: 0.28rem 0.6rem;
+    min-height: 32px;
+    padding: 0.28rem 0.72rem;
     border-radius: 999px;
     border: 1px solid var(--line-strong);
     color: var(--ink);
@@ -852,7 +758,8 @@
   }
 
   .mode-toggle__btn {
-    padding: 0.24rem 0.58rem;
+    min-height: 28px;
+    padding: 0.24rem 0.62rem;
     border-radius: 999px;
     font-size: 0.62rem;
     letter-spacing: 0.1em;
@@ -869,6 +776,15 @@
     background: var(--acid);
     color: var(--acid-ink);
     font-weight: 600;
+  }
+
+  @media (pointer: coarse) {
+    .crt-btn,
+    .theme-chip,
+    .spin-btn,
+    .mode-toggle__btn {
+      min-height: 36px;
+    }
   }
 
   @media (max-width: 460px) {
