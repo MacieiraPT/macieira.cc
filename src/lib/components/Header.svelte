@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { SITE } from '#lib/data/site.ts';
   import { i18n, stripLangPrefix } from '#lib/i18n/index.svelte.ts';
   import { THEMES, workbench } from '#lib/state/workbench.svelte.ts';
   import Icons from './Icons.svelte';
@@ -7,8 +8,10 @@
   let cleanPath = $derived(stripLangPrefix(page.url.pathname));
   let enHref = $derived(i18n.alternatePath('en'));
   let ptHref = $derived(i18n.alternatePath('pt'));
+  let workHref = $derived(i18n.isHome ? '#work' : i18n.href('/work'));
 
   let menuOpen = $state(false);
+  let menuToggleEl: HTMLButtonElement | undefined = $state();
 
   $effect(() => {
     // Close mobile drawer automatically whenever route changes
@@ -22,9 +25,16 @@
     workbench.showToast(i18n.t.nav.themeToast(next.label));
   }
 
+  function closeMenu(restoreFocus = false) {
+    menuOpen = false;
+    if (restoreFocus) {
+      menuToggleEl?.focus();
+    }
+  }
+
   function onWindowKeyDown(e: KeyboardEvent) {
     if (e.key === 'Escape' && menuOpen) {
-      menuOpen = false;
+      closeMenu(true);
     }
   }
 </script>
@@ -39,7 +49,7 @@
     </a>
 
     <nav class="masthead__nav" aria-label={i18n.t.nav.sectionsAria}>
-      <a href={i18n.href('/work')} class:is-current={cleanPath.startsWith('/work')}>
+      <a href={workHref} class:is-current={cleanPath.startsWith('/work')}>
         <span class="idx">01</span> {i18n.t.nav.work}
       </a>
       <a href={i18n.href('/#background')}>
@@ -48,11 +58,11 @@
       <a href={i18n.href('/#github')}>
         <span class="idx">03</span> {i18n.t.nav.github}
       </a>
-      <a href={i18n.href('/cv')} class:is-current={cleanPath === '/cv'}>
-        <span class="idx">04</span> {i18n.t.nav.cv}
+      <a href="#contact">
+        <span class="idx">04</span> {i18n.t.nav.contact}
       </a>
-      <a href={i18n.href('/#contact')}>
-        <span class="idx">05</span> {i18n.t.nav.contact}
+      <a href={i18n.href('/cv')} class:is-current={cleanPath === '/cv'}>
+        <span class="idx">05</span> {i18n.t.nav.cv}
       </a>
     </nav>
 
@@ -96,7 +106,7 @@
 
       <a
         class="btn btn--ghost masthead__gh"
-        href="https://github.com/MacieiraPT"
+        href={SITE.githubUrl}
         target="_blank"
         rel="me noopener"
       >
@@ -106,6 +116,7 @@
       </a>
 
       <button
+        bind:this={menuToggleEl}
         type="button"
         class="menu-toggle"
         aria-expanded={menuOpen}
@@ -119,31 +130,37 @@
   </div>
 
   {#if menuOpen}
+    <div
+      class="mobile-backdrop"
+      aria-hidden="true"
+      onclick={() => closeMenu()}
+    ></div>
+
     <nav id="mobile-nav" class="mobile-drawer" aria-label={i18n.t.nav.sectionsAria}>
       <div class="mobile-drawer__inner wrap">
         <div class="mobile-drawer__links mono">
           <a
-            href={i18n.href('/work')}
+            href={workHref}
             class:is-current={cleanPath.startsWith('/work')}
-            onclick={() => (menuOpen = false)}
+            onclick={() => closeMenu()}
           >
             <span class="idx">01</span> {i18n.t.nav.work}
           </a>
-          <a href={i18n.href('/#background')} onclick={() => (menuOpen = false)}>
+          <a href={i18n.href('/#background')} onclick={() => closeMenu()}>
             <span class="idx">02</span> {i18n.t.nav.background}
           </a>
-          <a href={i18n.href('/#github')} onclick={() => (menuOpen = false)}>
+          <a href={i18n.href('/#github')} onclick={() => closeMenu()}>
             <span class="idx">03</span> {i18n.t.nav.github}
+          </a>
+          <a href="#contact" onclick={() => closeMenu()}>
+            <span class="idx">04</span> {i18n.t.nav.contact}
           </a>
           <a
             href={i18n.href('/cv')}
             class:is-current={cleanPath === '/cv'}
-            onclick={() => (menuOpen = false)}
+            onclick={() => closeMenu()}
           >
-            <span class="idx">04</span> {i18n.t.nav.cv}
-          </a>
-          <a href={i18n.href('/#contact')} onclick={() => (menuOpen = false)}>
-            <span class="idx">05</span> {i18n.t.nav.contact}
+            <span class="idx">05</span> {i18n.t.nav.cv}
           </a>
         </div>
 
@@ -181,6 +198,8 @@
   }
 
   .masthead__inner {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -267,8 +286,8 @@
     border-radius: 999px;
     background: var(--bg-raise);
     color: var(--ink-dim);
-    font-size: 0.64rem;
-    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
     cursor: pointer;
     transition:
       color 0.2s var(--ease-out),
@@ -328,14 +347,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 28px;
-    padding: 0.32rem 0.6rem;
+    min-height: 30px;
+    padding: 0.32rem 0.62rem;
     border-radius: 999px;
     font-family: var(--font-mono);
-    font-size: 0.66rem;
+    font-size: 0.72rem;
     font-weight: 600;
     line-height: 1;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     color: var(--ink-dim);
     cursor: pointer;
     transition: color 0.25s var(--ease-out);
@@ -350,7 +369,7 @@
   }
 
   .masthead__gh {
-    min-height: 36px;
+    min-height: 38px;
     padding: 0.45rem 0.84rem;
     font-size: 0.84rem;
   }
@@ -359,8 +378,8 @@
     display: none;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     border-radius: 999px;
     border: 1px solid var(--line-strong);
     background: var(--bg-raise);
@@ -374,8 +393,17 @@
     background: var(--hover-wash);
   }
 
+  .mobile-backdrop {
+    position: fixed;
+    inset: 65px 0 0;
+    z-index: 1;
+    background: rgb(0 0 0 / 0.45);
+  }
+
   /* Mobile drawer */
   .mobile-drawer {
+    position: relative;
+    z-index: 2;
     border-top: 1px solid var(--line);
     background: var(--bg-raise);
   }
@@ -423,13 +451,13 @@
     align-items: center;
     justify-content: center;
     gap: 0.3rem;
-    min-height: 36px;
+    min-height: 42px;
     padding: 0.35rem 0.4rem;
     border-radius: 6px;
     border: 1px solid var(--line);
     color: var(--ink-dim);
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
     cursor: pointer;
   }
 
@@ -440,7 +468,19 @@
     font-weight: 600;
   }
 
-  @media (max-width: 1060px) {
+  @media (pointer: coarse) {
+    .lang__btn {
+      min-height: 34px;
+    }
+
+    .menu-toggle,
+    .masthead__gh {
+      min-height: 42px;
+      min-width: 42px;
+    }
+  }
+
+  @media (max-width: 1080px) {
     .theme-pill__code {
       display: none;
     }
@@ -451,7 +491,8 @@
   }
 
   @media (max-width: 960px) {
-    .masthead__nav {
+    .masthead__nav,
+    .theme-pill {
       display: none;
     }
 

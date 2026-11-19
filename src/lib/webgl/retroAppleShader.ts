@@ -163,8 +163,8 @@ export const RETRO_FRAGMENT_SHADER = /* glsl */ `
       return vec3(1.000, 0.878, 0.580);
     }
     if (t < 0.45) return vec3(0.063, 0.063, 0.078);
-    if (t < 0.80) return vec3(0.240, 0.240, 0.275);
-    return vec3(0.788, 0.141, 0.118);
+    if (t < 0.80) return vec3(0.320, 0.320, 0.355);
+    return vec3(0.860, 0.852, 0.828);
   }
 
   void main() {
@@ -645,6 +645,7 @@ function linkProgram(gl: WebGLRenderingContext, vertSrc: string, fragSrc: string
   }
   gl.attachShader(program, vs);
   gl.attachShader(program, fs);
+  gl.bindAttribLocation(program, 0, 'position');
   gl.linkProgram(program);
   gl.deleteShader(vs);
   gl.deleteShader(fs);
@@ -766,7 +767,11 @@ export function createRetroAppleRenderer(
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, colorTex, 0);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuf);
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (status !== gl.FRAMEBUFFER_COMPLETE) {
+      throw new Error(`WebGL framebuffer incomplete: 0x${status.toString(16)}`);
+    }
   };
 
   allocateRenderTarget(rtSize);

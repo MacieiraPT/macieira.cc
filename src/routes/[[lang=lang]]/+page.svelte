@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { SITE } from '#lib/data/site.ts';
   import { i18n } from '#lib/i18n/index.svelte.ts';
-  import { PROJECTS } from '#lib/data/projects.ts';
+  import { PROJECTS, resolveText } from '#lib/data/projects.ts';
+  import SeoHead from '#lib/components/SeoHead.svelte';
   import RetroAppleCanvas from '#lib/components/RetroAppleCanvas.svelte';
   import ProjectVisual from '#lib/components/ProjectVisual.svelte';
   import GitHubPanel from '#lib/components/GitHubPanel.svelte';
@@ -11,19 +13,19 @@
   const TAB_ORDER: BackgroundTab[] = ['how', 'track', 'education'];
   let activeTab = $state<BackgroundTab>('how');
 
-  let canonicalUrl = $derived(i18n.lang === 'pt' ? 'https://macieira.cc/pt' : 'https://macieira.cc/');
+  let canonicalUrl = $derived(i18n.lang === 'pt' ? `${SITE.origin}/pt` : `${SITE.origin}/`);
 
   let personJsonLd = $derived(
     JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Person',
-      name: 'Rodrigo Macieira',
-      alternateName: 'MacieiraPT',
+      name: SITE.author,
+      alternateName: SITE.githubUser,
       url: canonicalUrl,
       nationality: 'PT',
       jobTitle: i18n.t.cv.roleTitle,
-      email: 'rodrigo@macieira.cc',
-      sameAs: ['https://github.com/MacieiraPT'],
+      email: SITE.email,
+      sameAs: [SITE.githubUrl],
       makesOffer: {
         '@type': 'Offer',
         itemOffered: {
@@ -37,7 +39,7 @@
         name: 'Programador/a de Informática',
         credentialCategory: 'Professional certification',
         educationalLevel: 'Level 4, Quadro Nacional de Qualificações (EQF 4)',
-        url: 'https://catalogo.snq.gov.pt/qualificacoesDetalhe/7382',
+        url: SITE.qualificationUrl,
       },
     })
   );
@@ -53,28 +55,12 @@
   }
 </script>
 
-<svelte:head>
-  <title>{i18n.t.meta.homeTitle}</title>
-  <meta name="description" content={i18n.t.meta.homeDescription} />
-  <link rel="canonical" href={canonicalUrl} />
-  <link rel="alternate" hreflang="en" href="https://macieira.cc/" />
-  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/pt" />
-  <link rel="alternate" hreflang="x-default" href="https://macieira.cc/" />
-
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content={canonicalUrl} />
-  <meta property="og:site_name" content="macieira.cc" />
-  <meta property="og:title" content={i18n.t.meta.homeTitle} />
-  <meta property="og:description" content={i18n.t.meta.homeDescription} />
-  <meta property="og:locale" content={i18n.t.meta.ogLocale} />
-  <meta property="og:locale:alternate" content={i18n.t.meta.ogLocaleAlt} />
-  <meta property="og:image" content="https://macieira.cc/assets/og.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content={i18n.t.meta.ogImageAlt} />
-  <meta name="twitter:card" content="summary_large_image" />
-  {@html `<script type="application/ld+json">${personJsonLd}</script>`}
-</svelte:head>
+<SeoHead
+  title={i18n.t.meta.homeTitle}
+  description={i18n.t.meta.homeDescription}
+  path="/"
+  jsonLd={personJsonLd}
+/>
 
 <!-- HERO -->
 <section class="hero wrap" aria-labelledby="hero-name">
@@ -103,7 +89,7 @@
           <Icons name="file-text" class="icon icon--sm" />
           <span>{i18n.t.hero.cvCta}</span>
         </a>
-        <a class="btn btn--ghost" href="mailto:rodrigo@macieira.cc">
+        <a class="btn btn--ghost" href={`mailto:${SITE.email}`}>
           <Icons name="mail" />
           <span>{i18n.t.hero.secondaryCta}</span>
         </a>
@@ -147,55 +133,58 @@
   </div>
 
   <div class="work-grid">
-    {#each PROJECTS as project (project.slug)}
-      <article class="project-card">
+    {#each PROJECTS as project, index (project.slug)}
+      {@const featured = index === 0}
+      <article class="project-card" class:project-card--featured={featured}>
         <a
           class="project-card__visual"
           href={i18n.href(`/work/${project.slug}`)}
           tabindex="-1"
           aria-hidden="true"
         >
-          <ProjectVisual slug={project.slug} compact />
+          <ProjectVisual slug={project.slug} />
         </a>
 
-        <div class="project-card__meta mono">
-          <span>{project.year} · {project.categoryLabel[i18n.lang]}</span>
-          <span>{project.license}</span>
-        </div>
+        <div class="project-card__body">
+          <div class="project-card__meta mono">
+            <span>{project.year} · {project.categoryLabel[i18n.lang]}</span>
+            <span>{project.license}</span>
+          </div>
 
-        <h3 class="project-card__title">
-          <a href={i18n.href(`/work/${project.slug}`)}>{project.title}</a>
-        </h3>
+          <h3 class="project-card__title">
+            <a href={i18n.href(`/work/${project.slug}`)}>{project.title}</a>
+          </h3>
 
-        <p class="project-card__summary">{project.summary[i18n.lang]}</p>
+          <p class="project-card__summary">{project.summary[i18n.lang]}</p>
 
-        <dl class="project-card__kpis">
-          {#each project.metrics.slice(0, 2) as metric}
-            <div>
-              <dt class="mono">{metric.value}</dt>
-              <dd>{metric.label[i18n.lang]}</dd>
-            </div>
-          {/each}
-        </dl>
+          <dl class="project-card__kpis">
+            {#each project.metrics.slice(0, featured ? 3 : 2) as metric}
+              <div>
+                <dt class="mono">{resolveText(metric.value, i18n.lang)}</dt>
+                <dd>{metric.label[i18n.lang]}</dd>
+              </div>
+            {/each}
+          </dl>
 
-        <ul class="project-card__tags" aria-label={i18n.t.work.techStackAria}>
-          {#each project.stack.slice(0, 4) as tech}
-            <li class="mono">{tech}</li>
-          {/each}
-        </ul>
+          <ul class="project-card__tags" aria-label={i18n.t.work.techStackAria}>
+            {#each project.stack.slice(0, featured ? 5 : 4) as tech}
+              <li class="mono">{tech}</li>
+            {/each}
+          </ul>
 
-        <div class="project-card__links">
-          <a
-            class="project-link project-link--primary mono"
-            href={i18n.href(`/work/${project.slug}`)}
-          >
-            <span>{i18n.t.work.caseStudyLink}</span>
-            <Icons name="arrow-up-right" class="icon icon--sm" />
-          </a>
-          <a class="project-link mono" href={project.repoUrl} target="_blank" rel="noopener">
-            <Icons name="github" size={14} />
-            <span>{i18n.t.work.sourceLink}</span>
-          </a>
+          <div class="project-card__links">
+            <a
+              class="project-link project-link--primary mono"
+              href={i18n.href(`/work/${project.slug}`)}
+            >
+              <span>{i18n.t.work.caseStudyLink}</span>
+              <Icons name="arrow-up-right" class="icon icon--sm" />
+            </a>
+            <a class="project-link mono" href={project.repoUrl} target="_blank" rel="noopener">
+              <Icons name="github" size={14} />
+              <span>{i18n.t.work.sourceLink}</span>
+            </a>
+          </div>
         </div>
       </article>
     {/each}
@@ -324,7 +313,7 @@
       <p class="surface-card__body">{i18n.t.background.qualificationBody}</p>
       <a
         class="btn btn--ghost surface-card__cta"
-        href="https://catalogo.snq.gov.pt/qualificacoesDetalhe/7382"
+        href={SITE.qualificationUrl}
         target="_blank"
         rel="noopener"
       >
@@ -345,7 +334,7 @@
       <p class="prose">{i18n.t.github.prose}</p>
       <a
         class="btn btn--solid"
-        href="https://github.com/MacieiraPT"
+        href={SITE.githubUrl}
         target="_blank"
         rel="me noopener"
       >
@@ -403,12 +392,12 @@
     display: inline-flex;
     align-items: center;
     gap: 0.42rem;
-    padding: 0.25rem 0.62rem;
+    padding: 0.28rem 0.68rem;
     border-radius: 999px;
     border: 1px solid color-mix(in oklab, var(--acid) 45%, transparent);
     background: color-mix(in oklab, var(--acid) 10%, transparent);
     color: var(--ink);
-    font-size: 0.64rem;
+    font-size: 0.7rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -463,8 +452,8 @@
   .hero-proof dt {
     color: var(--ink-faint);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 0.64rem;
+    letter-spacing: 0.12em;
+    font-size: 0.7rem;
     margin-bottom: 0.35rem;
   }
 
@@ -501,15 +490,15 @@
 
   .work-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(1rem, 2vw, 1.5rem);
   }
 
   .project-card {
     display: flex;
     flex-direction: column;
-    gap: 0.85rem;
-    padding: clamp(1rem, 1.8vw, 1.35rem);
+    gap: 1rem;
+    padding: clamp(1.1rem, 2vw, 1.55rem);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: var(--bg-raise);
@@ -519,6 +508,22 @@
   .project-card:hover {
     border-color: var(--line-strong);
     transform: translateY(-2px);
+  }
+
+  .project-card--featured {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    border-color: var(--line-strong);
+  }
+
+  .project-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    flex: 1;
   }
 
   .project-card__visual {
@@ -541,6 +546,10 @@
     line-height: 1.15;
   }
 
+  .project-card--featured .project-card__title {
+    font-size: clamp(1.35rem, 2.1vw, 1.85rem);
+  }
+
   .project-card__title a:hover {
     color: var(--acid);
   }
@@ -559,15 +568,19 @@
     border-block: 1px solid var(--line);
   }
 
+  .project-card--featured .project-card__kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .project-card__kpis dt {
     color: var(--acid);
     font-weight: 600;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
   }
 
   .project-card__kpis dd {
     color: var(--ink-faint);
-    font-size: 0.76rem;
+    font-size: 0.78rem;
     line-height: 1.35;
     margin-top: 0.15rem;
   }
@@ -580,11 +593,11 @@
   }
 
   .project-card__tags li {
-    padding: 0.22rem 0.55rem;
+    padding: 0.24rem 0.58rem;
     border-radius: 999px;
     border: 1px solid var(--line);
     color: var(--ink-dim);
-    font-size: 0.64rem;
+    font-size: 0.7rem;
   }
 
   .project-card__links {
@@ -638,10 +651,10 @@
   }
 
   .bg-tab {
-    padding: 0.42rem 0.9rem;
+    padding: 0.44rem 0.95rem;
     border-radius: 999px;
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-dim);
     cursor: pointer;
@@ -684,8 +697,8 @@
   .surface-card__label {
     color: var(--acid);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    font-size: 0.7rem;
   }
 
   .surface-card__title {
@@ -707,7 +720,7 @@
 
   .surface-card__footnote {
     color: var(--ink-faint);
-    font-size: 0.68rem;
+    font-size: 0.72rem;
   }
 
   .ethos-grid {
@@ -728,7 +741,7 @@
 
   .ethos-item__label {
     color: var(--ink);
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -756,7 +769,7 @@
 
   .timeline__year {
     color: var(--acid);
-    font-size: 0.72rem;
+    font-size: 0.74rem;
   }
 
   .timeline__body {
@@ -782,7 +795,7 @@
 
   .timeline__scope {
     color: var(--ink-faint);
-    font-size: 0.66rem;
+    font-size: 0.72rem;
   }
 
   .timeline__desc {
@@ -819,7 +832,14 @@
       row-gap: 1.5rem;
     }
 
-    .work-grid,
+    .work-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .project-card--featured {
+      grid-template-columns: 1fr;
+    }
+
     .capability-grid,
     .ethos-grid {
       grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
@@ -832,7 +852,8 @@
 
   @media (max-width: 700px) {
     .hero-proof,
-    .project-card__kpis {
+    .project-card__kpis,
+    .project-card--featured .project-card__kpis {
       grid-template-columns: 1fr;
     }
 

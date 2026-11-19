@@ -30,6 +30,7 @@ export const pt = {
     menuCloseAria: 'Fechar menu de navegação',
     themeCycleAria: (label: string) => `Tema: ${label}. Clica para alternar paleta`,
     themeToast: (label: string) => `Tema: ${label}`,
+    modeToast: (mode: string) => `Modo shader: ${mode}`,
   },
   hero: {
     regionLine: 'Portugal · Full-Stack & Web Interativa',
@@ -37,7 +38,7 @@ export const pt = {
     name: 'Rodrigo Macieira',
     ledeLead: 'Software desktop em TypeScript/Electron e sistemas web em C#/.NET com PostgreSQL.',
     ledeSub:
-      'Combinado com WebGL Bayer sem dependências na página inicial, construído sem peso desnecessário.',
+      'Focado em fronteiras de sistema limpas, orçamentos rigorosos de desempenho e gráficos interativos na web.',
     primaryCta: 'Ver projetos escolhidos',
     secondaryCta: 'Enviar email',
     cvCta: 'Currículo / CV',
@@ -59,7 +60,8 @@ export const pt = {
     crtToggleAria: 'Alternar camada subtil de scanlines CRT',
     spinCta: 'RODAR',
     spinAria: 'Aplicar impulso rotacional à maçã 3D',
-    telemetryIdle: (tris: number, fps: number) => `${tris} TRIS · ${fps} FPS`,
+    telemetryIdle: (tris: number, fps?: number) =>
+      fps ? `${tris} TRIS · ${fps} FPS` : `${tris} TRIS`,
     telemetryStatic: (tris: number) => `${tris} TRIS · ESTÁTICO`,
     telemetrySpins: (n: string, raw: number, fps?: number) =>
       fps
@@ -214,6 +216,7 @@ export const pt = {
     activityQuietSince: (days: number, ago: string) =>
       `último push ${ago} · sem eventos nos últimos ${days} dias`,
     activityQuiet: (days: number) => `sem atividade · últimos ${days} dias`,
+    activitySnapshotUnavailable: 'Atividade dos últimos 14 dias indisponível em modo arquivo.',
     dayTooltip: (day: string, count: number) =>
       `${day}: ${count} evento${count === 1 ? '' : 's'} público${count === 1 ? '' : 's'}`,
     activityAria: (count: number, days: number) =>
@@ -234,7 +237,7 @@ export const pt = {
       'Feito com SvelteKit, TypeScript e WebGL sem dependências na Cloudflare Workers.',
     colophonSource: 'Código no GitHub',
     hostedOn: 'Cloudflare Workers',
-    shortcutsHint: 'Teclas: [1-5] secções · [P] tema · [B] bits · [R] rodar',
+    shortcutsHint: 'Teclas: [1-5] nav · [P] tema · [B] bits · [R] rodar',
     localTimePrefix: 'Hora em Lisboa',
     backToTop: 'Voltar ao topo',
     copiedToast: (val: string) => `${val} copiado`,
@@ -281,7 +284,7 @@ export const pt = {
   errorPage: {
     code: 'Erro',
     title: 'Nada neste ramo.',
-    body: 'Esta página não está aqui. Pode ter mudado de sítio durante a migração para SvelteKit ou o endereço não existe.',
+    body: 'Esta página não está aqui. A ligação pode estar desatualizada ou o endereço não existe.',
     homeCta: 'Voltar ao início',
     workCta: 'Ver estudos de caso',
   },

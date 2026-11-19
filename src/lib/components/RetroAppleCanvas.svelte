@@ -9,7 +9,7 @@
   let reducedMotion = $state(false);
   let sessionSpins = $state(0);
   let triangleCount = $state(678);
-  let measuredFps = $state(60);
+  let measuredFps = $state<number | null>(null);
   let spinningPulse = $state(false);
 
   let hostEl: HTMLDivElement | undefined = $state();
@@ -99,8 +99,9 @@
         const syncCanvasSize = () => {
           if (!hostEl || !renderer) return;
           const rect = hostEl.getBoundingClientRect();
-          const side = Math.max(200, Math.round(Math.min(rect.width, rect.height || rect.width)));
-          renderer.resize(side);
+          const cssSide = Math.max(200, Math.round(Math.min(rect.width, rect.height || rect.width)));
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          renderer.resize(Math.round(cssSide * dpr));
         };
 
         let rotX = 0.18;
@@ -228,6 +229,14 @@
           activePointerId = null;
         };
 
+        const cancelDrag = (e: PointerEvent) => {
+          if (e.pointerId !== activePointerId) return;
+          velX = 0;
+          velY = 0;
+          isDragging = false;
+          activePointerId = null;
+        };
+
         const onDoubleClick = () => {
           handleInteractiveSpin();
         };
@@ -281,7 +290,7 @@
         canvasEl.addEventListener('pointerdown', onPointerDown);
         canvasEl.addEventListener('pointermove', onPointerMove);
         canvasEl.addEventListener('pointerup', endDrag);
-        canvasEl.addEventListener('pointercancel', endDrag);
+        canvasEl.addEventListener('pointercancel', cancelDrag);
         canvasEl.addEventListener('dblclick', onDoubleClick);
         canvasEl.addEventListener('webglcontextlost', onContextLost);
         canvasEl.addEventListener('webglcontextrestored', onContextRestored);
@@ -302,7 +311,7 @@
           canvasEl?.removeEventListener('pointerdown', onPointerDown);
           canvasEl?.removeEventListener('pointermove', onPointerMove);
           canvasEl?.removeEventListener('pointerup', endDrag);
-          canvasEl?.removeEventListener('pointercancel', endDrag);
+          canvasEl?.removeEventListener('pointercancel', cancelDrag);
           canvasEl?.removeEventListener('dblclick', onDoubleClick);
           canvasEl?.removeEventListener('webglcontextlost', onContextLost);
           canvasEl?.removeEventListener('webglcontextrestored', onContextRestored);
@@ -329,16 +338,13 @@
     if (!webglReady) {
       return reducedMotion ? i18n.t.hero.shaderStatusReduced : i18n.t.hero.shaderStatusIdle;
     }
+    const fps = reducedMotion ? undefined : (measuredFps ?? undefined);
     if (sessionSpins > 0) {
-      return i18n.t.hero.telemetrySpins(
-        numberFmt.format(sessionSpins),
-        sessionSpins,
-        reducedMotion ? undefined : measuredFps
-      );
+      return i18n.t.hero.telemetrySpins(numberFmt.format(sessionSpins), sessionSpins, fps);
     }
     return reducedMotion
       ? i18n.t.hero.telemetryStatic(triangleCount)
-      : i18n.t.hero.telemetryIdle(triangleCount, measuredFps);
+      : i18n.t.hero.telemetryIdle(triangleCount, fps);
   });
 </script>
 
@@ -505,8 +511,8 @@
     padding-bottom: 0.65rem;
     border-bottom: 1px solid var(--line);
     color: var(--ink-dim);
-    font-size: 0.64rem;
-    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
   }
 
   .specimen-head__id {
@@ -529,12 +535,12 @@
   }
 
   .crt-btn {
-    min-height: 28px;
-    padding: 0.2rem 0.55rem;
+    min-height: 30px;
+    padding: 0.25rem 0.6rem;
     border-radius: 4px;
     border: 1px solid var(--line);
-    font-size: 0.58rem;
-    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
     color: var(--ink-faint);
     cursor: pointer;
     transition:
@@ -576,6 +582,15 @@
       circle,
       color-mix(in oklab, var(--apple-deep) 28%, transparent) 0%,
       color-mix(in oklab, var(--acid) 9%, transparent) 46%,
+      transparent 72%
+    );
+  }
+
+  :global(html[data-theme='mac1bit']) .apple-stage__spotlight {
+    background: radial-gradient(
+      circle,
+      rgb(16 16 20 / 0.07) 0%,
+      rgb(16 16 20 / 0.025) 48%,
       transparent 72%
     );
   }
@@ -661,14 +676,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.32rem;
-    min-height: 32px;
-    padding: 0.34rem 0.35rem;
+    gap: 0.3rem;
+    min-height: 34px;
+    padding: 0.35rem 0.3rem;
     border-radius: 6px;
     border: 1px solid var(--line);
     color: var(--ink-dim);
-    font-size: 0.58rem;
-    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
     cursor: pointer;
     transition:
       background-color 0.2s var(--ease-out),
@@ -715,13 +731,13 @@
   }
 
   .spin-btn {
-    min-height: 32px;
-    padding: 0.28rem 0.72rem;
+    min-height: 34px;
+    padding: 0.3rem 0.76rem;
     border-radius: 999px;
     border: 1px solid var(--line-strong);
     color: var(--ink);
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
     font-weight: 600;
     cursor: pointer;
     transition:
@@ -744,8 +760,8 @@
   .apple-stage__status {
     color: var(--ink-faint);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    font-size: 0.72rem;
     font-variant-numeric: tabular-nums;
   }
 
@@ -758,11 +774,11 @@
   }
 
   .mode-toggle__btn {
-    min-height: 28px;
-    padding: 0.24rem 0.62rem;
+    min-height: 30px;
+    padding: 0.26rem 0.64rem;
     border-radius: 999px;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
     color: var(--ink-dim);
     cursor: pointer;
     transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
@@ -783,11 +799,11 @@
     .theme-chip,
     .spin-btn,
     .mode-toggle__btn {
-      min-height: 36px;
+      min-height: 42px;
     }
   }
 
-  @media (max-width: 460px) {
+  @media (max-width: 520px) {
     .theme-bar {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }

@@ -105,6 +105,10 @@ main:focus-visible {
   opacity: 0.7;
 }
 
+html[data-theme='mac1bit'] .atmosphere__glow {
+  opacity: 0;
+}
+
 .atmosphere__grain {
   position: absolute;
   inset: 0;

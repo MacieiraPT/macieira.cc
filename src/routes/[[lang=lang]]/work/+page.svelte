@@ -1,6 +1,7 @@
 <script lang="ts">
   import { i18n } from '#lib/i18n/index.svelte.ts';
-  import { PROJECTS, type ProjectCategory } from '#lib/data/projects.ts';
+  import { PROJECTS, resolveText, type ProjectCategory } from '#lib/data/projects.ts';
+  import SeoHead from '#lib/components/SeoHead.svelte';
   import ProjectVisual from '#lib/components/ProjectVisual.svelte';
   import Icons from '#lib/components/Icons.svelte';
 
@@ -14,33 +15,13 @@
   let filteredProjects = $derived(
     activeFilter === 'all' ? PROJECTS : PROJECTS.filter((p) => p.category === activeFilter)
   );
-
-  let canonicalUrl = $derived(
-    i18n.lang === 'pt' ? 'https://macieira.cc/pt/work' : 'https://macieira.cc/work'
-  );
 </script>
 
-<svelte:head>
-  <title>{i18n.t.meta.workTitle}</title>
-  <meta name="description" content={i18n.t.meta.workDescription} />
-  <link rel="canonical" href={canonicalUrl} />
-  <link rel="alternate" hreflang="en" href="https://macieira.cc/work" />
-  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/pt/work" />
-  <link rel="alternate" hreflang="x-default" href="https://macieira.cc/work" />
-
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content={canonicalUrl} />
-  <meta property="og:site_name" content="macieira.cc" />
-  <meta property="og:title" content={i18n.t.meta.workTitle} />
-  <meta property="og:description" content={i18n.t.meta.workDescription} />
-  <meta property="og:locale" content={i18n.t.meta.ogLocale} />
-  <meta property="og:locale:alternate" content={i18n.t.meta.ogLocaleAlt} />
-  <meta property="og:image" content="https://macieira.cc/assets/og.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content={i18n.t.meta.ogImageAlt} />
-  <meta name="twitter:card" content="summary_large_image" />
-</svelte:head>
+<SeoHead
+  title={i18n.t.meta.workTitle}
+  description={i18n.t.meta.workDescription}
+  path="/work"
+/>
 
 <section class="archive wrap">
   <header class="archive__head">
@@ -107,7 +88,7 @@
           <dl class="archive-card__metrics">
             {#each project.metrics.slice(0, 3) as metric}
               <div>
-                <dt class="mono">{metric.value}</dt>
+                <dt class="mono">{resolveText(metric.value, i18n.lang)}</dt>
                 <dd>{metric.label[i18n.lang]}</dd>
               </div>
             {/each}
@@ -168,7 +149,8 @@
   }
 
   .filter-btn {
-    padding: 0.48rem 0.9rem;
+    min-height: 36px;
+    padding: 0.48rem 0.95rem;
     border-radius: 999px;
     border: 1px solid var(--line-strong);
     color: var(--ink-dim);
@@ -255,7 +237,7 @@
   .archive-card__metrics dt {
     color: var(--acid);
     font-weight: 600;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
   }
 
   .archive-card__metrics dd {
@@ -271,11 +253,11 @@
   }
 
   .archive-card__tags li {
-    padding: 0.22rem 0.55rem;
+    padding: 0.24rem 0.58rem;
     border-radius: 999px;
     border: 1px solid var(--line);
     color: var(--ink-dim);
-    font-size: 0.64rem;
+    font-size: 0.7rem;
   }
 
   .archive-card__actions {

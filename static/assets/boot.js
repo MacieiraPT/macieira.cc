@@ -64,31 +64,46 @@
       return;
     }
 
-    // Auto-route bare root / to /pt if user saved PT or has a Portuguese browser locale (skip crawlers)
+    // Auto-route bare root / to /pt if user saved PT or prefers Portuguese over English (skip crawlers & same-origin nav)
     if (path === '/' && !/bot|crawl|spider|slurp|facebookexternalhit|linkedinbot/i.test(navigator.userAgent || '')) {
-      var savedLang = null;
+      var fromSameOrigin = false;
       try {
-        savedLang = window.localStorage.getItem('lang:v2');
+        if (document.referrer) {
+          fromSameOrigin = new URL(document.referrer).origin === loc.origin;
+        }
       } catch (e) {
-        savedLang = null;
+        fromSameOrigin = false;
       }
 
-      var wantsPt = savedLang === 'pt';
-      if (!savedLang) {
-        var langs =
-          navigator.languages && navigator.languages.length
-            ? navigator.languages
-            : [navigator.language || ''];
-        for (var i = 0; i < langs.length; i++) {
-          if (/^pt\b/i.test(langs[i])) {
-            wantsPt = true;
-            break;
+      if (!fromSameOrigin) {
+        var savedLang = null;
+        try {
+          savedLang = window.localStorage.getItem('lang:v2');
+        } catch (e) {
+          savedLang = null;
+        }
+
+        var wantsPt = savedLang === 'pt';
+        if (!savedLang) {
+          var langs =
+            navigator.languages && navigator.languages.length
+              ? navigator.languages
+              : [navigator.language || ''];
+          for (var i = 0; i < langs.length; i++) {
+            if (/^pt\b/i.test(langs[i])) {
+              wantsPt = true;
+              break;
+            }
+            if (/^en\b/i.test(langs[i])) {
+              wantsPt = false;
+              break;
+            }
           }
         }
-      }
 
-      if (wantsPt) {
-        loc.replace('/pt' + loc.search + loc.hash);
+        if (wantsPt) {
+          loc.replace('/pt' + loc.search + loc.hash);
+        }
       }
     }
   } catch (e) {

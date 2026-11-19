@@ -1,10 +1,11 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { PROJECTS } from '#lib/data/projects.ts';
+import { SITE } from '#lib/data/site.ts';
 
 export const prerender = true;
 
-const ORIGIN = 'https://macieira.cc';
-const LASTMOD = '2026-11-19';
+const ORIGIN = SITE.origin;
+const LASTMOD = new Date().toISOString().slice(0, 10);
 
 const BASE_PATHS = ['/', '/work', '/cv', ...PROJECTS.map((p) => `/work/${p.slug}`)];
 

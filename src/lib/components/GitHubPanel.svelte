@@ -149,6 +149,9 @@
   let latestPushAt = $derived(latestPush?.at ?? ownRepos[0]?.pushed_at ?? null);
   let latestPushDisplay = $derived(latestPushAt ? timeAgo(latestPushAt, true) : '—');
 
+  let isSnapshotNoEvents = $derived(payload.source === 'snapshot' && payload.events.length === 0);
+  let hoveredBarTooltip = $state<string | null>(null);
+
   let activityBuckets = $derived.by(() => {
     const counts = new Array(ACTIVITY_DAYS).fill(0);
     const today = new Date();
@@ -160,7 +163,9 @@
       const diff = Math.round((today.getTime() - evDay.getTime()) / 86_400_000);
       if (diff >= 0 && diff < ACTIVITY_DAYS) {
         counts[ACTIVITY_DAYS - 1 - diff] +=
-          event.type === 'PushEvent' ? Math.max(1, event.payload?.commits?.length ?? 1) : 1;
+          event.type === 'PushEvent'
+            ? Math.max(1, event.payload?.size ?? event.payload?.commits?.length ?? 1)
+            : 1;
       }
     }
 
@@ -199,6 +204,8 @@
   });
 
   let activityNote = $derived.by(() => {
+    if (hoveredBarTooltip) return hoveredBarTooltip;
+    if (isSnapshotNoEvents) return i18n.t.github.snapshotBadge(snapshotFormatted);
     if (activityBuckets.total > 0) {
       return i18n.t.github.activityCount(activityBuckets.total, ACTIVITY_DAYS);
     }
@@ -310,20 +317,30 @@
       <span class="mono gh__dim">{activityNote}</span>
     </div>
 
-    <div
-      class="spark"
-      role="img"
-      aria-label={i18n.t.github.activityAria(activityBuckets.total, ACTIVITY_DAYS)}
-    >
-      {#each activityBuckets.bars as bar}
-        <span
-          class="spark__bar"
-          class:is-empty={bar.value === 0}
-          style:height="{bar.heightPct}%"
-          title={bar.tooltip}
-        ></span>
-      {/each}
-    </div>
+    {#if isSnapshotNoEvents}
+      <p class="gh__activity-fallback mono">{i18n.t.github.activitySnapshotUnavailable}</p>
+    {:else}
+      <div
+        class="spark"
+        role="img"
+        aria-label={i18n.t.github.activityAria(activityBuckets.total, ACTIVITY_DAYS)}
+        onpointermove={(e) => {
+          const tip = (e.target as HTMLElement | null)?.dataset?.tooltip;
+          if (tip) hoveredBarTooltip = tip;
+        }}
+        onpointerleave={() => (hoveredBarTooltip = null)}
+      >
+        {#each activityBuckets.bars as bar}
+          <span
+            class="spark__bar"
+            class:is-empty={bar.value === 0}
+            style:height="{bar.heightPct}%"
+            title={bar.tooltip}
+            data-tooltip={bar.tooltip}
+          ></span>
+        {/each}
+      </div>
+    {/if}
   </div>
 
   <div class="gh__repos">
@@ -465,8 +482,8 @@
   .gh__stats dt {
     color: var(--ink-faint);
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    font-size: 0.7rem;
     margin-bottom: 0.4rem;
     white-space: nowrap;
     overflow: hidden;
@@ -500,7 +517,7 @@
 
   .gh__push {
     color: var(--ink-faint);
-    font-size: 0.66rem;
+    font-size: 0.72rem;
     max-width: 44ch;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -530,7 +547,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem 1.1rem;
-    font-size: 0.66rem;
+    font-size: 0.72rem;
     color: var(--ink-dim);
   }
 
@@ -553,6 +570,15 @@
     color: var(--ink-faint);
   }
 
+  .gh__activity-fallback {
+    padding: 0.65rem 0.85rem;
+    border-radius: 6px;
+    border: 1px dashed var(--line-strong);
+    background: var(--bg);
+    color: var(--ink-dim);
+    font-size: 0.72rem;
+  }
+
   .spark {
     display: flex;
     align-items: flex-end;
@@ -565,7 +591,11 @@
     min-height: 3px;
     border-radius: 2px;
     background: var(--acid);
-    transition: height 0.5s var(--ease-out);
+    transition: height 0.5s var(--ease-out), opacity 0.15s var(--ease-out);
+  }
+
+  .spark__bar:hover {
+    opacity: 0.82;
   }
 
   .spark__bar.is-empty {

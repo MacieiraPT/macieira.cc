@@ -21,8 +21,10 @@
       '1': 'work',
       '2': 'background',
       '3': 'github',
-      '5': 'contact',
     };
+
+    const scrollBehavior = (): ScrollBehavior =>
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
     const isInteractiveFocus = (target: HTMLElement | null): boolean => {
       if (!target) return false;
@@ -48,6 +50,15 @@
 
       if (key === '4') {
         e.preventDefault();
+        document.getElementById('contact')?.scrollIntoView({
+          behavior: scrollBehavior(),
+          block: 'start',
+        });
+        return;
+      }
+
+      if (key === '5') {
+        e.preventDefault();
         goto(i18n.href('/cv'));
         return;
       }
@@ -56,7 +67,12 @@
         e.preventDefault();
         const id = SECTION_MAP[key];
         if (i18n.isHome) {
-          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById(id)?.scrollIntoView({
+            behavior: scrollBehavior(),
+            block: 'start',
+          });
+        } else if (key === '1') {
+          goto(i18n.href('/work'));
         } else {
           goto(i18n.href(`/#${id}`));
         }
@@ -67,7 +83,9 @@
         const next = workbench.cycleTheme();
         workbench.showToast(i18n.t.nav.themeToast(next.label));
       } else if (key === 'b' && i18n.isHome) {
-        workbench.toggleMode();
+        const nextMode = workbench.toggleMode();
+        const label = nextMode === '16bit' ? i18n.t.hero.shaderMode16 : i18n.t.hero.shaderMode8;
+        workbench.showToast(i18n.t.nav.modeToast(label));
       } else if (key === 'r' && i18n.isHome) {
         workbench.triggerSpin();
       }
