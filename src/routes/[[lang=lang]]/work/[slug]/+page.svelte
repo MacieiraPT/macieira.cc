@@ -1,38 +1,21 @@
 <script lang="ts">
+  import { resolveText } from '#lib/data/projects.ts';
   import { i18n } from '#lib/i18n/index.svelte.ts';
+  import SeoHead from '#lib/components/SeoHead.svelte';
   import ProjectVisual from '#lib/components/ProjectVisual.svelte';
   import Icons from '#lib/components/Icons.svelte';
 
   let { data } = $props();
   let project = $derived(data.project);
   let nextProject = $derived(data.nextProject);
-
-  let enUrl = $derived(`https://macieira.cc/work/${project.slug}`);
-  let ptUrl = $derived(`https://macieira.cc/pt/work/${project.slug}`);
-  let canonicalUrl = $derived(i18n.lang === 'pt' ? ptUrl : enUrl);
 </script>
 
-<svelte:head>
-  <title>{project.seoTitle[i18n.lang]}</title>
-  <meta name="description" content={project.seoDescription[i18n.lang]} />
-  <link rel="canonical" href={canonicalUrl} />
-  <link rel="alternate" hreflang="en" href={enUrl} />
-  <link rel="alternate" hreflang="pt-PT" href={ptUrl} />
-  <link rel="alternate" hreflang="x-default" href={enUrl} />
-
-  <meta property="og:type" content="article" />
-  <meta property="og:url" content={canonicalUrl} />
-  <meta property="og:site_name" content="macieira.cc" />
-  <meta property="og:title" content={project.seoTitle[i18n.lang]} />
-  <meta property="og:description" content={project.seoDescription[i18n.lang]} />
-  <meta property="og:locale" content={i18n.t.meta.ogLocale} />
-  <meta property="og:locale:alternate" content={i18n.t.meta.ogLocaleAlt} />
-  <meta property="og:image" content="https://macieira.cc/assets/og.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content={i18n.t.meta.ogImageAlt} />
-  <meta name="twitter:card" content="summary_large_image" />
-</svelte:head>
+<SeoHead
+  title={project.seoTitle[i18n.lang]}
+  description={project.seoDescription[i18n.lang]}
+  path={`/work/${project.slug}`}
+  ogType="article"
+/>
 
 <article class="case-study wrap">
   <nav class="case-study__crumb" aria-label={i18n.t.work.breadcrumbAria}>
@@ -55,7 +38,7 @@
           <span>{project.repoName}</span>
           <Icons name="arrow-up-right" class="icon icon--sm" />
         </a>
-        <a class="btn btn--ghost" href={i18n.href('/#contact')}>
+        <a class="btn btn--ghost" href="#contact">
           <Icons name="mail" />
           <span>{i18n.t.hero.secondaryCta}</span>
         </a>
@@ -93,7 +76,7 @@
   <section class="metrics-band" aria-label={i18n.t.work.metricsAria}>
     {#each project.metrics as metric}
       <div class="metric-tile">
-        <p class="metric-tile__val">{metric.value}</p>
+        <p class="metric-tile__val">{resolveText(metric.value, i18n.lang)}</p>
         <p class="metric-tile__label">{metric.label[i18n.lang]}</p>
       </div>
     {/each}
@@ -223,8 +206,8 @@
   .meta-strip dt {
     color: var(--ink-faint);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    font-size: 0.7rem;
     margin-bottom: 0.35rem;
   }
 

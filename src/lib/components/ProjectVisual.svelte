@@ -1,13 +1,15 @@
 <script lang="ts">
+  import { i18n } from '#lib/i18n/index.svelte.ts';
+
   interface Props {
     slug: 'emuhub' | 'sgeep' | 'finsight';
-    compact?: boolean;
   }
 
-  let { slug, compact = false }: Props = $props();
+  let { slug }: Props = $props();
+  let isPt = $derived(i18n.lang === 'pt');
 </script>
 
-<div class="schematic" class:is-compact={compact} aria-hidden="true">
+<div class="schematic" aria-hidden="true">
   {#if slug === 'emuhub'}
     <svg viewBox="0 0 420 180" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="1" y="1" width="418" height="178" rx="8" fill="var(--bg)" stroke="var(--line)" />
@@ -18,7 +20,7 @@
       <rect x="26" y="11" width="6" height="6" fill="var(--bark)" />
       <rect x="38" y="11" width="6" height="6" fill="var(--acid)" />
       <text x="58" y="18" fill="var(--ink-faint)" class="svg-mono" font-size="9.5" letter-spacing="1">
-        EMUHUB :: 55 CONSOLES · ELECTRON IPC
+        {isPt ? 'EMUHUB :: 55 CONSOLAS · IPC ELECTRON' : 'EMUHUB :: 55 CONSOLES · ELECTRON IPC'}
       </text>
 
       <!-- Three-process isolation pipeline -->
@@ -48,7 +50,7 @@
       <rect x="144" y="107" width="34" height="10" rx="2" fill="var(--line)" />
       <rect x="184" y="107" width="34" height="10" rx="2" fill="var(--line)" />
       <text x="232" y="115" fill="var(--ink-faint)" class="svg-mono" font-size="8.8">
-        +50 PLAYABLE CONSOLES
+        {isPt ? '+50 CONSOLAS JOGÁVEIS' : '+50 PLAYABLE CONSOLES'}
       </text>
 
       <rect x="16" y="135" width="232" height="28" rx="4" fill="var(--bg-elev)" stroke="var(--line)" />
@@ -58,7 +60,7 @@
 
       <rect x="256" y="135" width="148" height="28" rx="4" fill="var(--bg-elev)" stroke="var(--line)" />
       <text x="266" y="153" fill="var(--acid)" class="svg-mono" font-size="8.8" font-weight="600">
-        BOOT: 0.7–0.9 s
+        {isPt ? 'ARRANQUE: 0.7–0.9 s' : 'BOOT: 0.7–0.9 s'}
       </text>
     </svg>
   {:else if slug === 'sgeep'}
@@ -66,7 +68,7 @@
       <rect x="1" y="1" width="418" height="178" rx="8" fill="var(--bg)" stroke="var(--line)" />
       <line x1="1" y1="28" x2="419" y2="28" stroke="var(--line)" />
       <text x="16" y="18" fill="var(--ink-faint)" class="svg-mono" font-size="9.5" letter-spacing="1">
-        SGEEP.WEB :: CLEAN ARCHITECTURE (.NET 8)
+        {isPt ? 'SGEEP.WEB :: ARQUITETURA LIMPA (.NET 8)' : 'SGEEP.WEB :: CLEAN ARCHITECTURE (.NET 8)'}
       </text>
 
       <!-- Concentric architecture modules -->
@@ -76,24 +78,40 @@
       <text x="38" y="86" fill="var(--ink-dim)" class="svg-mono" font-size="8.8">Infrastructure · PgSQL</text>
       <rect x="40" y="96" width="138" height="44" rx="4" fill="var(--bg)" stroke="var(--acid)" stroke-opacity="0.7" />
       <text x="50" y="115" fill="var(--acid)" class="svg-mono" font-size="9.5" font-weight="600">SGEEP.Core</text>
-      <text x="50" y="130" fill="var(--ink-dim)" class="svg-mono" font-size="8.2">Pure Entities &amp; Enums</text>
+      <text x="50" y="130" fill="var(--ink-dim)" class="svg-mono" font-size="8.2">
+        {isPt ? 'Entidades & Enums' : 'Pure Entities & Enums'}
+      </text>
 
       <!-- Right column: 4 RBAC Scopes & Guards -->
       <rect x="214" y="42" width="90" height="37" rx="4" fill="var(--bg-elev)" stroke="var(--line-strong)" />
       <text x="223" y="58" fill="var(--ink)" class="svg-mono" font-size="9" font-weight="600">ADMIN</text>
-      <text x="223" y="71" fill="var(--ink-faint)" class="svg-mono" font-size="8.2">Full audit</text>
+      <text x="223" y="71" fill="var(--ink-faint)" class="svg-mono" font-size="8.2">
+        {isPt ? 'Auditoria' : 'Full audit'}
+      </text>
 
       <rect x="314" y="42" width="90" height="37" rx="4" fill="var(--bg-elev)" stroke="var(--line-strong)" />
-      <text x="323" y="58" fill="var(--acid)" class="svg-mono" font-size="9" font-weight="600">TEACHER</text>
-      <text x="323" y="71" fill="var(--ink-faint)" class="svg-mono" font-size="8.2">Own interns</text>
+      <text x="323" y="58" fill="var(--acid)" class="svg-mono" font-size="9" font-weight="600">
+        {isPt ? 'DOCENTE' : 'TEACHER'}
+      </text>
+      <text x="323" y="71" fill="var(--ink-faint)" class="svg-mono" font-size="8.2">
+        {isPt ? 'Seus alunos' : 'Own interns'}
+      </text>
 
       <rect x="214" y="87" width="90" height="37" rx="4" fill="var(--bg-elev)" stroke="var(--line-strong)" />
-      <text x="223" y="103" fill="var(--ink)" class="svg-mono" font-size="9" font-weight="600">STUDENT</text>
-      <text x="223" y="116" fill="var(--ink-faint)" class="svg-mono" font-size="8.2">Hours &amp; docs</text>
+      <text x="223" y="103" fill="var(--ink)" class="svg-mono" font-size="9" font-weight="600">
+        {isPt ? 'ALUNO' : 'STUDENT'}
+      </text>
+      <text x="223" y="116" fill="var(--ink-faint)" class="svg-mono" font-size="8.2">
+        {isPt ? 'Horas e docs' : 'Hours & docs'}
+      </text>
 
       <rect x="314" y="87" width="90" height="37" rx="4" fill="var(--bg-elev)" stroke="var(--line-strong)" />
-      <text x="323" y="103" fill="var(--ink)" class="svg-mono" font-size="9" font-weight="600">COMPANY</text>
-      <text x="323" y="116" fill="var(--ink-faint)" class="svg-mono" font-size="8.2">Assigned</text>
+      <text x="323" y="103" fill="var(--ink)" class="svg-mono" font-size="9" font-weight="600">
+        {isPt ? 'EMPRESA' : 'COMPANY'}
+      </text>
+      <text x="323" y="116" fill="var(--ink-faint)" class="svg-mono" font-size="8.2">
+        {isPt ? 'Atribuídos' : 'Assigned'}
+      </text>
 
       <!-- Bottom controls -->
       <rect x="214" y="134" width="190" height="30" rx="4" fill="var(--bg-elev)" stroke="var(--line)" />
@@ -106,18 +124,22 @@
       <rect x="1" y="1" width="418" height="178" rx="8" fill="var(--bg)" stroke="var(--line)" />
       <line x1="1" y1="28" x2="419" y2="28" stroke="var(--line)" />
       <text x="16" y="18" fill="var(--ink-faint)" class="svg-mono" font-size="9.5" letter-spacing="1">
-        FINSIGHT :: USER-ISOLATED LEDGER (PG 16)
+        {isPt ? 'FINSIGHT :: CONTAS ISOLADAS (PG 16)' : 'FINSIGHT :: USER-ISOLATED LEDGER (PG 16)'}
       </text>
 
       <!-- Auth + UserId Gate -->
       <rect x="16" y="42" width="146" height="54" rx="4" fill="var(--bg-elev)" stroke="var(--line-strong)" />
       <text x="25" y="60" fill="var(--acid)" class="svg-mono" font-size="9.2" font-weight="600">AUTH + GUARD</text>
       <text x="25" y="74" fill="var(--ink-dim)" class="svg-mono" font-size="8.2">OAuth + QR TOTP 2FA</text>
-      <text x="25" y="87" fill="var(--ink-faint)" class="svg-mono" font-size="8">UserId owner scope</text>
+      <text x="25" y="87" fill="var(--ink-faint)" class="svg-mono" font-size="8">
+        {isPt ? 'Filtro por UserId' : 'UserId owner scope'}
+      </text>
 
       <!-- 6-Month Chart Mini Panel -->
       <rect x="174" y="42" width="230" height="82" rx="4" fill="var(--bg-raise)" stroke="var(--line-strong)" />
-      <text x="186" y="59" fill="var(--ink-dim)" class="svg-mono" font-size="8.8">6-MONTH SPEND VS BUDGET</text>
+      <text x="186" y="59" fill="var(--ink-dim)" class="svg-mono" font-size="8.8">
+        {isPt ? 'DESPESA VS ORÇAMENTO (6M)' : '6-MONTH SPEND VS BUDGET'}
+      </text>
       <rect x="190" y="86" width="11" height="28" fill="var(--ink-dim)" fill-opacity="0.45" />
       <rect x="203" y="76" width="11" height="38" fill="var(--acid)" />
       <rect x="224" y="80" width="11" height="34" fill="var(--ink-dim)" fill-opacity="0.45" />
@@ -133,13 +155,15 @@
 
       <!-- Recurring + Export strips -->
       <rect x="16" y="106" width="146" height="58" rx="4" fill="var(--bg-elev)" stroke="var(--line)" />
-      <text x="25" y="124" fill="var(--ink)" class="svg-mono" font-size="8.8" font-weight="600">RECURRING JOBS</text>
+      <text x="25" y="124" fill="var(--ink)" class="svg-mono" font-size="8.8" font-weight="600">
+        {isPt ? 'RECORRÊNCIA' : 'RECURRING JOBS'}
+      </text>
       <text x="25" y="139" fill="var(--ink-faint)" class="svg-mono" font-size="8">DeleteBehavior.Restrict</text>
       <text x="25" y="153" fill="var(--ink-faint)" class="svg-mono" font-size="8">RegistoAuditoria</text>
 
       <rect x="174" y="134" width="230" height="30" rx="4" fill="var(--bg-elev)" stroke="var(--line)" />
       <text x="184" y="153" fill="var(--acid)" class="svg-mono" font-size="8.5" font-weight="600">
-        EXPORT: CSV + .XLSX (CLOSEDXML)
+        {isPt ? 'EXPORTAÇÃO: CSV + .XLSX' : 'EXPORT: CSV + .XLSX (CLOSEDXML)'}
       </text>
     </svg>
   {/if}
@@ -160,9 +184,5 @@
 
   .schematic :global(.svg-mono) {
     font-family: var(--font-mono);
-  }
-
-  .schematic.is-compact {
-    max-height: 170px;
   }
 </style>

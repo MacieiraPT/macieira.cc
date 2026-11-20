@@ -28,6 +28,7 @@ export interface GitHubEvent {
   };
   payload?: {
     head?: string;
+    size?: number;
     commits?: Array<{
       sha?: string;
       message?: string;

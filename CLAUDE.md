@@ -26,12 +26,13 @@ src/
   params.ts                    SvelteKit 3 defineParams matcher for optional [[lang=lang]] ('pt')
   lib/
     data/projects.ts           Single source of truth for Selected Work & /work/[slug]
+    data/site.ts               Shared site origin, contact handles, and external profile links
     data/github-snapshot.ts    Curated offline/rate-limit fallback & language/push helpers
     i18n/                      en.ts (DeepWiden TranslationShape), pt.ts (satisfies TranslationShape), index.svelte.ts
     state/workbench.svelte.ts  Theme presets (theme:v1), bit depth, CRT scanlines, spin sync, shared toast
     styles/                    tokens.css (4-theme WCAG AA ramps/fonts), global.css (base layout + print rules)
     webgl/retroAppleShader.ts  Zero-dependency raw WebGL two-pass 4x4 Bayer renderer + procedural meshes
-    components/                Header (desktop + mobile drawer + theme toggle), Footer, Icons, ProjectVisual, RetroAppleCanvas, GitHubPanel
+    components/                Header, Footer, SeoHead, Icons, ProjectVisual, RetroAppleCanvas, GitHubPanel
   routes/
     +layout.ts / +layout.svelte Prerender config, shared shell, reactive lang sync & accessible shortcuts (1-5, P, B, R)
     +error.svelte              Bilingual 404/error view

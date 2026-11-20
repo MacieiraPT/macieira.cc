@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/state';
+  import { SITE } from '#lib/data/site.ts';
   import { i18n, stripLangPrefix } from '#lib/i18n/index.svelte.ts';
   import { workbench } from '#lib/state/workbench.svelte.ts';
   import Icons from './Icons.svelte';
@@ -107,7 +108,7 @@
       <h2 class="footer__big">{i18n.t.footer.heading}</h2>
 
       <div class="footer__actions">
-        <a class="btn btn--solid" href="mailto:rodrigo@macieira.cc">
+        <a class="btn btn--solid" href={`mailto:${SITE.email}`}>
           <Icons name="mail" />
           <span>{i18n.t.footer.emailCta}</span>
         </a>
@@ -115,7 +116,7 @@
         <button
           class="btn btn--ghost"
           type="button"
-          onclick={() => copyValue('email', 'rodrigo@macieira.cc')}
+          onclick={() => copyValue('email', SITE.email)}
         >
           <Icons name={copiedKey === 'email' ? 'check' : 'copy'} class="icon icon--sm" />
           <span>{i18n.t.footer.copyEmailCta}</span>
@@ -131,20 +132,20 @@
         <button
           class="btn btn--ghost"
           type="button"
-          onclick={() => copyValue('discord', 'rvdi')}
+          onclick={() => copyValue('discord', SITE.discord)}
         >
           <Icons name={copiedKey === 'discord' ? 'check' : 'copy'} class="icon icon--sm" />
-          <span>{i18n.t.footer.discordCta}: rvdi</span>
+          <span>{i18n.t.footer.discordCta}: {SITE.discord}</span>
         </button>
 
         <a
           class="btn btn--ghost"
-          href="https://github.com/MacieiraPT"
+          href={SITE.githubUrl}
           target="_blank"
           rel="me noopener"
         >
           <Icons name="github" />
-          <span>{i18n.t.footer.githubCta} @MacieiraPT</span>
+          <span>{i18n.t.footer.githubCta} @{SITE.githubUser}</span>
           <Icons name="arrow-up-right" class="icon icon--sm" />
         </a>
       </div>
@@ -157,7 +158,7 @@
           <span class="sep" aria-hidden="true">·</span>
           <a
             class="colophon__link"
-            href="https://github.com/MacieiraPT/macieira.cc"
+            href={SITE.repoUrl}
             target="_blank"
             rel="noopener"
           >
@@ -232,7 +233,7 @@
   }
 
   .colophon__keys {
-    font-size: 0.64rem;
+    font-size: 0.72rem;
     color: var(--ink-faint);
   }
 

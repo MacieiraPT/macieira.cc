@@ -11,11 +11,57 @@ import {
   type GitHubRepo,
 } from '#lib/data/github-snapshot.ts';
 
-const USER = 'MacieiraPT';
+import { SITE } from '#lib/data/site.ts';
+
+const USER = SITE.githubUser;
 const GITHUB_API = 'https://api.github.com';
 const EDGE_TTL_SECONDS = 1800; // 30 minutes
 const FALLBACK_EDGE_TTL_SECONDS = 120; // 2 minutes to prevent retry storms
 const UPSTREAM_TIMEOUT_MS = 4500;
+
+function trimProfile(raw: GitHubProfile): GitHubProfile {
+  return {
+    login: raw.login,
+    name: raw.name ?? null,
+    bio: raw.bio ?? null,
+    avatar_url: raw.avatar_url,
+    html_url: raw.html_url,
+    public_repos: raw.public_repos ?? 0,
+    followers: raw.followers ?? 0,
+    created_at: raw.created_at,
+  };
+}
+
+function trimRepo(raw: GitHubRepo): GitHubRepo {
+  return {
+    name: raw.name,
+    html_url: raw.html_url,
+    description: raw.description ?? null,
+    language: raw.language ?? null,
+    stargazers_count: raw.stargazers_count ?? 0,
+    fork: Boolean(raw.fork),
+    archived: Boolean(raw.archived),
+    pushed_at: raw.pushed_at,
+  };
+}
+
+function trimEvent(raw: GitHubEvent): GitHubEvent {
+  const firstMsg = raw.payload?.commits?.[0]?.message;
+  const commitCount = raw.payload?.size ?? raw.payload?.commits?.length;
+  return {
+    type: raw.type,
+    created_at: raw.created_at,
+    ...(raw.repo?.name ? { repo: { name: raw.repo.name } } : {}),
+    ...(firstMsg || commitCount !== undefined
+      ? {
+          payload: {
+            ...(commitCount !== undefined ? { size: commitCount } : {}),
+            ...(firstMsg ? { commits: [{ message: firstMsg }] } : {}),
+          },
+        }
+      : {}),
+  };
+}
 
 interface UpstreamResult<T> {
   ok: boolean;
@@ -56,7 +102,7 @@ async function fetchGitHub<T>(path: string, headers: HeadersInit): Promise<Upstr
 }
 
 export const GET: RequestHandler = async ({ url }) => {
-  const cacheUrl = new URL(url.origin + '/api/github?v=3');
+  const cacheUrl = new URL(url.origin + '/api/github?v=4');
   const cacheStorage =
     typeof caches !== 'undefined' && 'default' in caches
       ? (caches as unknown as { default: Cache }).default
@@ -109,10 +155,10 @@ export const GET: RequestHandler = async ({ url }) => {
     profileRes.ok && Boolean(profileRes.data) && reposRes.ok && Array.isArray(reposRes.data);
   const rateLimited = profileRes.rateLimited || reposRes.rateLimited || eventsRes.rateLimited;
 
-  const repos = liveSuccess ? reposRes.data! : GITHUB_SNAPSHOT.repos;
+  const repos = liveSuccess ? reposRes.data!.map(trimRepo) : GITHUB_SNAPSHOT.repos;
   const events = liveSuccess
     ? eventsRes.ok && Array.isArray(eventsRes.data)
-      ? eventsRes.data
+      ? eventsRes.data.map(trimEvent)
       : []
     : GITHUB_SNAPSHOT.events;
 
@@ -121,7 +167,7 @@ export const GET: RequestHandler = async ({ url }) => {
     fetchedAt: new Date().toISOString(),
     snapshotDate: SNAPSHOT_DATE,
     ...(liveSuccess ? {} : { rateLimited }),
-    profile: liveSuccess ? profileRes.data! : GITHUB_SNAPSHOT.profile,
+    profile: liveSuccess ? trimProfile(profileRes.data!) : GITHUB_SNAPSHOT.profile,
     repos,
     events,
     languages: computeLanguageStats(repos),

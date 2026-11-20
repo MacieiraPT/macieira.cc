@@ -28,6 +28,7 @@ export const en = {
     menuCloseAria: 'Close navigation menu',
     themeCycleAria: (label: string) => `Theme: ${label}. Click to cycle palette`,
     themeToast: (label: string) => `Theme: ${label}`,
+    modeToast: (mode: string) => `Shader mode: ${mode}`,
   },
   hero: {
     regionLine: 'Portugal · Full-Stack & Interactive Web',
@@ -35,7 +36,7 @@ export const en = {
     name: 'Rodrigo Macieira',
     ledeLead: 'Building TypeScript/Electron desktop software and C#/.NET + PostgreSQL systems.',
     ledeSub:
-      'Paired with zero-dependency Bayer WebGL on the front page, engineered without bloat or framework lock-in.',
+      'Focused on clean system boundaries, strict performance budgets, and interactive browser graphics.',
     primaryCta: 'View selected work',
     secondaryCta: 'Email me',
     cvCta: 'CV / Resume',
@@ -57,7 +58,8 @@ export const en = {
     crtToggleAria: 'Toggle subtle CRT scanline overlay',
     spinCta: 'SPIN',
     spinAria: 'Apply rotational spin impulse to the 3D apple',
-    telemetryIdle: (tris: number, fps: number) => `${tris} TRIS · ${fps} FPS`,
+    telemetryIdle: (tris: number, fps?: number) =>
+      fps ? `${tris} TRIS · ${fps} FPS` : `${tris} TRIS`,
     telemetryStatic: (tris: number) => `${tris} TRIS · STATIC`,
     telemetrySpins: (n: string, raw: number, fps?: number) =>
       fps ? `${n} ${raw === 1 ? 'SPIN' : 'SPINS'} · ${fps} FPS` : `${n} ${raw === 1 ? 'SPIN' : 'SPINS'}`,
@@ -209,6 +211,7 @@ export const en = {
     activityQuietSince: (days: number, ago: string) =>
       `latest push ${ago} · quiet last ${days} days`,
     activityQuiet: (days: number) => `quiet · last ${days} days`,
+    activitySnapshotUnavailable: 'Live 14-day event feed unavailable in snapshot mode.',
     dayTooltip: (day: string, count: number) =>
       `${day}: ${count} public event${count === 1 ? '' : 's'}`,
     activityAria: (count: number, days: number) =>
@@ -228,7 +231,7 @@ export const en = {
     colophonTech: 'Built with SvelteKit, TypeScript, and zero-dependency WebGL on Cloudflare Workers.',
     colophonSource: 'Source on GitHub',
     hostedOn: 'Cloudflare Workers',
-    shortcutsHint: 'Keys: [1-5] sections · [P] theme · [B] bit · [R] spin',
+    shortcutsHint: 'Keys: [1-5] nav · [P] theme · [B] bit · [R] spin',
     localTimePrefix: 'Lisbon time',
     backToTop: 'Back to top',
     copiedToast: (val: string) => `Copied ${val}`,
@@ -275,7 +278,7 @@ export const en = {
   errorPage: {
     code: 'Error',
     title: 'Nothing on this branch.',
-    body: "That page isn't here. It may have moved during the SvelteKit migration, or the route doesn't exist.",
+    body: "That page isn't here. The link may be outdated, or the route doesn't exist.",
     homeCta: 'Return home',
     workCta: 'Browse case studies',
   },

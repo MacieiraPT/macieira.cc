@@ -6,8 +6,12 @@ export interface LocalizedText {
 }
 
 export interface ProjectMetric {
-  value: string;
+  value: string | LocalizedText;
   label: LocalizedText;
+}
+
+export function resolveText(value: string | LocalizedText, lang: 'en' | 'pt'): string {
+  return typeof value === 'string' ? value : value[lang];
 }
 
 export interface ProjectDecision {
@@ -85,7 +89,7 @@ export const PROJECTS: Project[] = [
         label: { en: 'Renderer JS bundle (312 kB unminified)', pt: 'Bundle JS do renderer (312 kB raw)' },
       },
       {
-        value: '55 systems',
+        value: { en: '55 systems', pt: '55 sistemas' },
         label: { en: 'Curated playable platforms mapped', pt: 'Plataformas jogáveis mapeadas' },
       },
     ],
@@ -179,11 +183,11 @@ export const PROJECTS: Project[] = [
     stack: ['C#', '.NET 8', 'ASP.NET Core MVC', 'Entity Framework Core', 'PostgreSQL (Npgsql)', 'ASP.NET Identity', 'QuestPDF / DinkToPdf', 'ClosedXML', 'MailKit', 'xUnit + Moq'],
     metrics: [
       {
-        value: '4 layers',
+        value: { en: '4 layers', pt: '4 camadas' },
         label: { en: 'Core, Infrastructure, Web, and Tests solution layout', pt: 'Camadas Core, Infrastructure, Web e Tests' },
       },
       {
-        value: '4 roles',
+        value: { en: '4 roles', pt: '4 perfis' },
         label: { en: 'Admin, Teacher, Student & Company isolation', pt: 'Isolamento Admin, Professor, Aluno e Empresa' },
       },
       {
@@ -293,7 +297,7 @@ export const PROJECTS: Project[] = [
         label: { en: 'Google OAuth paired with QR-encoded 2FA', pt: 'Google OAuth combinado com 2FA por TOTP QR' },
       },
       {
-        value: '6-mo trends',
+        value: { en: '6-mo trends', pt: 'Tendências 6m' },
         label: { en: 'Chart.js breakdowns & salary threshold warnings', pt: 'Tendências a 6 meses e alertas face ao rendimento' },
       },
       {

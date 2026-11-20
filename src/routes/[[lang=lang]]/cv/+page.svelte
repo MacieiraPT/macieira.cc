@@ -1,34 +1,17 @@
 <script lang="ts">
+  import { SITE } from '#lib/data/site.ts';
   import { i18n } from '#lib/i18n/index.svelte.ts';
-  import { PROJECTS } from '#lib/data/projects.ts';
+  import { PROJECTS, resolveText } from '#lib/data/projects.ts';
+  import SeoHead from '#lib/components/SeoHead.svelte';
   import Icons from '#lib/components/Icons.svelte';
-
-  let canonicalUrl = $derived(
-    i18n.lang === 'pt' ? 'https://macieira.cc/pt/cv' : 'https://macieira.cc/cv'
-  );
 </script>
 
-<svelte:head>
-  <title>{i18n.t.meta.cvTitle}</title>
-  <meta name="description" content={i18n.t.meta.cvDescription} />
-  <link rel="canonical" href={canonicalUrl} />
-  <link rel="alternate" hreflang="en" href="https://macieira.cc/cv" />
-  <link rel="alternate" hreflang="pt-PT" href="https://macieira.cc/pt/cv" />
-  <link rel="alternate" hreflang="x-default" href="https://macieira.cc/cv" />
-
-  <meta property="og:type" content="profile" />
-  <meta property="og:url" content={canonicalUrl} />
-  <meta property="og:site_name" content="macieira.cc" />
-  <meta property="og:title" content={i18n.t.meta.cvTitle} />
-  <meta property="og:description" content={i18n.t.meta.cvDescription} />
-  <meta property="og:locale" content={i18n.t.meta.ogLocale} />
-  <meta property="og:locale:alternate" content={i18n.t.meta.ogLocaleAlt} />
-  <meta property="og:image" content="https://macieira.cc/assets/og.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content={i18n.t.meta.ogImageAlt} />
-  <meta name="twitter:card" content="summary_large_image" />
-</svelte:head>
+<SeoHead
+  title={i18n.t.meta.cvTitle}
+  description={i18n.t.meta.cvDescription}
+  path="/cv"
+  ogType="profile"
+/>
 
 <article class="cv wrap">
   <div class="cv-toolbar">
@@ -54,17 +37,17 @@
       <dl class="cv-contact mono">
         <div>
           <dt>{i18n.t.cv.contactWeb}</dt>
-          <dd><a href="https://macieira.cc">macieira.cc</a></dd>
+          <dd><a href={SITE.origin}>{SITE.name}</a></dd>
         </div>
         <div>
           <dt>{i18n.t.cv.contactEmail}</dt>
-          <dd><a href="mailto:rodrigo@macieira.cc">rodrigo@macieira.cc</a></dd>
+          <dd><a href={`mailto:${SITE.email}`}>{SITE.email}</a></dd>
         </div>
         <div>
           <dt>{i18n.t.cv.contactGitHub}</dt>
           <dd>
-            <a href="https://github.com/MacieiraPT" target="_blank" rel="noopener">
-              github.com/MacieiraPT
+            <a href={SITE.githubUrl} target="_blank" rel="noopener">
+              github.com/{SITE.githubUser}
             </a>
           </dd>
         </div>
@@ -116,7 +99,7 @@
             <p class="cv-project__headline">{project.headline[i18n.lang]}</p>
             <p class="cv-project__outcomes">{project.outcomes[i18n.lang]}</p>
             <p class="cv-project__metrics mono">
-              {project.metrics.map((m) => m.value).join(' · ')}
+              {project.metrics.map((m) => resolveText(m.value, i18n.lang)).join(' · ')}
             </p>
           </div>
         {/each}
@@ -130,7 +113,6 @@
           <h3>{i18n.t.background.qualificationTitle}</h3>
           <p class="cv-edu__meta mono">{i18n.t.cv.educationCredentialMeta}</p>
           <p>{i18n.t.background.qualificationBody}</p>
-          <p class="cv-edu__ref mono">{i18n.t.background.qualificationMeta}</p>
         </div>
       </section>
 
@@ -151,6 +133,7 @@
 
 <style>
   .cv {
+    max-width: 960px;
     padding-block: clamp(2rem, 5vh, 3.5rem) var(--section-y);
     display: grid;
     gap: 1.5rem;
@@ -186,11 +169,10 @@
   }
 
   .cv-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1.5rem;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+    align-items: start;
+    gap: 1.5rem 2rem;
     padding-bottom: 1.35rem;
     border-bottom: 1px solid var(--line);
   }
@@ -217,7 +199,7 @@
   .cv-contact {
     display: grid;
     gap: 0.3rem;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .cv-contact > div {
@@ -238,6 +220,7 @@
 
   .cv-section {
     display: grid;
+    align-content: start;
     gap: 0.75rem;
   }
 
@@ -245,7 +228,7 @@
     color: var(--acid);
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    font-size: 0.68rem;
+    font-size: 0.7rem;
   }
 
   .cv-summary {
@@ -268,7 +251,7 @@
 
   .cv-skills__row dt {
     color: var(--ink);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .cv-skills__row dd {
@@ -325,13 +308,14 @@
 
   .cv-project__metrics {
     color: var(--ink-faint);
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     margin-top: 0.2rem;
   }
 
   .cv-split {
     display: grid;
     grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+    align-items: start;
     gap: 1.5rem 2.25rem;
     padding-top: 1rem;
     border-top: 1px solid var(--line);
@@ -347,10 +331,9 @@
     font-weight: 700;
   }
 
-  .cv-edu__meta,
-  .cv-edu__ref {
+  .cv-edu__meta {
     color: var(--ink-faint);
-    font-size: 0.68rem;
+    font-size: 0.72rem;
   }
 
   .cv-edu p:not(.mono) {
@@ -370,7 +353,7 @@
 
   .cv-principles strong {
     color: var(--ink);
-    font-size: 0.68rem;
+    font-size: 0.72rem;
   }
 
   .cv-principles span {
@@ -379,6 +362,7 @@
   }
 
   @media screen and (max-width: 780px) {
+    .cv-header,
     .cv-skills__row,
     .cv-split {
       grid-template-columns: 1fr;
@@ -607,8 +591,7 @@
       margin-bottom: 3pt !important;
     }
 
-    .cv-edu__meta,
-    .cv-edu__ref {
+    .cv-edu__meta {
       font-size: 7pt !important;
     }
 
@@ -651,7 +634,6 @@
     .cv-project__right,
     .cv-project__metrics,
     .cv-edu__meta,
-    .cv-edu__ref,
     .cv-contact dt {
       color: #3f3f46 !important;
     }
